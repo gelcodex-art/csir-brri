@@ -7,12 +7,15 @@ from collections import Counter
 from datetime import date, datetime
 
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth.views import LoginView
 from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.core.paginator import Paginator
-from django.db import transaction
+from django.db import DatabaseError, transaction
 from django.db.models import Count, Q, Sum
 from django.db.models.fields.files import FieldFile
 from django.db.models.functions import TruncMonth
@@ -23,10 +26,42 @@ from django.views.decorators.http import require_POST
 
 from . import codebook as cb
 from .checks import check_report
-from .forms import (AccidentForm, PassengerFormSet, PedestrianFormSet, ReviewForm,
+from .forms import (AccidentForm, FirstAdminForm, PassengerFormSet, PedestrianFormSet, ReviewForm,
                     VehicleFormSet)
 from .models import (Accident, AuditLog, District, PassengerCasualty, PedestrianCasualty,
                      PoliceStation, Region, Town, Vehicle)
+
+
+# ---------------------------------------------------------------------------
+# First run: with no accounts at all, the first visitor creates the administrator
+# ---------------------------------------------------------------------------
+def needs_first_admin():
+    try:
+        return not User.objects.exists()
+    except DatabaseError:       # tables not created yet: keep the login page working
+        return False
+
+
+class LoginOrSetupView(LoginView):
+    def dispatch(self, request, *args, **kwargs):
+        if needs_first_admin():
+            return redirect("first_admin")
+        return super().dispatch(request, *args, **kwargs)
+
+
+def first_admin(request):
+    if not needs_first_admin():         # closed for good once any account exists
+        return redirect("login")
+    form = FirstAdminForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        with transaction.atomic():
+            if User.objects.exists():
+                return redirect("login")
+            user = form.save()
+        login(request, user)
+        messages.success(request, "Administrator account created. You can now add your analysts.")
+        return redirect("admin:auth_user_add")
+    return render(request, "registration/first_admin.html", {"form": form})
 
 
 # ---------------------------------------------------------------------------

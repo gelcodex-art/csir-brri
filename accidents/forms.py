@@ -1,7 +1,11 @@
 import re
+import secrets
 from datetime import date
 
 from django import forms
+from django.conf import settings
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from django.forms import inlineformset_factory
 
 from . import codebook as cb
@@ -34,6 +38,40 @@ def _style(form):
             w.attrs.update({"class": "inp", "rows": 3})
         elif not isinstance(w, (forms.CheckboxInput, forms.ClearableFileInput)):
             w.attrs.setdefault("class", "inp")
+
+
+class FirstAdminForm(UserCreationForm):
+    """Creates the very first account, which is always an administrator."""
+    setup_code = forms.CharField(label="Setup code", widget=forms.PasswordInput,
+                                 help_text="The DJANGO_SETUP_CODE value set for this site.")
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ["first_name", "last_name", "email", "username"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not settings.FIRST_ADMIN_CODE:
+            del self.fields["setup_code"]
+        for name in ("first_name", "last_name"):
+            self.fields[name].required = True
+        self.fields["username"].help_text = "The name you will log in with."
+        self.fields["password1"].help_text = "At least 8 characters, and not only numbers."
+        self.fields["password2"].help_text = ""
+        _style(self)
+
+    def clean_setup_code(self):
+        code = self.cleaned_data["setup_code"]
+        if not secrets.compare_digest(code.encode(), settings.FIRST_ADMIN_CODE.encode()):
+            raise forms.ValidationError("That setup code is not correct.")
+        return code
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.is_staff = user.is_superuser = True
+        if commit:
+            user.save()
+        return user
 
 
 class AccidentForm(forms.ModelForm):

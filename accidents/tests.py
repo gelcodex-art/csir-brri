@@ -577,3 +577,36 @@ class AdminAreaTests(TestCase):
         self.assertNotContains(self.client.get(url + "delete/"), "your account doesn't have permission")
         self.client.post(url + "delete/", {"post": "yes"})
         self.assertEqual(Accident.objects.count(), 0)
+
+
+class FirstAdminTests(TestCase):
+    good = {"first_name": "Ama", "last_name": "Mensah", "email": "a@example.com", "username": "ama",
+            "password1": "Road-safety-2026", "password2": "Road-safety-2026"}
+
+    def test_login_sends_to_setup_when_no_accounts(self):
+        self.assertRedirects(self.client.get("/login/"), "/setup/")
+
+    def test_creates_administrator_and_opens_add_user(self):
+        r = self.client.post("/setup/", self.good)
+        self.assertRedirects(r, "/admin/auth/user/add/")
+        u = User.objects.get(username="ama")
+        self.assertTrue(u.is_superuser and u.is_staff and u.is_active)
+
+    def test_closed_once_an_account_exists(self):
+        User.objects.create_user("analyst", password="pw-12345-test")
+        self.assertRedirects(self.client.get("/setup/"), "/login/")
+        self.client.post("/setup/", self.good)
+        self.assertFalse(User.objects.filter(username="ama").exists())
+        self.assertEqual(self.client.get("/login/").status_code, 200)
+
+    def test_weak_password_rejected(self):
+        r = self.client.post("/setup/", {**self.good, "password1": "123", "password2": "123"})
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(User.objects.exists())
+
+    @override_settings(FIRST_ADMIN_CODE="open-sesame")
+    def test_setup_code_required_when_set(self):
+        self.client.post("/setup/", {**self.good, "setup_code": "wrong"})
+        self.assertFalse(User.objects.exists())
+        self.client.post("/setup/", {**self.good, "setup_code": "open-sesame"})
+        self.assertTrue(User.objects.filter(username="ama", is_superuser=True).exists())

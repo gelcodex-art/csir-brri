@@ -192,3 +192,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 TOMTOM_API_KEY = os.environ.get('TOMTOM_API_KEY', '').strip()
 if not TOMTOM_API_KEY and (BASE_DIR / 'tomtom.key').exists():
     TOMTOM_API_KEY = (BASE_DIR / 'tomtom.key').read_text(encoding='utf-8').strip()
+
+
+# Optional code that must be typed on the first-administrator page (/setup/).
+# Set it on any public site, so a stranger cannot create the first account.
+FIRST_ADMIN_CODE = os.environ.get('DJANGO_SETUP_CODE', '').strip()
