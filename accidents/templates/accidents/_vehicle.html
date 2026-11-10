@@ -1,0 +1,16 @@
+<div class="vehicle formrow">
+  <h3>
+    <span>Vehicle</span>
+    {% if new %}<button type="button" class="btn ghost small" data-remove>Remove</button>
+    {% else %}<label class="muted">{{ f.DELETE }} Delete</label>{% endif %}
+  </h3>
+  {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+  {% for e in f.non_field_errors %}<p class="err">{{ e }}</p>{% endfor %}
+  <div class="fields">
+    {% for field in f.visible_fields %}{% if field.name != 'DELETE' %}
+      {% if field.name == 'vehicle_type' %}<div class="subhead">The vehicle</div>{% endif %}
+      {% if field.name == 'driver_name' %}<div class="subhead">The driver / rider <span class="muted" data-driver-note hidden>&middot; not needed for an unknown vehicle</span></div>{% endif %}
+      {% include "accidents/_field.html" %}
+    {% endif %}{% endfor %}
+  </div>
+</div>

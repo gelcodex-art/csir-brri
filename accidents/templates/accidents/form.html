@@ -1,0 +1,154 @@
+{% extends "accidents/base.html" %}
+{% load static %}
+{% block title %}{% if instance %}Edit {{ instance }}{% else %}New accident report{% endif %} · BRRI{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.css" crossorigin="anonymous">
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    {% if instance %}<a class="crumb" href="{% url 'accident_detail' instance.pk %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Report {{ instance }}</a>{% endif %}
+    <h1>{% if instance %}Edit report {{ instance }}{% else %}New road accident report{% endif %}</h1>
+    <p class="sub">Field numbers match the Ghana Police Service / BRRI Road Accident Report form. * = required.</p>
+  </div>
+</div>
+{% if instance and instance.status == "reviewed" %}
+<div class="msg warning">This report was approved{% if instance.reviewed_by %} by {{ instance.reviewed_by }}{% endif %}.
+  You can still change it; your changes will be recorded in the report's history as "edited after approval".</div>
+{% endif %}
+
+<div class="form-layout">
+<nav class="form-toc" id="form-toc" aria-label="Sections of the form"></nav>
+<form id="accident-form" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  {# ---- Problems found when "Save report" was clicked (see checks.py) ---- #}
+  {% if problems or warnings %}
+  <div id="check-summary" class="check-summary" tabindex="-1">
+    {% if problems %}
+    <div class="msg error">
+      <strong>The report was not saved. Please fix {{ problems|length }} problem{{ problems|pluralize }}:</strong>
+      <ol>{% for p in problems %}<li>{% if p.anchor %}<a href="#{{ p.anchor }}" data-goto="{{ p.anchor }}">{{ p.msg }}</a>{% else %}{{ p.msg }}{% endif %}</li>{% endfor %}</ol>
+    </div>
+    {% endif %}
+    {% if warnings %}
+    <div class="msg warning">
+      <strong>Please check {{ warnings|length }} thing{{ warnings|pluralize }} that may have been forgotten:</strong>
+      <ol>{% for w in warnings %}<li><a href="#{{ w.anchor }}" data-goto="{{ w.anchor }}">{{ w.msg }}</a></li>{% endfor %}</ol>
+      {% if not problems %}
+      <p style="margin:8px 0 0">Fill them in and click <strong>Save report</strong>, or if they are correct as they are,
+        <button class="btn small" type="submit" name="confirm_warnings" value="1">Save anyway</button></p>
+      {% else %}<p style="margin:8px 0 0">Fix the problems above first.</p>{% endif %}
+    </div>
+    {% endif %}
+    {% if files_lost %}<div class="msg info">Sketch files you attached must be chosen again (browsers do not keep them after a failed save).</div>{% endif %}
+  </div>
+  {% endif %}
+
+  {# Page 1 of the paper form: 1-28 #}
+  {% include "accidents/_sections.html" with sections=form.sections_before_people %}
+
+  {# ---------------- Vehicles & drivers (29-45) ---------------- #}
+  <section class="card" id="vehicles-section">
+    <div class="card-head">
+      <h2>Vehicles &amp; drivers (29-45)</h2>
+      <button type="button" class="btn ghost small" data-add="vehicles">+ Add vehicle</button>
+    </div>
+    {{ vfs.management_form }}
+    <div id="vehicles-rows">
+      {% for vf in vfs %}{% include "accidents/_vehicle.html" with f=vf %}{% endfor %}
+    </div>
+    <template id="vehicles-empty">{% include "accidents/_vehicle.html" with f=vfs.empty_form new=1 %}</template>
+  </section>
+
+  {# ---------------- Passenger casualties (46-51) ---------------- #}
+  <section class="card" id="passengers-section">
+    <div class="card-head">
+      <h2>Passenger casualties (46-51)</h2>
+      <button type="button" class="btn ghost small" data-add="passengers">+ Add passenger</button>
+    </div>
+    {{ pfs.management_form }}
+    <p class="none-yet" data-none="passengers">No passenger was killed or injured? Leave this empty. Otherwise click <strong>Add passenger</strong>, once for each one.</p>
+    <div class="table-wrap">
+      <table class="rowtable">
+        <thead><tr>{% for fld in pfs.empty_form.visible_fields %}{% if fld.name != 'DELETE' %}<th>{{ fld.label }}</th>{% endif %}{% endfor %}<th></th></tr></thead>
+        <tbody id="passengers-rows">
+          {% for f in pfs %}{% include "accidents/_row.html" %}{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <template id="passengers-empty">{% include "accidents/_row.html" with f=pfs.empty_form new=1 %}</template>
+  </section>
+
+  {# ---------------- Pedestrian casualties (52-58) ---------------- #}
+  <section class="card" id="pedestrians-section">
+    <div class="card-head">
+      <h2>Pedestrian casualties (52-58)</h2>
+      <button type="button" class="btn ghost small" data-add="pedestrians">+ Add pedestrian</button>
+    </div>
+    {{ dfs.management_form }}
+    <p class="none-yet" data-none="pedestrians">No pedestrian was killed or injured? Leave this empty. Otherwise click <strong>Add pedestrian</strong>, once for each one.</p>
+    <div class="table-wrap">
+      <table class="rowtable">
+        <thead><tr>{% for fld in dfs.empty_form.visible_fields %}{% if fld.name != 'DELETE' %}<th>{{ fld.label }}</th>{% endif %}{% endfor %}<th></th></tr></thead>
+        <tbody id="pedestrians-rows">
+          {% for f in dfs %}{% include "accidents/_row.html" %}{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <template id="pedestrians-empty">{% include "accidents/_row.html" with f=dfs.empty_form new=1 %}</template>
+  </section>
+
+  {# Page 2 of the paper form: 59-69 #}
+  {% include "accidents/_sections.html" with sections=form.sections_after_people %}
+
+  <div class="actions sticky-actions">
+    <button class="btn" type="submit">Save report</button>
+    {% if warnings and not problems %}<button class="btn ghost" type="submit" name="confirm_warnings" value="1">Save anyway</button>
+      <span class="muted">{{ warnings|length }} reminder{{ warnings|pluralize }} at the top of the form</span>{% endif %}
+    {% if instance %}<a class="btn ghost" href="{% url 'accident_detail' instance.pk %}">Cancel</a>{% endif %}
+  </div>
+</form>
+</div>
+{{ form.town_codes|json_script:"town-codes" }}
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'accidents/app.js' %}?v=18"></script>
+{# Map for the site location. "Detailed map" (street names, churches, fuel stations) needs MapLibre. #}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/4.7.1/maplibre-gl.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js" crossorigin="anonymous"></script>
+<script src="{% static 'accidents/maps.js' %}?v=18"></script>
+<script src="{% static 'accidents/picker.js' %}?v=1"></script>
+<script>
+  // Section list beside the form: jump to a section, and show where you are.
+  (function () {
+    var toc = document.getElementById("form-toc");
+    var sections = Array.prototype.slice.call(document.querySelectorAll("#accident-form section.card"));
+    if (!toc || !sections.length) return;
+    var title = document.createElement("div");
+    title.className = "toc-title"; title.textContent = "Sections";
+    toc.appendChild(title);
+    var links = sections.map(function (sec, i) {
+      if (!sec.id) sec.id = "section-" + (i + 1);
+      var m = /^(.*?)\s*\(([\d-]+)\)\s*$/.exec(sec.querySelector("h2").textContent.trim());
+      var a = document.createElement("a");
+      a.href = "#" + sec.id;
+      var name = document.createElement("span"); name.textContent = m ? m[1] : sec.querySelector("h2").textContent.trim();
+      a.appendChild(name);
+      if (m) { var n = document.createElement("span"); n.className = "n"; n.textContent = m[2]; a.appendChild(n); }
+      if (sec.querySelector(".has-err, .err, .errorlist")) a.classList.add("bad");
+      toc.appendChild(a);
+      return a;
+    });
+    function mark() {
+      var current = 0;
+      sections.forEach(function (sec, i) { if (sec.getBoundingClientRect().top < 140) current = i; });
+      links.forEach(function (a, i) { a.classList.toggle("current", i === current); });
+    }
+    window.addEventListener("scroll", mark, { passive: true });
+    mark();
+  })();
+</script>
+{% endblock %}

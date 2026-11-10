@@ -1,0 +1,5249 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-11-08T18:46:19Z",
+    "timestamp_areas_base": "2026-11-08T14:25:20Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 10784669605,
+  "lat": 5.0884587,
+  "lon": -2.5643640,
+  "tags": {
+    "amenity": "police",
+    "name": "Customs & immigration"
+  }
+},
+{
+  "type": "node",
+  "id": 7787469385,
+  "lat": 5.0890845,
+  "lon": -2.5647057,
+  "tags": {
+    "amenity": "police",
+    "name": "Police & Customs"
+  }
+},
+{
+  "type": "node",
+  "id": 7742054585,
+  "lat": 4.9364440,
+  "lon": -2.3444138,
+  "tags": {
+    "amenity": "police",
+    "name": "Esiama Divisional District Police HQ"
+  }
+},
+{
+  "type": "node",
+  "id": 7600049643,
+  "lat": 5.0463615,
+  "lon": -2.4712827,
+  "tags": {
+    "addr:city": "Aiyinase",
+    "amenity": "police",
+    "name": "Aiyinase Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 7746196285,
+  "lat": 5.0494360,
+  "lon": -2.4744668,
+  "tags": {
+    "amenity": "police",
+    "email": "marinepolice.trngschool@gmail.com",
+    "name": "Marine Police Training School",
+    "phone": "+23359237736"
+  }
+},
+{
+  "type": "node",
+  "id": 5759334822,
+  "lat": 4.8004572,
+  "lon": -1.9501434,
+  "tags": {
+    "amenity": "police",
+    "name": "Dixcove"
+  }
+},
+{
+  "type": "node",
+  "id": 1296807973,
+  "lat": 4.9006905,
+  "lon": -2.0901235,
+  "tags": {
+    "description": "Customs",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6356042785,
+  "lat": 4.9047035,
+  "lon": -2.0664220,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 8848281537,
+  "lat": 4.9046155,
+  "lon": -2.0664489,
+  "tags": {
+    "police": "offices"
+  }
+},
+{
+  "type": "node",
+  "id": 6453283691,
+  "lat": 4.9738701,
+  "lon": -1.9913423,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 5658665841,
+  "lat": 4.9697970,
+  "lon": -1.8927886,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 9633317495,
+  "lat": 4.8920788,
+  "lon": -1.8653177,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 4035478047,
+  "lat": 4.8937120,
+  "lon": -1.8139468,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service Apowa"
+  }
+},
+{
+  "type": "node",
+  "id": 3685693597,
+  "lat": 4.9018185,
+  "lon": -1.8032857,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 3782677237,
+  "lat": 4.8915384,
+  "lon": -1.7585944,
+  "tags": {
+    "addr:city": "Takoradi",
+    "amenity": "police",
+    "name": "Police Barracks"
+  }
+},
+{
+  "type": "node",
+  "id": 3157669886,
+  "lat": 4.8937310,
+  "lon": -1.7567790,
+  "tags": {
+    "addr:city": "Takoradi",
+    "amenity": "police",
+    "name": "Central Police Station",
+    "operator": "Ghana Police"
+  }
+},
+{
+  "type": "node",
+  "id": 4715704289,
+  "lat": 4.9094661,
+  "lon": -1.7810308,
+  "tags": {
+    "amenity": "police",
+    "name": "Kwesiminting police station"
+  }
+},
+{
+  "type": "node",
+  "id": 3681448100,
+  "lat": 4.9375663,
+  "lon": -1.7781536,
+  "tags": {
+    "amenity": "police",
+    "name": "Anaji Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 8948411971,
+  "lat": 4.9580705,
+  "lon": -1.7396794,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 5112120550,
+  "lat": 4.9928190,
+  "lon": -1.6822650,
+  "tags": {
+    "name": "Inchaban Police Barrier",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 5965472408,
+  "lat": 4.9931042,
+  "lon": -1.6822248,
+  "tags": {
+    "name": "Inchaban Police Barrier",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6242101625,
+  "lat": 5.1528018,
+  "lon": -2.0770560,
+  "tags": {
+    "amenity": "police",
+    "name": "Dompim Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 4499388279,
+  "lat": 5.1831576,
+  "lon": -2.0410636,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 5303110211,
+  "lat": 5.3042680,
+  "lon": -1.9961051,
+  "tags": {
+    "amenity": "police",
+    "name": "Tarkwa Railways Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 1296762877,
+  "lat": 5.3054215,
+  "lon": -1.9923994,
+  "tags": {
+    "amenity": "police",
+    "name": "Tarkwa Police"
+  }
+},
+{
+  "type": "node",
+  "id": 5311756336,
+  "lat": 5.3694763,
+  "lon": -1.9391135,
+  "tags": {
+    "amenity": "police",
+    "name": "Aboso Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 8246337151,
+  "lat": 5.6113755,
+  "lon": -2.7345791,
+  "tags": {
+    "amenity": "police",
+    "name": "Omanpe Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 5782982873,
+  "lat": 5.6151446,
+  "lon": -2.5583852,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 10917484471,
+  "lat": 5.8183454,
+  "lon": -2.8719936,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 8034221765,
+  "lat": 5.8147310,
+  "lon": -2.8254327,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service Headquarters(Aowin Municipal-Enchi)"
+  }
+},
+{
+  "type": "node",
+  "id": 8015025806,
+  "lat": 5.8225520,
+  "lon": -2.8212325,
+  "tags": {
+    "addr:street": "Nana Brentu Road",
+    "amenity": "police",
+    "name": "Ghana Police Service-Enchi"
+  }
+},
+{
+  "type": "node",
+  "id": 9121434417,
+  "lat": 5.7810416,
+  "lon": -2.6504820,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 9102588964,
+  "lat": 5.6440688,
+  "lon": -2.2694947,
+  "tags": {
+    "amenity": "police",
+    "name": "Manso Amanfi Police District Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 9136591973,
+  "lat": 5.6315805,
+  "lon": -2.1023904,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 5535643093,
+  "lat": 5.6398062,
+  "lon": -2.1003326,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6703482986,
+  "lat": 5.8057623,
+  "lon": -2.4465935,
+  "tags": {
+    "amenity": "police",
+    "name": "Old police headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 5535643740,
+  "lat": 5.4996751,
+  "lon": -1.9949322,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 4720000391,
+  "lat": 5.7890318,
+  "lon": -2.0839856,
+  "tags": {
+    "amenity": "police",
+    "name": "Wassa Akropong Police station",
+    "name:en": "Wassa Akropong Police station",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "node",
+  "id": 9251040837,
+  "lat": 5.9419245,
+  "lon": -2.4375347,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service-Sompre"
+  }
+},
+{
+  "type": "node",
+  "id": 13607690877,
+  "lat": 6.0899563,
+  "lon": -2.2135388,
+  "tags": {
+    "name": "Wasa Juabo Police Station",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 9234278559,
+  "lat": 6.1392416,
+  "lon": -2.3356500,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 9501905277,
+  "lat": 6.1955051,
+  "lon": -2.3860237,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 7745719028,
+  "lat": 6.1970089,
+  "lon": -2.3202531,
+  "tags": {
+    "addr:city": "Sefwi Bekwai",
+    "addr:street": "Bibiani - Sefwi Bekwai Rd",
+    "amenity": "police",
+    "level": "1",
+    "name": "Sefwi Bekwai Police Sation",
+    "name:en": "New office",
+    "opening_hours": "24/7",
+    "operator": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 7745719029,
+  "lat": 6.1963986,
+  "lon": -2.3196645,
+  "tags": {
+    "addr:city": "Sefwi Bekwai",
+    "addr:street": "Bibiani - Sefwi Bekwai Rd",
+    "amenity": "police",
+    "level": "1",
+    "name": "Sefwi Bekwai Police Station",
+    "name:en": "Old office",
+    "opening_hours": "24/7",
+    "operator": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 9231199507,
+  "lat": 6.2063511,
+  "lon": -2.4615201,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 9765925738,
+  "lat": 6.2763984,
+  "lon": -2.2263429,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 3218092758,
+  "lat": 5.9692234,
+  "lon": -1.7860183,
+  "tags": {
+    "amenity": "police",
+    "name": "Dunkwa - Offin Police Station",
+    "source": "GPS track, Bing"
+  }
+},
+{
+  "type": "node",
+  "id": 4685581562,
+  "lat": 6.1405729,
+  "lon": -1.7403019,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 5186466721,
+  "lat": 5.0135359,
+  "lon": -1.6418299,
+  "tags": {
+    "amenity": "police",
+    "name": "Shama Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 11133587928,
+  "lat": 5.0492441,
+  "lon": -1.6599521,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 1378720161,
+  "lat": 5.1233439,
+  "lon": -1.6141399,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-05-24",
+    "internet_access": "no",
+    "name": "Beposo Police Station",
+    "payment:cards": "no",
+    "payment:cash": "yes",
+    "payment:credit_cards": "no",
+    "payment:debit_cards": "no",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 10046374331,
+  "lat": 5.0548532,
+  "lon": -1.4942849,
+  "tags": {
+    "addr:city": "Komenda",
+    "addr:district": "Komenda Edina Eguafo Abbrem",
+    "amenity": "police",
+    "name": "Komenda Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 5842077073,
+  "lat": 5.1049312,
+  "lon": -1.3970956,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 7012266825,
+  "lat": 5.1050776,
+  "lon": -1.3931306,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 13894100118,
+  "lat": 5.1182429,
+  "lon": -1.2897122,
+  "tags": {
+    "name": "Security Check Point",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6131438286,
+  "lat": 5.1059614,
+  "lon": -1.2798723,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-06-07",
+    "internet_access": "wlan",
+    "internet_access:fee": "no",
+    "name": "UCC Police Station",
+    "payment:cards": "no",
+    "payment:cash": "yes",
+    "payment:credit_cards": "no",
+    "payment:debit_cards": "no",
+    "wheelchair": "limited"
+  }
+},
+{
+  "type": "node",
+  "id": 4564840392,
+  "lat": 5.1224712,
+  "lon": -1.2703888,
+  "tags": {
+    "addr:street": "Pedu Junction",
+    "amenity": "police",
+    "name": "Police Headquarters Cape Coast",
+    "phone": "0543226313"
+  }
+},
+{
+  "type": "node",
+  "id": 6440347394,
+  "lat": 5.1962200,
+  "lon": -1.3199283,
+  "tags": {
+    "amenity": "police",
+    "name": "Police barrier"
+  }
+},
+{
+  "type": "node",
+  "id": 11944537347,
+  "lat": 5.3818082,
+  "lon": -1.4803167,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Barrier"
+  }
+},
+{
+  "type": "node",
+  "id": 11944558941,
+  "lat": 5.3818082,
+  "lon": -1.4803167,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Barrier"
+  }
+},
+{
+  "type": "node",
+  "id": 6440378009,
+  "lat": 5.2633650,
+  "lon": -1.3418450,
+  "tags": {
+    "amenity": "police",
+    "name": "Police barrier"
+  }
+},
+{
+  "type": "node",
+  "id": 6518396629,
+  "lat": 5.1139565,
+  "lon": -1.2475501,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-03-02",
+    "name": "Kotokraba Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 8077134647,
+  "lat": 5.1420738,
+  "lon": -1.2438633,
+  "tags": {
+    "amenity": "police",
+    "name": "Nkanfoa Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 1378720232,
+  "lat": 5.1429097,
+  "lon": -1.2157885,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Check Point"
+  }
+},
+{
+  "type": "node",
+  "id": 5272849852,
+  "lat": 5.1605323,
+  "lon": -1.1624198,
+  "tags": {
+    "amenity": "police",
+    "name": "Biriwa Police Barrier"
+  }
+},
+{
+  "type": "node",
+  "id": 5842078087,
+  "lat": 5.1613246,
+  "lon": -1.1644649,
+  "tags": {
+    "amenity": "police",
+    "name": "Biriwa"
+  }
+},
+{
+  "type": "node",
+  "id": 11125043070,
+  "lat": 5.1777261,
+  "lon": -1.1233990,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 6242101624,
+  "lat": 5.1876712,
+  "lon": -1.1042333,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6242101623,
+  "lat": 5.2421525,
+  "lon": -1.0264351,
+  "tags": {
+    "amenity": "police",
+    "name": "Mankessim"
+  }
+},
+{
+  "type": "node",
+  "id": 2800251730,
+  "lat": 5.4581522,
+  "lon": -1.1585040,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6242101622,
+  "lat": 5.2729195,
+  "lon": -0.9848453,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 4442149910,
+  "lat": 5.2802842,
+  "lon": -0.9354136,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6006303335,
+  "lat": 5.2996195,
+  "lon": -0.9037017,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 4614565889,
+  "lat": 5.3161653,
+  "lon": -0.8905574,
+  "tags": {
+    "amenity": "police",
+    "name": "Ekumfi Ekrawfo",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "node",
+  "id": 6242101621,
+  "lat": 5.3253741,
+  "lon": -0.8616935,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 13465206077,
+  "lat": 5.3254850,
+  "lon": -0.8620222,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Barrier"
+  }
+},
+{
+  "type": "node",
+  "id": 13704897416,
+  "lat": 5.4004003,
+  "lon": -0.9792521,
+  "tags": {
+    "addr:city": "Enyan Denkyira",
+    "addr:street": "Anaafo Salah-Danho Street",
+    "amenity": "police",
+    "name": "Enyan Denkyira Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6242096623,
+  "lat": 5.3337191,
+  "lon": -0.8193357,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 13465201088,
+  "lat": 5.3376006,
+  "lon": -0.7625939,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6242101620,
+  "lat": 5.3396966,
+  "lon": -0.7854952,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6717390620,
+  "lat": 5.3612792,
+  "lon": -0.6986193,
+  "tags": {
+    "description": "Barrier and check point",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 13465189463,
+  "lat": 5.3683026,
+  "lon": -0.6768819,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 9170482976,
+  "lat": 5.4144672,
+  "lon": -0.6571546,
+  "tags": {
+    "amenity": "police",
+    "name": "New Winneba Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 14269985404,
+  "lat": 5.3973424,
+  "lon": -0.6494511,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-10-10",
+    "name": "Gomoa Pomadze Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 13465240699,
+  "lat": 5.3997454,
+  "lon": -0.6251493,
+  "tags": {
+    "amenity": "police",
+    "name": "Police checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 2132147663,
+  "lat": 5.4223954,
+  "lon": -0.4692726,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 10278965695,
+  "lat": 5.5992649,
+  "lon": -1.5430480,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 10241851460,
+  "lat": 5.6109688,
+  "lon": -1.5509699,
+  "tags": {
+    "amenity": "police",
+    "name": "Twifo Praso Police Station",
+    "opening_hours": "24/7",
+    "operator": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 9657150560,
+  "lat": 5.6974198,
+  "lon": -1.2774994,
+  "tags": {
+    "amenity": "police",
+    "name": "Divisional Police Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 9657143794,
+  "lat": 5.7009339,
+  "lon": -1.2834094,
+  "tags": {
+    "amenity": "police",
+    "name": "Agogo Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6329759787,
+  "lat": 5.8379420,
+  "lon": -0.9959924,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 10038661525,
+  "lat": 5.9468073,
+  "lon": -1.3647961,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Barrier"
+  }
+},
+{
+  "type": "node",
+  "id": 2159242283,
+  "lat": 6.2001494,
+  "lon": -1.6655856,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 10043559367,
+  "lat": 6.2014809,
+  "lon": -1.4887060,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Barrier"
+  }
+},
+{
+  "type": "node",
+  "id": 1405374103,
+  "lat": 5.5219103,
+  "lon": -0.4751777,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 6935525125,
+  "lat": 5.5328992,
+  "lon": -0.4322145,
+  "tags": {
+    "amenity": "police",
+    "name": "Kasoa Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6746374586,
+  "lat": 5.8603999,
+  "lon": -0.6651172,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana police station Asamankese"
+  }
+},
+{
+  "type": "node",
+  "id": 5302051090,
+  "lat": 5.5472919,
+  "lon": -0.3819264,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-10-09",
+    "name": "Ngleshie-Amanfrom-Weija"
+  }
+},
+{
+  "type": "node",
+  "id": 5331409009,
+  "lat": 5.5486227,
+  "lon": -0.3791553,
+  "tags": {
+    "amenity": "police",
+    "name": "Weija Division Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 6949782698,
+  "lat": 5.5531488,
+  "lon": -0.3423478,
+  "tags": {
+    "addr:city": "Accra",
+    "addr:street": "footpath behind scc park",
+    "amenity": "police",
+    "name": "SCC Police Station",
+    "opening_hours": "24/7",
+    "operator": "Commander Quaye"
+  }
+},
+{
+  "type": "node",
+  "id": 1000064925,
+  "lat": 5.5441617,
+  "lon": -0.2653277,
+  "tags": {
+    "amenity": "police",
+    "name": "Dansoman Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 5302017871,
+  "lat": 5.5709752,
+  "lon": -0.2846744,
+  "tags": {
+    "amenity": "police",
+    "name": "Mallam Police Post"
+  }
+},
+{
+  "type": "node",
+  "id": 13465280093,
+  "lat": 5.5676166,
+  "lon": -0.2876089,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Barriers"
+  }
+},
+{
+  "type": "node",
+  "id": 2148020793,
+  "lat": 5.5275757,
+  "lon": -0.2372332,
+  "tags": {
+    "amenity": "police",
+    "name": "Chokor Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6396012717,
+  "lat": 5.5335290,
+  "lon": -0.2397966,
+  "tags": {
+    "amenity": "police",
+    "name": "Mamprobi Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 3903316932,
+  "lat": 5.5364506,
+  "lon": -0.2141175,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 8946497499,
+  "lat": 5.5705693,
+  "lon": -0.2478911,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-03-04",
+    "name": "Odorkor Police Station",
+    "opening_hours": "24/7",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4429993094,
+  "lat": 5.5508339,
+  "lon": -0.2104515,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-11-06",
+    "name": "Accra Regional Police HQ"
+  }
+},
+{
+  "type": "node",
+  "id": 2815335737,
+  "lat": 5.5665075,
+  "lon": -0.2353210,
+  "tags": {
+    "amenity": "police",
+    "name": "Kaneshie Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 4286178189,
+  "lat": 5.5626699,
+  "lon": -0.2140154,
+  "tags": {
+    "amenity": "police",
+    "name": "Adabraka Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6405110921,
+  "lat": 5.5698906,
+  "lon": -0.2143910,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2023-04-29",
+    "name": "Ghana National Fire\nService",
+    "note": "This is beneath overpass not a bad mapping :)",
+    "source": "local knowledge",
+    "wheelchair": "limited"
+  }
+},
+{
+  "type": "node",
+  "id": 5815609755,
+  "lat": 5.6308492,
+  "lon": -0.3220173,
+  "tags": {
+    "addr:postcode": "00233",
+    "amenity": "police",
+    "fixme": "node position",
+    "name": "Israel Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6331588086,
+  "lat": 5.6006216,
+  "lon": -0.2883950,
+  "tags": {
+    "amenity": "police",
+    "name": "Anyaa MTTU"
+  }
+},
+{
+  "type": "node",
+  "id": 3103642315,
+  "lat": 5.5773662,
+  "lon": -0.2569451,
+  "tags": {
+    "amenity": "police",
+    "name": "Odorkor Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 3137499104,
+  "lat": 5.5906065,
+  "lon": -0.2362133,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Container"
+  }
+},
+{
+  "type": "node",
+  "id": 3154428579,
+  "lat": 5.6062562,
+  "lon": -0.2485563,
+  "tags": {
+    "amenity": "police",
+    "name": "Lapaz Police station"
+  }
+},
+{
+  "type": "node",
+  "id": 7157290005,
+  "lat": 5.6242749,
+  "lon": -0.2490626,
+  "tags": {
+    "amenity": "police",
+    "name": "Achimota - Petroleum Police Post"
+  }
+},
+{
+  "type": "node",
+  "id": 4056390487,
+  "lat": 5.6052802,
+  "lon": -0.2254269,
+  "tags": {
+    "amenity": "police",
+    "name": "Tesano Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 7207518304,
+  "lat": 5.6049214,
+  "lon": -0.2254747,
+  "tags": {
+    "amenity": "police",
+    "name": "DOVVSU Tesano Division"
+  }
+},
+{
+  "type": "node",
+  "id": 7123849966,
+  "lat": 5.6124551,
+  "lon": -0.2269884,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-05-22",
+    "name": "Achimota Police Check",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "node",
+  "id": 7695274420,
+  "lat": 5.6206637,
+  "lon": -0.2253128,
+  "tags": {
+    "amenity": "police",
+    "name": "Achimota New Station Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 373424300,
+  "lat": 5.6216650,
+  "lon": -0.2187028,
+  "tags": {
+    "amenity": "police",
+    "name": "Achimota Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 12171812479,
+  "lat": 5.6348005,
+  "lon": -0.3102362,
+  "tags": {
+    "amenity": "police",
+    "name": "Agbaajena Police station"
+  }
+},
+{
+  "type": "node",
+  "id": 6442493037,
+  "lat": 5.6511372,
+  "lon": -0.2821826,
+  "tags": {
+    "addr:city": "Accra",
+    "amenity": "police",
+    "name": "Asofan Hill Top Police Post"
+  }
+},
+{
+  "type": "node",
+  "id": 6443296258,
+  "lat": 5.6583516,
+  "lon": -0.2653785,
+  "tags": {
+    "addr:city": "Accra",
+    "addr:street": "Nsawam Road",
+    "amenity": "police",
+    "check_date": "2025-01-24",
+    "name": "Ofankor Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6318609377,
+  "lat": 5.6328982,
+  "lon": -0.2256991,
+  "tags": {
+    "addr:city": "Achimota Accra",
+    "addr:street": "Falcon Avenue",
+    "amenity": "police",
+    "name": "Achimota Golf Hills Police Station",
+    "opening_hours": "24/7",
+    "operator": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 7471960631,
+  "lat": 5.6547455,
+  "lon": -0.2411696,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Dome Post"
+  }
+},
+{
+  "type": "node",
+  "id": 3063488066,
+  "lat": 5.6745830,
+  "lon": -0.2410277,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-12-06",
+    "name": "South Kwabenya Police Post"
+  }
+},
+{
+  "type": "node",
+  "id": 3063488063,
+  "lat": 5.6674399,
+  "lon": -0.2314399,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-12-06",
+    "name": "Kwabenya Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 2148020819,
+  "lat": 5.5711546,
+  "lon": -0.1866920,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana National Police Headquarter"
+  }
+},
+{
+  "type": "node",
+  "id": 11110571006,
+  "lat": 5.5718286,
+  "lon": -0.1881843,
+  "tags": {
+    "amenity": "police",
+    "website": "https://www.police.gov.gh/"
+  }
+},
+{
+  "type": "node",
+  "id": 6939266127,
+  "lat": 5.5709215,
+  "lon": -0.1805052,
+  "tags": {
+    "amenity": "police",
+    "fixme": "location - Fixed",
+    "name": "Cantonment Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 3754224194,
+  "lat": 5.5613099,
+  "lon": -0.1526190,
+  "tags": {
+    "amenity": "police",
+    "name": "Labadi Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 3415001092,
+  "lat": 5.5919515,
+  "lon": -0.2043693,
+  "tags": {
+    "amenity": "police",
+    "name": "Kotobabi M.T.T.U"
+  }
+},
+{
+  "type": "node",
+  "id": 3078223762,
+  "lat": 5.6071954,
+  "lon": -0.1988996,
+  "tags": {
+    "amenity": "police",
+    "name": "Roman Ridge Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 10891508178,
+  "lat": 5.6098284,
+  "lon": -0.1984085,
+  "tags": {
+    "amenity": "police",
+    "name": "Dzorwulu Police station"
+  }
+},
+{
+  "type": "node",
+  "id": 30729986,
+  "lat": 5.6074516,
+  "lon": -0.1766364,
+  "tags": {
+    "amenity": "police",
+    "name": "Airport Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6674373297,
+  "lat": 5.5852398,
+  "lon": -0.1312211,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-11-18",
+    "name": "Rasta Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 1775844715,
+  "lat": 5.6506714,
+  "lon": -0.1795850,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2023-10-31",
+    "internet_access": "no",
+    "name": "Legon Police Station",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 5775920950,
+  "lat": 5.6567997,
+  "lon": -0.2079420,
+  "tags": {
+    "amenity": "police",
+    "name": "Westland Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 2423829411,
+  "lat": 5.6316248,
+  "lon": -0.1525559,
+  "tags": {
+    "amenity": "police",
+    "name": "East Legon Police Station",
+    "opening_hours": "24/7",
+    "operator": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 7123899678,
+  "lat": 5.6268878,
+  "lon": -0.1524205,
+  "tags": {
+    "amenity": "police",
+    "name": "Flower Pot Police Checkpoint",
+    "opening_hours": "24/7",
+    "source": "survey;2019"
+  }
+},
+{
+  "type": "node",
+  "id": 9581378017,
+  "lat": 5.6293575,
+  "lon": -0.1467767,
+  "tags": {
+    "amenity": "police",
+    "name": "Spintex Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 4881657735,
+  "lat": 5.6347616,
+  "lon": -0.1249400,
+  "tags": {
+    "amenity": "police",
+    "name": "Manet Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 7123899679,
+  "lat": 5.6405029,
+  "lon": -0.1193631,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-11-16",
+    "name": "Printex Police Check",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "node",
+  "id": 4311940892,
+  "lat": 5.6770076,
+  "lon": -0.1183353,
+  "tags": {
+    "amenity": "police",
+    "name": "Nmai Dzorn Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 4980578539,
+  "lat": 5.6135961,
+  "lon": -0.0738224,
+  "tags": {
+    "amenity": "police",
+    "name": "Nungua Barrier",
+    "note": "likely affected due to construction, please reuse, don't just delete",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "node",
+  "id": 4311940690,
+  "lat": 5.6222463,
+  "lon": -0.0686544,
+  "tags": {
+    "amenity": "police",
+    "name": "Sakumono Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 4468806551,
+  "lat": 5.6308047,
+  "lon": -0.0625668,
+  "tags": {
+    "amenity": "police",
+    "name": "Lashibi Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 10948881760,
+  "lat": 5.6428325,
+  "lon": -0.0764153,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2023-06-03",
+    "internet_access": "no",
+    "name": "Ghana Police Service - Community 18 District Headquarters",
+    "opening_hours": "24/7",
+    "payment:cards": "no",
+    "payment:credit_cards": "no",
+    "payment:debit_cards": "no",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 5191997325,
+  "lat": 5.6525605,
+  "lon": -0.0825236,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police",
+    "name:en": "Ghana Police"
+  }
+},
+{
+  "type": "node",
+  "id": 2622097845,
+  "lat": 5.6312866,
+  "lon": -0.0128581,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 4350177216,
+  "lat": 5.6436804,
+  "lon": -0.0023106,
+  "tags": {
+    "amenity": "police",
+    "name": "Community 1 Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6294993076,
+  "lat": 5.6605185,
+  "lon": -0.0518006,
+  "tags": {
+    "amenity": "police",
+    "name": "Klagon Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 4413035452,
+  "lat": 5.6627976,
+  "lon": -0.0159427,
+  "tags": {
+    "amenity": "police",
+    "name": "Tema Regional Patrol Police Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 5919919564,
+  "lat": 5.6759933,
+  "lon": -0.0218517,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 4151841339,
+  "lat": 5.6674479,
+  "lon": -0.0098843,
+  "tags": {
+    "amenity": "police",
+    "name": "Community 8 Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6266640876,
+  "lat": 5.7366836,
+  "lon": -0.3590662,
+  "tags": {
+    "amenity": "police",
+    "name": "Kotoku Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6279636713,
+  "lat": 5.7051149,
+  "lon": -0.2984465,
+  "tags": {
+    "amenity": "police",
+    "name": "Amasaman Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 3063488055,
+  "lat": 5.6991372,
+  "lon": -0.2373358,
+  "tags": {
+    "amenity": "police",
+    "name": "Atomic Hills Estate Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 7306760183,
+  "lat": 5.6805253,
+  "lon": -0.2017401,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 2148020767,
+  "lat": 5.6866575,
+  "lon": -0.1940229,
+  "tags": {
+    "amenity": "police",
+    "name": "Agbogba Police Post"
+  }
+},
+{
+  "type": "node",
+  "id": 5695374526,
+  "lat": 5.7304218,
+  "lon": -0.2034903,
+  "tags": {
+    "amenity": "police",
+    "name": "Abokobi Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 2152138361,
+  "lat": 5.7066591,
+  "lon": -0.1705913,
+  "tags": {
+    "amenity": "police",
+    "name": "Adenta Abokobi Divisional Police Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 12657994262,
+  "lat": 5.6926632,
+  "lon": -0.1077779,
+  "tags": {
+    "amenity": "police",
+    "name": "East Legon Hills Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 8907841817,
+  "lat": 5.7191091,
+  "lon": -0.1228676,
+  "tags": {
+    "addr:street": "University Avenue",
+    "amenity": "police",
+    "name": "Lakeside Community 8 Police Station",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "node",
+  "id": 8266178717,
+  "lat": 5.7278993,
+  "lon": -0.1208032,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-03-04",
+    "name": "Lakeside Community 8 Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 9450753948,
+  "lat": 5.7625161,
+  "lon": -0.1771286,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 3993662830,
+  "lat": 5.7833418,
+  "lon": -0.1814418,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service Ayimensah"
+  }
+},
+{
+  "type": "node",
+  "id": 9161462517,
+  "lat": 5.7827122,
+  "lon": -0.1815073,
+  "tags": {
+    "amenity": "police",
+    "name": "Ayi Mensah"
+  }
+},
+{
+  "type": "node",
+  "id": 9244323878,
+  "lat": 5.7353269,
+  "lon": -0.1555339,
+  "tags": {
+    "amenity": "police",
+    "name": "Foster Home Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 2003070573,
+  "lat": 5.6875617,
+  "lon": -0.0310747,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana police headquaters Ashaiman"
+  }
+},
+{
+  "type": "node",
+  "id": 4286136992,
+  "lat": 5.7012236,
+  "lon": -0.0465249,
+  "tags": {
+    "amenity": "police",
+    "name": "Lebanon Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 5498276414,
+  "lat": 5.6844478,
+  "lon": -0.0259934,
+  "tags": {
+    "amenity": "police",
+    "name": "Police"
+  }
+},
+{
+  "type": "node",
+  "id": 3802484461,
+  "lat": 5.7034465,
+  "lon": -0.0141905,
+  "tags": {
+    "amenity": "police",
+    "name": "New Tula Aku Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 9596456411,
+  "lat": 5.7461300,
+  "lon": -0.0533441,
+  "tags": {
+    "amenity": "police",
+    "name": "Districts Police"
+  }
+},
+{
+  "type": "node",
+  "id": 3802491057,
+  "lat": 5.7581036,
+  "lon": -0.0043396,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-11-22",
+    "name": "Emefs Estate Police"
+  }
+},
+{
+  "type": "node",
+  "id": 9132743821,
+  "lat": 5.7903236,
+  "lon": -0.1588963,
+  "tags": {
+    "amenity": "police",
+    "name": "Danfa Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 12458815432,
+  "lat": 5.8499012,
+  "lon": -0.0558855,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-12-28",
+    "name": "Odumse Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 12462649569,
+  "lat": 5.8838040,
+  "lon": -0.1028565,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-12-30",
+    "name": "Dodowa Divisional Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 5539020367,
+  "lat": 5.9846605,
+  "lon": -0.5786893,
+  "tags": {
+    "amenity": "police",
+    "name": "Anum Apapam Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 2161109106,
+  "lat": 6.0375214,
+  "lon": -0.4499974,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 11468216977,
+  "lat": 6.3030516,
+  "lon": -0.7262317,
+  "tags": {
+    "amenity": "police",
+    "name": "Abomosu Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 4167732823,
+  "lat": 6.2916576,
+  "lon": -0.4745095,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2025-03-06",
+    "name": "Linda Dor Police"
+  }
+},
+{
+  "type": "node",
+  "id": 6037787237,
+  "lat": 6.3035151,
+  "lon": -0.4721555,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6532524335,
+  "lat": 5.9185615,
+  "lon": -0.3938312,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 5894876586,
+  "lat": 5.9969913,
+  "lon": -0.2410055,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Barrier"
+  }
+},
+{
+  "type": "node",
+  "id": 5894876886,
+  "lat": 6.0374295,
+  "lon": -0.2598996,
+  "tags": {
+    "amenity": "police",
+    "name": "Okorase Police Station",
+    "operator": "Government"
+  }
+},
+{
+  "type": "node",
+  "id": 6288793601,
+  "lat": 6.0916386,
+  "lon": -0.2632342,
+  "tags": {
+    "amenity": "police",
+    "name": "Railways Police station"
+  }
+},
+{
+  "type": "node",
+  "id": 6266591690,
+  "lat": 6.0786081,
+  "lon": -0.2565412,
+  "tags": {
+    "amenity": "police",
+    "name": "Galloway Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6234182247,
+  "lat": 6.0910585,
+  "lon": -0.2557083,
+  "tags": {
+    "amenity": "police",
+    "name": "Central Police station"
+  }
+},
+{
+  "type": "node",
+  "id": 2369678831,
+  "lat": 5.9124948,
+  "lon": -0.1426310,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 12549485058,
+  "lat": 6.0106515,
+  "lon": -0.0534722,
+  "tags": {
+    "amenity": "police",
+    "building:colour": "yellow",
+    "building:levels": "1",
+    "building:levels:underground": "0",
+    "building:material": "cement_block",
+    "building:use": "government",
+    "name": "Police Post",
+    "note": "Unoccupied as of end 2024",
+    "roof:material": "metal"
+  }
+},
+{
+  "type": "node",
+  "id": 12972875147,
+  "lat": 6.1870283,
+  "lon": -0.3654139,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service - Kukurantumi"
+  }
+},
+{
+  "type": "node",
+  "id": 6281842081,
+  "lat": 6.1048450,
+  "lon": -0.2673468,
+  "tags": {
+    "amenity": "police",
+    "name": "Effiduase Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6299336278,
+  "lat": 6.1259033,
+  "lon": -0.2234865,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Barrier"
+  }
+},
+{
+  "type": "node",
+  "id": 13635824815,
+  "lat": 6.4166523,
+  "lon": -2.7443340,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 13626125803,
+  "lat": 7.0195528,
+  "lon": -3.0489665,
+  "tags": {
+    "amenity": "police",
+    "name": "Nkrankwanta Police Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 7252704231,
+  "lat": 6.4567784,
+  "lon": -2.3126680,
+  "tags": {
+    "addr:city": "BIBIANI",
+    "addr:street": "Bibiani - Nyinahin - Kumasi Road",
+    "amenity": "police",
+    "description": "Office",
+    "level": "1",
+    "name": "Bibiani District Police Headquaters",
+    "opening_hours": "Mo-Fr 09:00-17:00"
+  }
+},
+{
+  "type": "node",
+  "id": 9765933168,
+  "lat": 6.4706629,
+  "lon": -2.3334350,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 9501906116,
+  "lat": 6.4256918,
+  "lon": -2.3054256,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 9765918912,
+  "lat": 6.4617950,
+  "lon": -2.2731867,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 9765863454,
+  "lat": 6.4835304,
+  "lon": -2.2342149,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 9765910527,
+  "lat": 6.5098864,
+  "lon": -2.2037679,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 9501880295,
+  "lat": 6.6115545,
+  "lon": -2.4820238,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 9701899392,
+  "lat": 6.5909633,
+  "lon": -2.3831761,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 9701893969,
+  "lat": 6.7005856,
+  "lon": -2.4469874,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service-Kukuom"
+  }
+},
+{
+  "type": "node",
+  "id": 10023131526,
+  "lat": 6.6176230,
+  "lon": -1.9896557,
+  "tags": {
+    "amenity": "police",
+    "name": "Nkrumah Nkwanta Police Post"
+  }
+},
+{
+  "type": "node",
+  "id": 10023125740,
+  "lat": 6.6299504,
+  "lon": -1.9649090,
+  "tags": {
+    "amenity": "police",
+    "name": "Betinko Police Post"
+  }
+},
+{
+  "type": "node",
+  "id": 10023125319,
+  "lat": 6.6278356,
+  "lon": -1.7895446,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 10023100982,
+  "lat": 6.6601117,
+  "lon": -1.8191250,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 10023134138,
+  "lat": 6.6317446,
+  "lon": -1.7537952,
+  "tags": {
+    "amenity": "police",
+    "name": "Atwima Kwanwoma District Police Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 6091146470,
+  "lat": 6.7004537,
+  "lon": -1.7159389,
+  "tags": {
+    "amenity": "police",
+    "name": "Abuakuaa Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 12097309745,
+  "lat": 6.7008669,
+  "lon": -1.7158719,
+  "tags": {
+    "amenity": "police",
+    "name": "Abuakwa Police station"
+  }
+},
+{
+  "type": "node",
+  "id": 7476292383,
+  "lat": 6.6976033,
+  "lon": -1.6867676,
+  "tags": {
+    "addr:city": "kumasi",
+    "addr:street": "Tanoso-Abuakwa road",
+    "amenity": "police",
+    "name": "Taanoso Police Post"
+  }
+},
+{
+  "type": "node",
+  "id": 6308275225,
+  "lat": 6.8635426,
+  "lon": -2.4470115,
+  "tags": {
+    "amenity": "police",
+    "name": "NKaseim Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 9701874077,
+  "lat": 6.9341753,
+  "lon": -2.3567606,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 9696564085,
+  "lat": 7.0125811,
+  "lon": -2.3654408,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 9696564135,
+  "lat": 7.1505331,
+  "lon": -2.4052637,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service-Atronie"
+  }
+},
+{
+  "type": "node",
+  "id": 7045903057,
+  "lat": 7.2236760,
+  "lon": -2.2407171,
+  "tags": {
+    "amenity": "police",
+    "name": "Yamfo Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 6688689749,
+  "lat": 7.4067356,
+  "lon": -2.1834569,
+  "tags": {
+    "amenity": "police",
+    "name": "Chiraa Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6535945896,
+  "lat": 7.3179770,
+  "lon": -1.9039389,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 6535949580,
+  "lat": 7.5623934,
+  "lon": -1.9360620,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6688914650,
+  "lat": 7.5804093,
+  "lon": -1.9415003,
+  "tags": {
+    "amenity": "police",
+    "name": "Techiman Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 7067159426,
+  "lat": 7.5944138,
+  "lon": -1.8698927,
+  "tags": {
+    "amenity": "police",
+    "name": "Forikrom Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 7787682618,
+  "lat": 7.5665873,
+  "lon": -1.7081002,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6535942505,
+  "lat": 7.7420702,
+  "lon": -1.8326861,
+  "tags": {
+    "amenity": "police",
+    "name": "MTTU"
+  }
+},
+{
+  "type": "node",
+  "id": 6535958164,
+  "lat": 7.9091209,
+  "lon": -1.7646463,
+  "tags": {
+    "amenity": "police",
+    "name": "District Police Headquarters Kintampo South -Jema"
+  }
+},
+{
+  "type": "node",
+  "id": 5060788191,
+  "lat": 6.4547357,
+  "lon": -1.5765465,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service, Bekwai Office"
+  }
+},
+{
+  "type": "node",
+  "id": 5308069422,
+  "lat": 6.5031404,
+  "lon": -1.6537334,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6036654016,
+  "lat": 6.6693918,
+  "lon": -1.6295698,
+  "tags": {
+    "amenity": "police",
+    "name": "Dakojom Police Post"
+  }
+},
+{
+  "type": "node",
+  "id": 5347277124,
+  "lat": 6.6676169,
+  "lon": -1.6047115,
+  "tags": {
+    "amenity": "police",
+    "branch": "Asokwa",
+    "name": "Divisional Police Headquarters",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "node",
+  "id": 4519735190,
+  "lat": 6.6858110,
+  "lon": -1.6450457,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Training School"
+  }
+},
+{
+  "type": "node",
+  "id": 5566445524,
+  "lat": 6.6931215,
+  "lon": -1.6249894,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-03-02",
+    "name": "Regional Police Headquarters, Ashanti"
+  }
+},
+{
+  "type": "node",
+  "id": 11294541709,
+  "lat": 6.7009522,
+  "lon": -1.6201994,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service (Krobo Odumasi)"
+  }
+},
+{
+  "type": "node",
+  "id": 3820432316,
+  "lat": 6.6852280,
+  "lon": -1.5750405,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2023-08-22",
+    "name": "Security Check Point",
+    "source": "survey",
+    "wheelchair": "limited"
+  }
+},
+{
+  "type": "node",
+  "id": 6033601892,
+  "lat": 6.6882457,
+  "lon": -1.5954889,
+  "tags": {
+    "amenity": "police",
+    "name": "Oforikrom Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6091147587,
+  "lat": 6.7133914,
+  "lon": -1.6177301,
+  "tags": {
+    "amenity": "police",
+    "name": "CPC"
+  }
+},
+{
+  "type": "node",
+  "id": 13894149216,
+  "lat": 6.7116288,
+  "lon": -1.5977694,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-05-22",
+    "internet_access": "no",
+    "name": "Airport police station",
+    "payment:cards": "no",
+    "payment:cash": "yes",
+    "payment:credit_cards": "no",
+    "payment:debit_cards": "no",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 10773833594,
+  "lat": 6.6678376,
+  "lon": -1.5639532,
+  "tags": {
+    "addr:floor": "G",
+    "amenity": "police",
+    "check_date": "2023-03-30",
+    "operator": "KNUST",
+    "source": "local knowledge",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 11167490398,
+  "lat": 6.6613788,
+  "lon": -1.5312245,
+  "tags": {
+    "amenity": "police",
+    "name": "Appiadu Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 11398318977,
+  "lat": 6.6881665,
+  "lon": -1.5680692,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police"
+  }
+},
+{
+  "type": "node",
+  "id": 2697994442,
+  "lat": 6.7097384,
+  "lon": -1.5692081,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 10884362008,
+  "lat": 6.7106246,
+  "lon": -1.5247327,
+  "tags": {
+    "amenity": "police",
+    "fixme": "location not accurate. edit over satellite imagery",
+    "name": "Fomesua Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6037787506,
+  "lat": 6.7233836,
+  "lon": -1.4687207,
+  "tags": {
+    "amenity": "police",
+    "name": "Ejisu Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 4169298589,
+  "lat": 6.5425198,
+  "lon": -1.4502220,
+  "tags": {
+    "amenity": "police",
+    "name": "Kessben College Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 11203660713,
+  "lat": 6.6230403,
+  "lon": -1.2212566,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 13563142210,
+  "lat": 6.6237621,
+  "lon": -1.2109558,
+  "tags": {
+    "amenity": "police",
+    "name": "konongo police station"
+  }
+},
+{
+  "type": "node",
+  "id": 7545541185,
+  "lat": 6.6305126,
+  "lon": -1.0584641,
+  "tags": {
+    "amenity": "police",
+    "name": "Bompa ta Police station"
+  }
+},
+{
+  "type": "node",
+  "id": 6533654419,
+  "lat": 6.7505461,
+  "lon": -1.6416819,
+  "tags": {
+    "amenity": "police",
+    "name": "Kronum Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 10695805189,
+  "lat": 6.7727085,
+  "lon": -1.6458260,
+  "tags": {
+    "amenity": "police",
+    "name": "Afrancho Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 13593865045,
+  "lat": 6.8357918,
+  "lon": -1.4192171,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 4595157189,
+  "lat": 6.8485778,
+  "lon": -1.3987640,
+  "tags": {
+    "amenity": "police",
+    "fixme": "node position, also consider fixing https://www.openstreetmap.org/node/4595398789",
+    "name": "Charge Office"
+  }
+},
+{
+  "type": "node",
+  "id": 4595398789,
+  "lat": 6.8479396,
+  "lon": -1.4004623,
+  "tags": {
+    "amenity": "police",
+    "fixme": "node position, also consider fixing https://www.openstreetmap.org/node/4595157189",
+    "name": "District Police Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 6535964508,
+  "lat": 6.9383658,
+  "lon": -1.6713172,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 6535963908,
+  "lat": 6.9373831,
+  "lon": -1.6679871,
+  "tags": {
+    "amenity": "police",
+    "name": "Offinso Polices Station"
+  }
+},
+{
+  "type": "node",
+  "id": 1293965184,
+  "lat": 6.4744591,
+  "lon": -0.6526891,
+  "tags": {
+    "amenity": "police",
+    "name": "New Jejeti Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 1293965187,
+  "lat": 6.3840266,
+  "lon": -0.5508761,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2025-06-04",
+    "name": "Ghana Police Service MTTU Anyinam"
+  }
+},
+{
+  "type": "node",
+  "id": 3496565027,
+  "lat": 6.3430967,
+  "lon": -0.4816039,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2025-06-04",
+    "name": "Osino Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 3496565025,
+  "lat": 6.3686334,
+  "lon": -0.5080366,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service Anyinam"
+  }
+},
+{
+  "type": "node",
+  "id": 5806003935,
+  "lat": 6.5546860,
+  "lon": -0.7600096,
+  "tags": {
+    "amenity": "police",
+    "name": "MTTU Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 11753784982,
+  "lat": 6.6077168,
+  "lon": -0.7742849,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 7395651751,
+  "lat": 6.3815666,
+  "lon": -0.1460513,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 4224179937,
+  "lat": 7.3078459,
+  "lon": -1.5761199,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6810795595,
+  "lat": 8.0761353,
+  "lon": -1.7162547,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6535966536,
+  "lat": 8.1544975,
+  "lon": -1.6941189,
+  "tags": {
+    "amenity": "police",
+    "name": "Kintampo Police Post"
+  }
+},
+{
+  "type": "node",
+  "id": 8354981831,
+  "lat": 9.0856972,
+  "lon": -1.8025822,
+  "tags": {
+    "amenity": "police",
+    "name": "Savannah Police Regional Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 7183821685,
+  "lat": 7.9891219,
+  "lon": -1.3858012,
+  "tags": {
+    "amenity": "police",
+    "fixme": "location",
+    "name": "Zambrama Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6810792457,
+  "lat": 8.7789409,
+  "lon": -1.4574980,
+  "tags": {
+    "amenity": "police",
+    "name": "District Police Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 7182148785,
+  "lat": 8.2315883,
+  "lon": -0.6741402,
+  "tags": {
+    "amenity": "police",
+    "name": "Yeji Camp Prison"
+  }
+},
+{
+  "type": "node",
+  "id": 6820926779,
+  "lat": 8.2953553,
+  "lon": -0.0945679,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6820953196,
+  "lat": 8.4425203,
+  "lon": -0.0155836,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 8354983702,
+  "lat": 9.1639994,
+  "lon": -1.4904163,
+  "tags": {
+    "amenity": "police",
+    "fixme": "incorrect location, no building here",
+    "name": "Busunu Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 7185359862,
+  "lat": 9.4267658,
+  "lon": -1.0535305,
+  "tags": {
+    "amenity": "police",
+    "name": "Tolon Police District Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 6544013170,
+  "lat": 9.3418417,
+  "lon": -0.9133383,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 1877220983,
+  "lat": 9.3949596,
+  "lon": -0.8487255,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-03-17",
+    "name": "Lamashegu Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 1814351792,
+  "lat": 9.4166421,
+  "lon": -0.8422639,
+  "tags": {
+    "amenity": "police",
+    "name": "Sakasaka Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 1799130727,
+  "lat": 9.4031787,
+  "lon": -0.8364918,
+  "tags": {
+    "amenity": "police",
+    "name": "Tamale Regional Police Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 2521036124,
+  "lat": 9.6053822,
+  "lon": -0.8305854,
+  "tags": {
+    "amenity": "police",
+    "name": "Customs Barrier",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6548996225,
+  "lat": 9.3773020,
+  "lon": -0.0077194,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 5913390158,
+  "lat": 9.4368446,
+  "lon": -0.0401782,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 2281752271,
+  "lat": 9.4423493,
+  "lon": -0.0049453,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6548978004,
+  "lat": 9.4790649,
+  "lon": -0.0164195,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 4389176322,
+  "lat": 10.0184926,
+  "lon": -2.5485219,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 11335777568,
+  "lat": 10.1661949,
+  "lon": -2.5408402,
+  "tags": {
+    "amenity": "police",
+    "checkpoint": "police",
+    "name": "Duane Check Point"
+  }
+},
+{
+  "type": "node",
+  "id": 13475035267,
+  "lat": 9.7144716,
+  "lon": -2.4936005,
+  "tags": {
+    "amenity": "police",
+    "name": "GPS SWAT/CTU"
+  }
+},
+{
+  "type": "node",
+  "id": 14350352163,
+  "lat": 9.8854619,
+  "lon": -2.4617282,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 13027303608,
+  "lat": 9.9921735,
+  "lon": -2.4734299,
+  "tags": {
+    "amenity": "police",
+    "name": "UBIDS Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 11335736079,
+  "lat": 10.0664642,
+  "lon": -2.5148528,
+  "tags": {
+    "amenity": "police",
+    "name": "Dobile Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 4502582005,
+  "lat": 10.0631303,
+  "lon": -2.4980543,
+  "tags": {
+    "amenity": "police",
+    "name": "Wa Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 8926713335,
+  "lat": 10.1089622,
+  "lon": -2.4668517,
+  "tags": {
+    "amenity": "police",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 12594133775,
+  "lat": 10.4823522,
+  "lon": -2.5029828,
+  "tags": {
+    "amenity": "police",
+    "name": "Bussie Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 13115681164,
+  "lat": 10.4857622,
+  "lon": -2.5014792,
+  "tags": {
+    "name": "Bussie Police Checkpoint",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 9089438306,
+  "lat": 10.6431394,
+  "lon": -2.8914448,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 888731915,
+  "lat": 11.0016553,
+  "lon": -2.7469976,
+  "tags": {
+    "amenity": "police",
+    "name": "Police National"
+  }
+},
+{
+  "type": "node",
+  "id": 7115110029,
+  "lat": 9.7934891,
+  "lon": -0.8505124,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 11421707769,
+  "lat": 9.8442807,
+  "lon": -0.8671064,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 7115113524,
+  "lat": 9.9326330,
+  "lon": -0.8435612,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 7115111716,
+  "lat": 9.7206785,
+  "lon": -0.8203482,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6544042022,
+  "lat": 9.7700271,
+  "lon": -0.8355177,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 7115122305,
+  "lat": 9.9974197,
+  "lon": -0.8241769,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 7115112137,
+  "lat": 10.0423220,
+  "lon": -0.8198252,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 11421622771,
+  "lat": 10.0824324,
+  "lon": -0.8135027,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6546820822,
+  "lat": 9.9270221,
+  "lon": -0.2102429,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 7115106420,
+  "lat": 10.0867699,
+  "lon": -0.8128817,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 11421659769,
+  "lat": 10.0850080,
+  "lon": -0.8131640,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 7120411969,
+  "lat": 10.2002666,
+  "lon": -0.8211294,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 7120411968,
+  "lat": 10.2523237,
+  "lon": -0.8280898,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6544044616,
+  "lat": 10.3489769,
+  "lon": -0.7983586,
+  "tags": {
+    "amenity": "police",
+    "name": "Walewale Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 7506100300,
+  "lat": 10.3659428,
+  "lon": -0.7963666,
+  "tags": {
+    "amenity": "police",
+    "name": "Walewale District Police Headquarters",
+    "operator": "Ghana Police Service"
+  }
+},
+{
+  "type": "node",
+  "id": 7119983871,
+  "lat": 10.4289616,
+  "lon": -0.7876249,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6544013840,
+  "lat": 10.4935258,
+  "lon": -0.8018937,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 7115114552,
+  "lat": 10.6163562,
+  "lon": -0.8545594,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 13739738885,
+  "lat": 10.8972100,
+  "lon": -1.0868960,
+  "tags": {
+    "addr:city": "Navrongo",
+    "addr:street": "Bolgatanga - Navrongo Road",
+    "amenity": "police",
+    "name": "Navrongo Divisional Police Headquaters"
+  }
+},
+{
+  "type": "node",
+  "id": 2028079895,
+  "lat": 10.7797007,
+  "lon": -0.8537242,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6991167794,
+  "lat": 10.7824696,
+  "lon": -0.8501924,
+  "tags": {
+    "amenity": "police",
+    "name": "Régional MTTU office"
+  }
+},
+{
+  "type": "node",
+  "id": 6544016516,
+  "lat": 10.9370048,
+  "lon": -1.0899755,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 4309025630,
+  "lat": 10.5242622,
+  "lon": -0.8146908,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6544013838,
+  "lat": 10.5232108,
+  "lon": -0.8141742,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 2295755326,
+  "lat": 10.5757574,
+  "lon": -0.8325905,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 7000924947,
+  "lat": 10.7090414,
+  "lon": -0.8141569,
+  "tags": {
+    "amenity": "police",
+    "name": "Tongo Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6546837834,
+  "lat": 10.8787142,
+  "lon": -0.5953337,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6546826078,
+  "lat": 10.8618377,
+  "lon": -0.1795624,
+  "tags": {
+    "amenity": "police",
+    "name": "Garu Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6546841873,
+  "lat": 10.9370021,
+  "lon": -0.4901973,
+  "tags": {
+    "amenity": "police",
+    "name": "Zebilla Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 2330379511,
+  "lat": 11.0591011,
+  "lon": -0.2467122,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 13621817166,
+  "lat": 11.0614447,
+  "lon": -0.1017652,
+  "tags": {
+    "name": "pusiga police Check point",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 5725939822,
+  "lat": 5.6330141,
+  "lon": 0.0050858,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 11143822144,
+  "lat": 5.6993385,
+  "lon": 0.0002045,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 4350187525,
+  "lat": 5.7158668,
+  "lon": 0.0145420,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 5320449340,
+  "lat": 5.7169019,
+  "lon": 0.0152510,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 10285930561,
+  "lat": 5.7236759,
+  "lon": 0.0172918,
+  "tags": {
+    "amenity": "police",
+    "name": "Community 25 Police Station",
+    "opening_hours": "24/7",
+    "operator": "Ghana Police"
+  }
+},
+{
+  "type": "node",
+  "id": 4400510897,
+  "lat": 5.6914869,
+  "lon": 0.0530083,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 2579170855,
+  "lat": 5.8034172,
+  "lon": 0.0072030,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-11-22",
+    "name": "Afienya Police Station",
+    "name:zh": "矿区警察局"
+  }
+},
+{
+  "type": "node",
+  "id": 6371308428,
+  "lat": 5.8755465,
+  "lon": 0.3638317,
+  "tags": {
+    "amenity": "police",
+    "fixme": "check position",
+    "name": "Sege Police District Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 901048674,
+  "lat": 5.8129494,
+  "lon": 0.6144400,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 901049253,
+  "lat": 5.7807814,
+  "lon": 0.6331823,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 916706919,
+  "lat": 5.7801062,
+  "lon": 0.8303022,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 12467658786,
+  "lat": 5.8981337,
+  "lon": 0.0244462,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6009255168,
+  "lat": 5.9784495,
+  "lon": 0.0535833,
+  "tags": {
+    "name": "Asutsuare Junction",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6019716882,
+  "lat": 5.9802517,
+  "lon": 0.0535457,
+  "tags": {
+    "name": "Asutsuare Junction",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 5686213621,
+  "lat": 6.0261280,
+  "lon": 0.3758955,
+  "tags": {
+    "amenity": "police",
+    "name": "Aveyime Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6431496085,
+  "lat": 6.1432299,
+  "lon": 0.0081538,
+  "tags": {
+    "amenity": "police",
+    "name": "Old Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 12915414300,
+  "lat": 6.1432863,
+  "lon": 0.0067436,
+  "tags": {
+    "addr:city": "Mampon",
+    "addr:street": "Meridian Street",
+    "amenity": "police",
+    "name": "New Police Station",
+    "opening_hours": "Mo-Su 09:00-21:00"
+  }
+},
+{
+  "type": "node",
+  "id": 4695189361,
+  "lat": 6.1576845,
+  "lon": 0.0329486,
+  "tags": {
+    "amenity": "police",
+    "name": "Nuaso Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 3202124721,
+  "lat": 6.2190211,
+  "lon": 0.0858172,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6019716879,
+  "lat": 6.2398065,
+  "lon": 0.0981488,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 2880403526,
+  "lat": 6.2788933,
+  "lon": 0.0520813,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 5063174996,
+  "lat": 5.9768271,
+  "lon": 0.5249110,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 11143785080,
+  "lat": 5.9984712,
+  "lon": 0.5290651,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 3947345032,
+  "lat": 5.9969084,
+  "lon": 0.5883518,
+  "tags": {
+    "name": "Sogakope Police Barrier",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 3997865972,
+  "lat": 6.0542472,
+  "lon": 0.7285878,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 7566452087,
+  "lat": 6.2961591,
+  "lon": 0.5465166,
+  "tags": {
+    "amenity": "police",
+    "name": "Adaklu Police station"
+  }
+},
+{
+  "type": "node",
+  "id": 3022290992,
+  "lat": 6.1292032,
+  "lon": 0.7949791,
+  "tags": {
+    "amenity": "police",
+    "name": "Akatsi Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 918987978,
+  "lat": 5.7928522,
+  "lon": 0.8866154,
+  "tags": {
+    "amenity": "police",
+    "name": "Anloga Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6032341105,
+  "lat": 5.7945881,
+  "lon": 0.9017705,
+  "tags": {
+    "amenity": "police",
+    "name": "Anloga Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 4971270885,
+  "lat": 6.0644879,
+  "lon": 0.9153566,
+  "tags": {
+    "amenity": "police",
+    "name": "Afife Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 925866741,
+  "lat": 6.0103272,
+  "lon": 1.0484154,
+  "tags": {
+    "amenity": "police",
+    "fixme": "location",
+    "name": "Agavedzi Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 3997866169,
+  "lat": 6.0535793,
+  "lon": 0.9787425,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 3627918041,
+  "lat": 6.0728565,
+  "lon": 1.0323917,
+  "tags": {
+    "amenity": "police",
+    "name": "Agbozume Police Station",
+    "source": "survey"
+  }
+},
+{
+  "type": "node",
+  "id": 7116122713,
+  "lat": 6.0682831,
+  "lon": 1.1065955,
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6564893646,
+  "lat": 6.2326222,
+  "lon": 1.0004968,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 5013153601,
+  "lat": 6.1161935,
+  "lon": 1.1336296,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 3188233273,
+  "lat": 6.1218262,
+  "lon": 1.1850433,
+  "tags": {
+    "amenity": "police",
+    "name": "District Police Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 11132324166,
+  "lat": 6.3373651,
+  "lon": 0.1697805,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 3793455587,
+  "lat": 6.5399436,
+  "lon": 0.2871392,
+  "tags": {
+    "amenity": "police",
+    "name": "Tsito Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 10771853005,
+  "lat": 6.5427333,
+  "lon": 0.2894592,
+  "tags": {
+    "amenity": "police",
+    "name": "Tsitso Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 7746713085,
+  "lat": 6.5739328,
+  "lon": 0.3741494,
+  "tags": {
+    "amenity": "police",
+    "name": "Sokode Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 3802723683,
+  "lat": 6.6794517,
+  "lon": 0.3184086,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-12-25",
+    "name": "Kpeve Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6553303090,
+  "lat": 6.6791357,
+  "lon": 0.3193787,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 3793455582,
+  "lat": 6.7204232,
+  "lon": 0.3766576,
+  "tags": {
+    "amenity": "police",
+    "name": "Hlefi Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6311346157,
+  "lat": 6.4470523,
+  "lon": 0.6274393,
+  "tags": {
+    "amenity": "police",
+    "description": "Not far from the roundabout",
+    "name": "Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 6553299245,
+  "lat": 6.6079735,
+  "lon": 0.4565090,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-03-13",
+    "name": "Volta Regional Police Headquarters"
+  }
+},
+{
+  "type": "node",
+  "id": 2319247459,
+  "lat": 6.6106087,
+  "lon": 0.4676759,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-12-06",
+    "name": "Municipal Prisons"
+  }
+},
+{
+  "type": "node",
+  "id": 7975742295,
+  "lat": 6.5471977,
+  "lon": 0.6850945,
+  "tags": {
+    "amenity": "police",
+    "name": "District Police Headquarters - Kpetoe",
+    "operator": "Ghana Police Service",
+    "operator:type": "public"
+  }
+},
+{
+  "type": "node",
+  "id": 3802723681,
+  "lat": 6.7553349,
+  "lon": 0.3586056,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-12-25",
+    "name": "Have Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 8920690468,
+  "lat": 6.8813526,
+  "lon": 0.2770134,
+  "tags": {
+    "amenity": "police",
+    "name": "Anfoega Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 8901955103,
+  "lat": 6.9994833,
+  "lon": 0.3015783,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2024-11-08",
+    "name": "Kpando Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 13993689957,
+  "lat": 7.0003447,
+  "lon": 0.4362663,
+  "tags": {
+    "amenity": "police",
+    "name": "buildings"
+  }
+},
+{
+  "type": "node",
+  "id": 3802654043,
+  "lat": 7.0707919,
+  "lon": 0.5096832,
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service Fadome Helu"
+  }
+},
+{
+  "type": "node",
+  "id": 8605682523,
+  "lat": 7.1808597,
+  "lon": 0.3366294,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 2319490170,
+  "lat": 7.1516209,
+  "lon": 0.4736811,
+  "tags": {
+    "amenity": "police",
+    "check_date": "2026-03-28",
+    "name": "Ghana Police Station Hohoe"
+  }
+},
+{
+  "type": "node",
+  "id": 2319565027,
+  "lat": 7.1568291,
+  "lon": 0.4863091,
+  "tags": {
+    "amenity": "police",
+    "name": "Gbi-Bla Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 8645215642,
+  "lat": 7.5783646,
+  "lon": 0.5094621,
+  "tags": {
+    "government": "customs",
+    "name": "Checkpoint",
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "node",
+  "id": 6548940581,
+  "lat": 7.9045666,
+  "lon": 0.5375217,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 10702745890,
+  "lat": 8.0035334,
+  "lon": 0.5568350,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6548957721,
+  "lat": 8.2004726,
+  "lon": 0.5387491,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6548981972,
+  "lat": 8.4884115,
+  "lon": 0.3100494,
+  "tags": {
+    "amenity": "police",
+    "name": "Kpasa Police Station"
+  }
+},
+{
+  "type": "node",
+  "id": 8645213647,
+  "lat": 8.4641602,
+  "lon": 0.3360356,
+  "tags": {
+    "amenity": "police",
+    "name": "Police Barrier"
+  }
+},
+{
+  "type": "node",
+  "id": 6548944641,
+  "lat": 8.6889292,
+  "lon": 0.1800773,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6548984261,
+  "lat": 8.7661925,
+  "lon": 0.0552953,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6548982332,
+  "lat": 8.8722229,
+  "lon": 0.0440186,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6548986928,
+  "lat": 8.8448063,
+  "lon": 0.0599112,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6548977915,
+  "lat": 8.8588472,
+  "lon": 0.0547702,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 6548989160,
+  "lat": 9.2127112,
+  "lon": 0.0219099,
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "node",
+  "id": 13120192805,
+  "lat": 10.2694352,
+  "lon": 0.2079910,
+  "tags": {
+    "amenity": "police",
+    "name": "Wenchiki Police Station",
+    "operator": "Ghana Police Service"
+  }
+},
+{
+  "type": "way",
+  "id": 466704949,
+  "center": {
+    "lat": 5.0234153,
+    "lon": -2.7245172
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 977445336,
+  "center": {
+    "lat": 5.2892088,
+    "lon": -2.7790459
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 427604976,
+  "center": {
+    "lat": 5.4431958,
+    "lon": -2.1327368
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "Prestea Police Station Complex"
+  }
+},
+{
+  "type": "way",
+  "id": 1483982087,
+  "center": {
+    "lat": 6.0899112,
+    "lon": -2.2135471
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Wasa Juabo Police Station",
+    "operator": "public"
+  }
+},
+{
+  "type": "way",
+  "id": 829909834,
+  "center": {
+    "lat": 6.1967746,
+    "lon": -2.3199882
+  },
+  "tags": {
+    "addr:city": "Sefwi Bekwai",
+    "addr:street": "Bibiani - Sefwi Bekwai",
+    "amenity": "police",
+    "building": "yes",
+    "name": "Police Residentail accomodation",
+    "operator": "Ghana Police service"
+  }
+},
+{
+  "type": "way",
+  "id": 967547897,
+  "center": {
+    "lat": 5.9556321,
+    "lon": -1.8834298
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1495995310,
+  "center": {
+    "lat": 5.4003980,
+    "lon": -0.9792243
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "Enyan Denkyira Police Station",
+    "operator": "Ghana Police Service"
+  }
+},
+{
+  "type": "way",
+  "id": 480611287,
+  "center": {
+    "lat": 5.4093342,
+    "lon": -0.9793769
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 791972066,
+  "center": {
+    "lat": 5.3400381,
+    "lon": -0.6227315
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "internet_access": "yes",
+    "name": "Winneba Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 1135428436,
+  "center": {
+    "lat": 5.5469058,
+    "lon": -1.5479034
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "TOPP Police station"
+  }
+},
+{
+  "type": "way",
+  "id": 1572038792,
+  "center": {
+    "lat": 5.4826222,
+    "lon": -0.5350660
+  },
+  "tags": {
+    "amenity": "police",
+    "internet_access": "yes",
+    "name": "Ojobi Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 1572218051,
+  "center": {
+    "lat": 5.5133131,
+    "lon": -0.3867232
+  },
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "way",
+  "id": 622248134,
+  "center": {
+    "lat": 5.5362247,
+    "lon": -0.4109909
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Amanfrom Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 298258034,
+  "center": {
+    "lat": 5.5369037,
+    "lon": -0.2241989
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "building:levels": "1",
+    "check_date": "2026-02-27",
+    "name": "Korle Bu Police station",
+    "roof:shape": "hipped",
+    "source": "Bing"
+  }
+},
+{
+  "type": "way",
+  "id": 676083523,
+  "center": {
+    "lat": 5.6003718,
+    "lon": -0.2884767
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "house",
+    "name": "Anyaa Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 34235988,
+  "center": {
+    "lat": 5.5919027,
+    "lon": -0.2241579
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "Police Training Depot"
+  }
+},
+{
+  "type": "way",
+  "id": 750275454,
+  "center": {
+    "lat": 5.6124179,
+    "lon": -0.2398726
+  },
+  "tags": {
+    "addr:city": "Accra",
+    "addr:community": "Zongo",
+    "addr:street": "Dzagble Avenue",
+    "addr:suburb": "Akweteyman",
+    "building": "school",
+    "building:levels": "1",
+    "building:material": "Plastic",
+    "police": "checkpoint",
+    "roof:material": "plastic",
+    "source": "Open Cities Accra / GARID- Field Survey"
+  }
+},
+{
+  "type": "way",
+  "id": 302376266,
+  "center": {
+    "lat": 5.6207163,
+    "lon": -0.2253680
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Bus Terminal Police Station",
+    "operator": "Ghana Police Service",
+    "source": "Bing 2014"
+  }
+},
+{
+  "type": "way",
+  "id": 157017164,
+  "center": {
+    "lat": 5.5507460,
+    "lon": -0.1981288
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "source": "Bing"
+  }
+},
+{
+  "type": "way",
+  "id": 705032251,
+  "center": {
+    "lat": 5.5738835,
+    "lon": -0.2004507
+  },
+  "tags": {
+    "addr:city": "Accra",
+    "addr:community": "Nima",
+    "addr:street": "Al-Waleed Bin-Talal Highway",
+    "addr:suburb": "Police Station",
+    "amenity": "police",
+    "building": "public",
+    "check_date": "2023-04-29",
+    "name": "Nima Police Station",
+    "opening_hours": "24/7",
+    "source": "Open Cities Accra / GARID- Field Survey",
+    "wheelchair": "limited"
+  }
+},
+{
+  "type": "way",
+  "id": 742032290,
+  "center": {
+    "lat": 5.5746911,
+    "lon": -0.2002683
+  },
+  "tags": {
+    "police": "barracks",
+    "source": "Open Cities Accra / GARID- Field Survey"
+  }
+},
+{
+  "type": "way",
+  "id": 157012448,
+  "center": {
+    "lat": 5.5714865,
+    "lon": -0.1870787
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Police Headquaters",
+    "source": "Bing"
+  }
+},
+{
+  "type": "way",
+  "id": 706729235,
+  "center": {
+    "lat": 5.5916607,
+    "lon": -0.2039958
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "public",
+    "name": "Kotobabi Police Station",
+    "source": "Open Cities Accra / GARID- Field Survey"
+  }
+},
+{
+  "type": "way",
+  "id": 712019306,
+  "center": {
+    "lat": 5.5884436,
+    "lon": -0.1964146
+  },
+  "tags": {
+    "addr:city": "Accra",
+    "addr:community": "Nima",
+    "addr:street": "Al-Waleed Bin-Talal Highway",
+    "addr:suburb": "15 Bob",
+    "amenity": "police",
+    "building": "public",
+    "building:levels": "1",
+    "building:material": "metal",
+    "name": "Maamobi Baakin Guttter Police Post",
+    "opening_hours": "24/7",
+    "roof:material": "metal",
+    "source": "Open Cities Accra / GARID- Field Survey"
+  }
+},
+{
+  "type": "way",
+  "id": 452648059,
+  "center": {
+    "lat": 5.6096579,
+    "lon": -0.1982852
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Dzorwolu Police"
+  }
+},
+{
+  "type": "way",
+  "id": 444882268,
+  "center": {
+    "lat": 5.6074869,
+    "lon": -0.1732522
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 397553972,
+  "center": {
+    "lat": 5.6134087,
+    "lon": -0.1068265
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Greda Estate Police Post"
+  }
+},
+{
+  "type": "way",
+  "id": 503106584,
+  "center": {
+    "lat": 5.6773199,
+    "lon": -0.1690851
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "La Nkwantanang-Madina Divisional Police Headquarters"
+  }
+},
+{
+  "type": "way",
+  "id": 490882244,
+  "center": {
+    "lat": 5.5946224,
+    "lon": -0.0884130
+  },
+  "tags": {
+    "addr:suburb": "Brigade Junction",
+    "amenity": "police",
+    "name": "Kpeshie Divisional Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 1328195498,
+  "center": {
+    "lat": 5.7137874,
+    "lon": -0.1874594
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 470202604,
+  "center": {
+    "lat": 5.6973439,
+    "lon": -0.1271412
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Lakeside Estate Police station",
+    "operator": "Ghana Police Service"
+  }
+},
+{
+  "type": "way",
+  "id": 930172465,
+  "center": {
+    "lat": 5.6913912,
+    "lon": -0.0275213
+  },
+  "tags": {
+    "alt_name": "Domestic Violence and Victim Support Unit (DOVVSU)",
+    "amenity": "police",
+    "building": "yes",
+    "name": "Domestic Violence and Victim Support Unit",
+    "short_name": "DOVVSU"
+  }
+},
+{
+  "type": "way",
+  "id": 935930362,
+  "center": {
+    "lat": 5.7080684,
+    "lon": -0.0222443
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "check_date": "2026-03-04",
+    "name": "Community 22 Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 498116387,
+  "center": {
+    "lat": 5.8547009,
+    "lon": -0.1700702
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "Aburi District Police Headquarters, Aburi/Akuapem"
+  }
+},
+{
+  "type": "way",
+  "id": 886263792,
+  "center": {
+    "lat": 5.8811128,
+    "lon": -0.1073136
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1104185484,
+  "center": {
+    "lat": 5.8812764,
+    "lon": -0.1072269
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Dodowa District Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 1235383029,
+  "center": {
+    "lat": 6.3029981,
+    "lon": -0.7261928
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Abomosu Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 615266869,
+  "center": {
+    "lat": 6.0791922,
+    "lon": -0.2543846
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Regional Police Headquarters",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "way",
+  "id": 1309932521,
+  "center": {
+    "lat": 6.7627461,
+    "lon": -3.1917293
+  },
+  "tags": {
+    "addr:city": "yawmatwa",
+    "amenity": "police",
+    "building": "yes",
+    "name": "police station",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "way",
+  "id": 653617232,
+  "center": {
+    "lat": 6.5047536,
+    "lon": -2.5025204
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Sankore Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 666648140,
+  "center": {
+    "lat": 6.4555626,
+    "lon": -2.3193262
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Police Headquarters"
+  }
+},
+{
+  "type": "way",
+  "id": 1341961536,
+  "center": {
+    "lat": 6.6140429,
+    "lon": -1.6871950
+  },
+  "tags": {
+    "police": "checkpoint"
+  }
+},
+{
+  "type": "way",
+  "id": 597916162,
+  "center": {
+    "lat": 6.8060485,
+    "lon": -2.5145117
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "office",
+    "building:levels": "1",
+    "building:material": "cement_block",
+    "roof:material": "metal"
+  }
+},
+{
+  "type": "way",
+  "id": 608962387,
+  "center": {
+    "lat": 6.8076715,
+    "lon": -2.5157156
+  },
+  "tags": {
+    "addr:street": "Municipal Assembly Avenue",
+    "amenity": "police",
+    "building": "yes",
+    "building:levels": "2",
+    "building:use": "office",
+    "name": "Divisional Police Office",
+    "roof:colour": "grey",
+    "roof:material": "metal",
+    "roof:orientation": "along"
+  }
+},
+{
+  "type": "way",
+  "id": 798764977,
+  "center": {
+    "lat": 6.8207908,
+    "lon": -1.8638008
+  },
+  "tags": {
+    "addr:city": "Mankranso",
+    "addr:postcode": "P.O Box 58",
+    "amenity": "police",
+    "building": "office",
+    "building:levels": "1",
+    "name": "District Police Headquarters",
+    "roof:colour": "grey",
+    "roof:material": "metal",
+    "roof:orientation": "along"
+  }
+},
+{
+  "type": "way",
+  "id": 804523616,
+  "center": {
+    "lat": 6.8198304,
+    "lon": -1.8615867
+  },
+  "tags": {
+    "addr:city": "Mankranso",
+    "addr:postcode": "P.O Box 58",
+    "amenity": "police",
+    "building": "office",
+    "building:levels": "1",
+    "roof:colour": "grey",
+    "roof:material": "metal",
+    "roof:orientation": "along"
+  }
+},
+{
+  "type": "way",
+  "id": 692777904,
+  "center": {
+    "lat": 7.3278065,
+    "lon": -2.3209188
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "Regional Police Headquarters"
+  }
+},
+{
+  "type": "way",
+  "id": 692235202,
+  "center": {
+    "lat": 7.3363014,
+    "lon": -2.3293993
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "Sunyani Municipal Police Station",
+    "name:fr": "Poste de police municipale de Sunyani"
+  }
+},
+{
+  "type": "way",
+  "id": 1112559772,
+  "center": {
+    "lat": 6.6746534,
+    "lon": -1.5879918
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Ring Road Post - KNUST",
+    "operator": "Ghana Police Service"
+  }
+},
+{
+  "type": "way",
+  "id": 572460595,
+  "center": {
+    "lat": 6.6933316,
+    "lon": -1.6253435
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "check_date": "2026-03-02",
+    "name": "Ashanti Regional Police Headquarters"
+  }
+},
+{
+  "type": "way",
+  "id": 467288971,
+  "center": {
+    "lat": 6.7113349,
+    "lon": -1.6287881
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Suame District MTTU"
+  }
+},
+{
+  "type": "way",
+  "id": 611868904,
+  "center": {
+    "lat": 6.7115560,
+    "lon": -1.6285676
+  },
+  "tags": {
+    "alt_name": "Suame District Headquarters - Ghana Police Service",
+    "amenity": "police",
+    "check_date": "2026-10-04",
+    "name": "Suame Police Station",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "way",
+  "id": 571757264,
+  "center": {
+    "lat": 6.6938164,
+    "lon": -1.6245437
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "check_date": "2026-03-02",
+    "name": "Central Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 655136145,
+  "center": {
+    "lat": 6.6918871,
+    "lon": -1.6199389
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Adum Railway Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 778043758,
+  "center": {
+    "lat": 6.7033029,
+    "lon": -1.6140573
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "public",
+    "name": "Manhyia Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 909175517,
+  "center": {
+    "lat": 6.6885182,
+    "lon": -1.5647678
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "KNUST Police station"
+  }
+},
+{
+  "type": "way",
+  "id": 1408189390,
+  "center": {
+    "lat": 6.7269379,
+    "lon": -1.4909180
+  },
+  "tags": {
+    "addr:city": "Kumasi",
+    "addr:street": "Campus Road",
+    "amenity": "police",
+    "building": "yes",
+    "name": "KSTU Police Station",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "way",
+  "id": 1134671201,
+  "center": {
+    "lat": 6.4587741,
+    "lon": -0.9156857
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Abomu Police Barrier",
+    "opening_hours": "sunrise-sunset"
+  }
+},
+{
+  "type": "way",
+  "id": 1123599490,
+  "center": {
+    "lat": 6.4670914,
+    "lon": -0.8874944
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "Akoasi Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 1268822684,
+  "center": {
+    "lat": 6.6597088,
+    "lon": -1.1790251
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Patriensa Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 1575144472,
+  "center": {
+    "lat": 6.8292025,
+    "lon": -1.4980232
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "AS. POLICE S"
+  }
+},
+{
+  "type": "way",
+  "id": 1489608654,
+  "center": {
+    "lat": 6.9396011,
+    "lon": -1.6753849
+  },
+  "tags": {
+    "addr:street": "Dentin",
+    "amenity": "police",
+    "building": "yes",
+    "name": "Offinso police",
+    "opening_hours": "24/7",
+    "operator": "Police"
+  }
+},
+{
+  "type": "way",
+  "id": 506032997,
+  "center": {
+    "lat": 7.0110082,
+    "lon": -1.3831678
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "office",
+    "name": "Nsuta Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 492078971,
+  "center": {
+    "lat": 6.5536092,
+    "lon": -0.7678357
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "Ghana Police Service District Headquarters & Central Police Station Nkawkaw"
+  }
+},
+{
+  "type": "way",
+  "id": 635708162,
+  "center": {
+    "lat": 8.0487696,
+    "lon": -1.7310786
+  },
+  "tags": {
+    "amenity": "police"
+  }
+},
+{
+  "type": "way",
+  "id": 1146996259,
+  "center": {
+    "lat": 8.4518471,
+    "lon": -0.0129978
+  },
+  "tags": {
+    "addr:city": "Kpandai",
+    "addr:street": "Kpandai-Krachi Road",
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 776395809,
+  "center": {
+    "lat": 8.4618594,
+    "lon": -0.0117750
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Kpandai Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 754638105,
+  "center": {
+    "lat": 9.5984660,
+    "lon": -0.8310422
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Savelugu Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 727888712,
+  "center": {
+    "lat": 9.4363932,
+    "lon": -0.0398639
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 487527493,
+  "center": {
+    "lat": 10.3871293,
+    "lon": -2.3311670
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1465437668,
+  "center": {
+    "lat": 10.9754065,
+    "lon": -2.2105216
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Gwolu Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 1500768418,
+  "center": {
+    "lat": 10.8972672,
+    "lon": -1.0906513
+  },
+  "tags": {
+    "amenity": "police",
+    "fixme": "local knowledge and further checks required",
+    "mobile": "911",
+    "name": "Navrongo Police Station",
+    "opening_hours": "24/7"
+  }
+},
+{
+  "type": "way",
+  "id": 1040381043,
+  "center": {
+    "lat": 10.8975247,
+    "lon": -1.0888917
+  },
+  "tags": {
+    "landuse": "residential",
+    "name": "Navrongo Police Quarters",
+    "police": "barracks"
+  }
+},
+{
+  "type": "way",
+  "id": 441130994,
+  "center": {
+    "lat": 10.7827379,
+    "lon": -0.8502980
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Bolgatanga Municipal Police Station",
+    "source": "Bing 11/29/2010-4/27/2014"
+  }
+},
+{
+  "type": "way",
+  "id": 760619438,
+  "center": {
+    "lat": 10.9871737,
+    "lon": -0.8612498
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 755411502,
+  "center": {
+    "lat": 10.7910278,
+    "lon": -0.7874638
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Zuarungu Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 363524851,
+  "center": {
+    "lat": 5.6440033,
+    "lon": 0.0137926
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Fishing Harbour Police Station",
+    "source": "Bing maps"
+  }
+},
+{
+  "type": "way",
+  "id": 1376981322,
+  "center": {
+    "lat": 5.6527527,
+    "lon": 0.0068675
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "TLOC Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 356952868,
+  "center": {
+    "lat": 5.8380654,
+    "lon": 0.2268341
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "source": "GPS trace; Bing"
+  }
+},
+{
+  "type": "way",
+  "id": 457229798,
+  "center": {
+    "lat": 5.8657447,
+    "lon": 0.2903855
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Dawa Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 615905446,
+  "center": {
+    "lat": 5.9990097,
+    "lon": 0.5884490
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "Police Barracks"
+  }
+},
+{
+  "type": "way",
+  "id": 1223389272,
+  "center": {
+    "lat": 5.7946120,
+    "lon": 0.9017968
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1223389273,
+  "center": {
+    "lat": 5.7946816,
+    "lon": 0.9017908
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 247276771,
+  "center": {
+    "lat": 5.9016256,
+    "lon": 0.9876291
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "Keta Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 360779707,
+  "center": {
+    "lat": 6.1004235,
+    "lon": 1.1470098
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Denu Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 630269784,
+  "center": {
+    "lat": 6.6103258,
+    "lon": 0.4707170
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "check_date": "2024-11-25",
+    "name": "Police Station"
+  }
+},
+{
+  "type": "way",
+  "id": 783874118,
+  "center": {
+    "lat": 6.9931815,
+    "lon": 0.2920208
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Kpando Divisional Police Headquarters"
+  }
+},
+{
+  "type": "way",
+  "id": 837391957,
+  "center": {
+    "lat": 8.0533318,
+    "lon": 0.1856259
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes",
+    "name": "Dambai Police Police Station",
+    "operator": "Ghana Police Service"
+  }
+},
+{
+  "type": "way",
+  "id": 1041307139,
+  "center": {
+    "lat": 8.2575139,
+    "lon": 0.5233762
+  },
+  "tags": {
+    "amenity": "police",
+    "name": "Nkwanta police station"
+  }
+},
+{
+  "type": "way",
+  "id": 1377775825,
+  "center": {
+    "lat": 9.7090318,
+    "lon": 0.3180509
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1377775824,
+  "center": {
+    "lat": 9.7091782,
+    "lon": 0.3184057
+  },
+  "tags": {
+    "amenity": "police",
+    "building": "yes"
+  }
+}
+
+  ]
+}

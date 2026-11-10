@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | CSIR-BRRI admin{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="icon" href="{% static 'accidents/favicon.png' %}" type="image/png">
+<link rel="stylesheet" href="{% static 'accidents/admin.css' %}?v=2">{% endblock %}
+
+{% block branding %}
+<a class="brri-brand" href="{% url 'admin:index' %}">
+  <img src="{% static 'accidents/csir-emblem.png' %}" alt="CSIR seal" width="38" height="38">
+  <span><strong>CSIR-BRRI</strong><small>Administration &middot; Road Accident Data System</small></span>
+</a>
+{% endblock %}
+
+{% block welcome-msg %}<span class="brri-who">Signed in as <strong>{% firstof user.get_short_name user.get_username %}</strong></span>{% endblock %}
+
+{% block userlinks %}
+  <a class="brri-pill" href="{% url 'dashboard' %}">&larr; Back to the app</a>
+  {% if user.has_usable_password %}<a href="{% url 'admin:password_change' %}">Change my password</a>{% endif %}
+  <form id="logout-form" method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Log out</button></form>
+  {% include "admin/color_theme_toggle.html" %}
+{% endblock %}

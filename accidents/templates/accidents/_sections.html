@@ -1,0 +1,10 @@
+{% for title, fields in sections %}
+{% if title == form.location_section %}{% include "accidents/_location.html" %}{% else %}
+<section class="card">
+  <h2>{{ title }}</h2>
+  <div class="fields">
+    {% for field in fields %}{% include "accidents/_field.html" %}{% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endfor %}

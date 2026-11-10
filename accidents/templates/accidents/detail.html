@@ -1,0 +1,143 @@
+{% extends "accidents/base.html" %}
+{% block title %}Report {{ a }} · BRRI{% endblock %}
+{% load static %}
+{% block head %}{% if a.latitude %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" crossorigin="anonymous">
+{% endif %}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <a class="crumb" href="{% url 'accident_list' %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Records</a>
+    <h1>Report {{ a }} <span class="badge {{ a.status }}">{{ a.get_status_display }}</span></h1>
+    <p class="sub">Day of week: {{ a.get_day_of_week_display|default:"-" }} ·
+      GPS: {% if a.latitude %}{{ a.latitude }}, {{ a.longitude }}{% else %}not set{% endif %} ·
+      Entered by {{ a.created_by|default:"-" }} on {{ a.created_at|date:"d M Y H:i" }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="{% url 'accident_list' %}">Back to records</a>
+    <a class="btn" href="{% url 'accident_edit' a.pk %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>Edit report</a>
+  </div>
+</div>
+{% if a.status == "reviewed" %}
+<div class="msg success">Approved{% if a.reviewed_by %} by {{ a.reviewed_by }}{% endif %}. The report can still be edited; any change is recorded in its history.</div>
+{% endif %}
+
+{% if duplicates %}
+<div class="msg warning">
+  <strong>Possible duplicates:</strong>
+  {% for d in duplicates %}<a href="{% url 'accident_detail' d.pk %}">{{ d }} ({{ d.accident_date|date:"d M Y" }}, {{ d.region }})</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+</div>
+{% endif %}
+
+<section class="card facts" aria-label="Summary">
+  <div class="fact"><div class="k">Date</div><div class="v">{{ a.accident_date|date:"d M Y" }}</div></div>
+  <div class="fact"><div class="k">Time</div><div class="v">{{ a.accident_time|time:"H:i"|default:"-" }}</div></div>
+  <div class="fact"><div class="k">Region</div><div class="v">{{ a.region }}</div></div>
+  <div class="fact"><div class="k">Severity</div><div class="v">{% if a.severity %}<span class="sev sev-{{ a.severity }}">{{ a.get_severity_display }}</span>{% else %}-{% endif %}</div></div>
+  <div class="fact"><div class="k">Killed</div><div class="v big">{{ a.killed|default:0 }}</div></div>
+  <div class="fact"><div class="k">Injured</div><div class="v big">{{ a.injured|default:0 }}</div></div>
+  <div class="fact"><div class="k">Vehicles</div><div class="v big">{{ vehicles|length }}</div></div>
+</section>
+
+<section class="card">
+  <h2>Site location</h2>
+  {% if a.site_location_text %}<p style="margin:0 0 12px;white-space:pre-line">{{ a.site_location_text }}</p>{% endif %}
+  {% if a.latitude %}
+  <div id="report-map" class="map big" data-lat="{{ a.latitude|stringformat:'f' }}" data-lng="{{ a.longitude|stringformat:'f' }}"></div>
+  <p class="muted" style="margin:10px 0 0;font-size:.86em">Pin at {{ a.latitude }}, {{ a.longitude }}{% if a.district %} &middot; {{ a.district }}{% endif %}</p>
+  {% else %}
+  <p class="none-yet">No pin on the map for this report. <a href="{% url 'accident_edit' a.pk %}#location-section">Edit the report</a> to place one.</p>
+  {% endif %}
+</section>
+
+<div class="grid2" style="margin-bottom:16px">
+  <section class="card">
+    <h2>Approval</h2>
+    <form method="post" action="{% url 'accident_review' a.pk %}">
+      {% csrf_token %}
+      <div class="field"><label for="{{ review.status.id_for_label }}">Status</label>{{ review.status }}</div>
+      <div class="field" style="margin-top:12px"><label for="{{ review.analyst_notes.id_for_label }}">Notes / queries</label>{{ review.analyst_notes }}</div>
+      <div class="actions" style="margin-top:14px"><button class="btn">Save</button>
+        {% if a.reviewed_by %}<span class="muted">Approved by {{ a.reviewed_by }}</span>{% endif %}</div>
+    </form>
+  </section>
+  <section class="card">
+    <h2>History</h2>
+    <ol class="timeline">{% for h in audit %}
+      <li><div class="what">{{ h.action }}{% if h.note %} <span class="muted" style="font-weight:400">· {{ h.note }}</span>{% endif %}</div>
+        <div class="meta">{{ h.at|date:"d M Y H:i" }} · {{ h.user|default:"-" }}</div></li>
+      {% empty %}<li class="muted">No history.</li>{% endfor %}</ol>
+  </section>
+</div>
+
+{% for title, rows in sections %}
+<section class="card">
+  <h2>{{ title }}</h2>
+  <dl class="kv">
+    {% for label, value, is_file, wide in rows %}
+    <div class="kv-item{% if wide %} wide{% endif %}">
+      <dt>{{ label }}</dt>
+      {% if is_file %}<dd{% if not value %} class="blank"{% endif %}>{% if value %}<a href="{{ value.url }}" target="_blank">View file</a>{% else %}-{% endif %}</dd>
+      {% elif value or value == 0 %}<dd>{{ value }}</dd>
+      {% else %}<dd class="blank">-</dd>{% endif %}
+    </div>
+    {% endfor %}
+  </dl>
+</section>
+{% endfor %}
+
+<section class="card">
+  <h2>Vehicles &amp; drivers ({{ vehicle_cards|length }})</h2>
+  {% for no, rows in vehicle_cards %}
+  <h3 style="margin:{% if forloop.first %}4px{% else %}22px{% endif %} 0 10px">Vehicle {{ no|default:forloop.counter }}</h3>
+  <dl class="kv">
+    {% for label, value in rows %}
+    <div class="kv-item">
+      <dt>{{ label }}</dt>
+      {% if value or value == 0 %}<dd>{{ value }}</dd>{% else %}<dd class="blank">-</dd>{% endif %}
+    </div>
+    {% endfor %}
+  </dl>
+  {% empty %}<p class="none-yet">No vehicles recorded.</p>{% endfor %}
+</section>
+
+<section class="card table-wrap table-flush">
+  <h2 style="padding:18px 20px 0">Passenger casualties</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Veh</th><th>Sex</th><th>Age</th><th>Severity</th><th>Position</th><th>Action</th><th>Helmet/belt</th></tr></thead>
+    {% for p in passengers %}
+    <tr><td>{{ p.name|default:"-" }}</td><td>{{ p.vehicle_no|default:"" }}</td><td>{{ p.get_sex_display|default:"" }}</td><td>{{ p.age|default:"" }}</td>
+      <td>{{ p.get_severity_display|default:"" }}</td><td>{{ p.get_position_display|default:"" }}</td>
+      <td>{{ p.get_action_display|default:"" }}</td><td>{{ p.helmet_belt|yesno:"Y,N,-" }}</td></tr>
+    {% empty %}<tr><td colspan="8" class="empty">No passenger casualties.</td></tr>{% endfor %}
+  </table>
+</section>
+
+<section class="card table-wrap table-flush">
+  <h2 style="padding:18px 20px 0">Pedestrian casualties</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Veh</th><th>Sex</th><th>Age</th><th>Severity</th><th>Action</th><th>Location</th><th>Drink/drugs</th><th>STD</th><th>Nationality</th></tr></thead>
+    {% for p in pedestrians %}
+    <tr><td>{{ p.name|default:"-" }}</td><td>{{ p.vehicle_no|default:"" }}</td><td>{{ p.get_sex_display|default:"" }}</td><td>{{ p.age|default:"" }}</td>
+      <td>{{ p.get_severity_display|default:"" }}</td><td>{{ p.get_action_display|default:"" }}</td>
+      <td>{{ p.get_location_display|default:"" }}</td><td>{{ p.get_drink_drugs_display|default:"" }}</td>
+      <td>{{ p.std|yesno:"Y,N,-" }}</td><td>{{ p.get_nationality_display|default:"" }}</td></tr>
+    {% empty %}<tr><td colspan="10" class="empty">No pedestrian casualties.</td></tr>{% endfor %}
+  </table>
+</section>
+{% endblock %}
+{% block scripts %}{% if a.latitude %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous"></script>
+<script src="{% static 'accidents/maps.js' %}?v=18"></script>
+<script>
+  (function () {
+    var el = document.getElementById("report-map");
+    var created = window.BRRIMap ? BRRIMap.create("report-map") : null;
+    if (!created || !created.map) return;
+    var p = [Number(el.dataset.lat), Number(el.dataset.lng)];
+    created.map.setView(p, 16);
+    L.marker(p, { icon: L.divIcon({ className: "loc-pin", iconSize: [30, 42], iconAnchor: [15, 41],
+      html: '<svg viewBox="0 0 32 44"><path d="M16 1C7.7 1 1 7.7 1 16c0 11 15 27 15 27s15-16 15-27C31 7.7 24.3 1 16 1z"/><circle cx="16" cy="16" r="6"/></svg>' }) }).addTo(created.map);
+  })();
+</script>
+{% endif %}{% endblock %}

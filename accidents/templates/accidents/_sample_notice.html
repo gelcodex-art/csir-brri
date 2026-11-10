@@ -1,0 +1,5 @@
+{% if sample_count %}
+<div class="msg warning"><strong>Sample data:</strong> {{ sample_count }} report{{ sample_count|pluralize }}
+  numbered SAMPLE-… are generated demo data, not real accidents. Before real data entry starts, remove them
+  with <code>manage.py load_sample_data --delete</code>.</div>
+{% endif %}

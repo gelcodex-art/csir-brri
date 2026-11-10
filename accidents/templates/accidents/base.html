@@ -1,0 +1,84 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#c0004b">
+  <title>{% block title %}CSIR-BRRI Road Accident Data{% endblock %}</title>
+  <link rel="icon" href="{% static 'accidents/favicon.png' %}" type="image/png">
+  <link rel="stylesheet" href="{% static 'accidents/app.css' %}?v=20">
+  {% if tomtom_key %}<script>window.BRRI_TOMTOM_KEY = "{{ tomtom_key|escapejs }}";</script>{% endif %}
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  {% block header %}
+  {% with u=request.resolver_match.url_name %}
+  <header class="appbar">
+    <a class="logo" href="{% url 'dashboard' %}">
+      <img src="{% static 'accidents/csir-emblem.png' %}" alt="CSIR seal" width="40" height="40">
+      <span class="logo-text">
+        <span class="logo-title">CSIR-BRRI</span>
+        <span class="logo-sub">Road Accident Data System</span>
+      </span>
+    </a>
+    {% if user.is_authenticated %}
+    <nav class="links" aria-label="Main">
+      <a href="{% url 'dashboard' %}" class="tab{% if u == 'dashboard' %} active{% endif %}"{% if u == 'dashboard' %} aria-current="page"{% endif %}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="{% url 'accident_new' %}" class="tab{% if u == 'accident_new' %} active{% endif %}"{% if u == 'accident_new' %} aria-current="page"{% endif %}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+        <span>New report</span>
+      </a>
+      <a href="{% url 'accident_list' %}" class="tab{% if u == 'accident_list' or u == 'accident_detail' or u == 'accident_edit' or u == 'accident_review' %} active{% endif %}"{% if u == 'accident_list' %} aria-current="page"{% endif %}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>
+        <span>Records</span>
+      </a>
+      {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="tab">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>
+        <span>Admin</span>
+      </a>{% endif %}
+    </nav>
+    <div class="user">
+      <span class="avatar" aria-hidden="true">{{ user.get_username|slice:":1"|upper }}</span>
+      <span class="who">
+        <span class="user-name">{{ user.get_full_name|default:user.get_username }}</span>
+        <span class="user-role">{% if user.is_staff %}Administrator{% else %}Analyst{% endif %}</span>
+      </span>
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+        <button class="logout" title="Log out">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <span>Log out</span>
+        </button>
+      </form>
+    </div>
+    {% endif %}
+  </header>
+  {% endwith %}
+  {% endblock %}
+  <main>
+    {% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+  {% block footer %}
+  <footer class="site-foot">
+    <span>Council for Scientific and Industrial Research &middot; Building and Road Research Institute</span>
+    <span>Road Accident Data System</span>
+  </footer>
+  {% endblock %}
+  <script>
+    // The app is online-only. Remove the offline service worker and caches
+    // installed by earlier versions.
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        regs.forEach(function (r) { r.unregister(); });
+      });
+    }
+    if (window.caches) {
+      caches.keys().then(function (keys) { keys.forEach(function (k) { caches.delete(k); }); });
+    }
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

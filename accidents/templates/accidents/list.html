@@ -1,0 +1,48 @@
+{% extends "accidents/base.html" %}
+{% block title %}Records · BRRI{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Accident records <span class="count">({{ total }})</span></h1>
+    <p class="sub">Every report entered so far. Click a report number to open it.</p>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="{% url 'export' 'xlsx' %}?{{ querystring }}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Export Excel</a>
+    <a class="btn ghost" href="{% url 'export' 'csv' %}?{{ querystring }}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Export CSV</a>
+    <a class="btn" href="{% url 'accident_new' %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New report</a>
+  </div>
+</div>
+{% include "accidents/_sample_notice.html" %}
+{% include "accidents/_filters.html" with show_status=1 %}
+<div class="card table-wrap table-flush">
+  <table>
+    <thead><tr><th>Report</th><th>Date</th><th>Time</th><th>Region</th><th>Location</th>
+      <th>Road</th><th>Police station</th><th>Severity</th><th class="num">Killed</th><th class="num">Injured</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for a in page %}
+      <tr>
+        <td class="nowrap strong"><a href="{% url 'accident_detail' a.pk %}">{{ a }}</a></td>
+        <td class="nowrap">{{ a.accident_date|date:"d M Y" }}</td>
+        <td>{{ a.accident_time|time:"H:i"|default:"" }}</td>
+        <td>{{ a.region }}</td><td>{{ a.site_location_text|truncatechars:60|default:"" }}</td>
+        <td>{{ a.road_name }}</td>
+        <td>{{ a.police_station|default:"" }}</td>
+        <td>{% if a.severity %}<span class="sev sev-{{ a.severity }}">{{ a.get_severity_display }}</span>{% endif %}</td>
+        <td class="num">{{ a.killed }}</td><td class="num">{{ a.injured }}</td>
+        <td><span class="badge {{ a.status }}">{{ a.get_status_display }}</span></td>
+        <td><a href="{% url 'accident_edit' a.pk %}">Edit</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="12" class="empty">No records match these filters.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if page.has_other_pages %}
+<div class="actions pager">
+  {% if page.has_previous %}<a class="btn ghost small" href="?{{ querystring }}&page={{ page.previous_page_number }}">Previous</a>{% endif %}
+  <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a class="btn ghost small" href="?{{ querystring }}&page={{ page.next_page_number }}">Next</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

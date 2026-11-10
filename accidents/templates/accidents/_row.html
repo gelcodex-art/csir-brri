@@ -1,0 +1,7 @@
+<tr class="formrow">
+  {% for field in f.visible_fields %}{% if field.name != 'DELETE' %}
+  <td>{% if forloop.first %}{% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}{% endif %}{{ field }}{% for e in field.errors %}<p class="err">{{ e }}</p>{% endfor %}</td>
+  {% endif %}{% endfor %}
+  <td>{% if new %}<button type="button" class="btn ghost small" data-remove>Remove</button>
+      {% else %}<label class="muted">{{ f.DELETE }} Delete</label>{% endif %}</td>
+</tr>

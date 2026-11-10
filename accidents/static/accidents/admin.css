@@ -1,0 +1,180 @@
+/* CSIR-BRRI look for the administrator area (Django admin).
+   Colours are the admin's own variables, set to the BRRI palette for light
+   and dark themes. */
+:root {
+  --font-family-primary: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", sans-serif;
+  --header-bg: #10283a;
+  --header-color: #c9d6e2;
+  --header-branding-color: #ffffff;
+  --header-link-color: #ffffff;
+  --brri-accent: #c0004b;
+}
+html[data-theme="light"], :root {
+  --primary: #1b4263;
+  --secondary: #10283a;
+  --accent: #c0004b;
+  --primary-fg: #ffffff;
+  --body-fg: #0f1c2b;
+  --body-bg: #ffffff;
+  --body-quiet-color: #76849a;
+  --body-medium-color: #45556a;
+  --body-loud-color: #0f1c2b;
+  --breadcrumbs-fg: #76849a;
+  --breadcrumbs-link-fg: #2466c9;
+  --breadcrumbs-bg: #f4f6f9;
+  --link-fg: #2466c9;
+  --link-hover-color: #173f80;
+  --link-selected-fg: #10283a;
+  --hairline-color: #e8ecf1;
+  --border-color: #cdd5df;
+  --error-fg: #a82222;
+  --message-success-bg: #e7f6ec;
+  --message-warning-bg: #fff5dc;
+  --message-error-bg: #fdecec;
+  --darkened-bg: #f6f8fb;
+  --selected-bg: #e9f0f7;
+  --selected-row: #eef4fb;
+  --button-fg: #ffffff;
+  --button-bg: #10283a;
+  --button-hover-bg: #1b4263;
+  --default-button-bg: #10283a;
+  --default-button-hover-bg: #1b4263;
+  --close-button-bg: #5d6b7e;
+  --close-button-hover-bg: #45556a;
+  --delete-button-bg: #c62828;
+  --delete-button-hover-bg: #a82222;
+  --object-tools-bg: #10283a;
+  --object-tools-hover-bg: #1b4263;
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    --primary: #2f6397; --secondary: #10283a; --accent: #f0668f;
+    --body-fg: #eef2f7; --body-bg: #151c26; --body-quiet-color: #8291a5; --body-medium-color: #b4c0cf; --body-loud-color: #ffffff;
+    --breadcrumbs-fg: #8291a5; --breadcrumbs-link-fg: #5b9cf0; --breadcrumbs-bg: #0c1118;
+    --link-fg: #5b9cf0; --link-hover-color: #8db8f5; --link-selected-fg: #8db8f5;
+    --hairline-color: #242e3b; --border-color: #344152;
+    --error-fg: #f19a9a; --message-success-bg: #12301f; --message-warning-bg: #3a2c0b; --message-error-bg: #3a1717;
+    --darkened-bg: #0c1118; --selected-bg: #1b2a3b; --selected-row: #16283f;
+    --button-bg: #2f6397; --button-hover-bg: #3b78b5; --default-button-bg: #2f6397; --default-button-hover-bg: #3b78b5;
+    --close-button-bg: #45556a; --close-button-hover-bg: #5d6b7e;
+    --object-tools-bg: #2f6397; --object-tools-hover-bg: #3b78b5;
+  }
+}
+html[data-theme="dark"] {
+  --primary: #2f6397; --secondary: #10283a; --accent: #f0668f;
+  --body-fg: #eef2f7; --body-bg: #151c26; --body-quiet-color: #8291a5; --body-medium-color: #b4c0cf; --body-loud-color: #ffffff;
+  --breadcrumbs-fg: #8291a5; --breadcrumbs-link-fg: #5b9cf0; --breadcrumbs-bg: #0c1118;
+  --link-fg: #5b9cf0; --link-hover-color: #8db8f5; --link-selected-fg: #8db8f5;
+  --hairline-color: #242e3b; --border-color: #344152;
+  --error-fg: #f19a9a; --message-success-bg: #12301f; --message-warning-bg: #3a2c0b; --message-error-bg: #3a1717;
+  --darkened-bg: #0c1118; --selected-bg: #1b2a3b; --selected-row: #16283f;
+  --button-bg: #2f6397; --button-hover-bg: #3b78b5; --default-button-bg: #2f6397; --default-button-hover-bg: #3b78b5;
+  --close-button-bg: #45556a; --close-button-hover-bg: #5d6b7e;
+  --object-tools-bg: #2f6397; --object-tools-hover-bg: #3b78b5;
+}
+
+body { font-size: 14px; -webkit-font-smoothing: antialiased; background: var(--darkened-bg); }
+.main, #main { background: var(--darkened-bg); }
+
+/* Header */
+#header {
+  padding: 10px 28px; min-height: 60px; align-items: center;
+  border-top: 3px solid var(--brri-accent);
+}
+#branding { display: flex; align-items: center; }
+.brri-brand { display: flex; align-items: center; gap: 12px; color: #fff !important; text-decoration: none !important; }
+.brri-brand img { width: 38px; height: 38px; background: #fff; border-radius: 50%; padding: 2px; }
+.brri-brand strong { display: block; font-size: 1.12rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; color: #fff; }
+.brri-brand small { display: block; font-size: .74rem; font-weight: 600; color: #a9bccd; }
+#user-tools {
+  display: flex; align-items: center; gap: 6px 16px; flex-wrap: wrap; justify-content: flex-end;
+  font-size: .8rem; letter-spacing: 0; text-transform: none; font-weight: 500;
+}
+#user-tools a, #logout-form button {
+  border-bottom: 0; text-transform: none; letter-spacing: 0; font-size: .8rem; font-weight: 600; color: #fff;
+}
+#user-tools a:hover, #logout-form button:hover { color: #fff; text-decoration: underline; border-bottom: 0; margin-bottom: 0; }
+#user-tools .brri-pill { padding: 6px 12px; border: 1px solid rgba(255, 255, 255, .35); border-radius: 8px; }
+#user-tools .brri-pill:hover { background: rgba(255, 255, 255, .12); text-decoration: none; }
+.brri-who strong { color: #fff; }
+
+/* Breadcrumbs and page frame */
+div.breadcrumbs { padding: 12px 28px; font-size: .84rem; border-bottom: 1px solid var(--hairline-color); }
+#content { padding: 24px 28px; }
+#content h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.015em; color: var(--body-loud-color); margin-bottom: 16px; }
+#content h2 { font-weight: 650; }
+
+/* Panels and tables */
+.module { border: 1px solid var(--hairline-color); border-radius: 12px; overflow: hidden; background: var(--body-bg); box-shadow: 0 1px 2px rgba(15, 28, 43, .05); }
+.module h2, .module caption, .inline-group h2 {
+  background: var(--darkened-bg); color: var(--body-medium-color); font-size: .76rem; font-weight: 650;
+  letter-spacing: .05em; text-transform: uppercase; padding: 11px 16px; border-bottom: 1px solid var(--hairline-color);
+}
+.module caption a.section:link, .module caption a.section:visited { color: var(--body-medium-color); }
+#changelist { border: 1px solid var(--hairline-color); border-radius: 12px; overflow: hidden; background: var(--body-bg); }
+#changelist .module, #changelist-filter { border-radius: 0; box-shadow: none; }
+#changelist .changelist-form-container .module, #changelist-form .results { border: 0; }
+#changelist-filter { border: 0; border-left: 1px solid var(--hairline-color); background: var(--darkened-bg); }
+#changelist-filter h2 { background: transparent; border: 0; padding: 14px 16px 4px; }
+#changelist table thead th { background: var(--darkened-bg); }
+thead th, tfoot td { font-size: .74rem; letter-spacing: .05em; color: var(--body-quiet-color); }
+td, th { padding: 10px 12px; font-size: .88rem; }
+#result_list tbody tr:hover { background: var(--selected-row); }
+.dashboard .module table th { font-weight: 600; }
+.dashboard .module table td, .dashboard .module table th { padding: 11px 16px; }
+.dashboard #content { width: auto; max-width: 1120px; }
+.dashboard #content-main { float: none; width: auto; }
+.dashboard #content-main .module { margin-bottom: 18px; }
+.form-row { padding: 14px 16px; }
+.aligned label { font-weight: 600; color: var(--body-medium-color); }
+div.help, p.help, .helptext { font-size: .82rem !important; color: var(--body-quiet-color) !important; }
+
+/* Inputs and buttons */
+input[type="text"], input[type="password"], input[type="email"], input[type="url"], input[type="number"],
+input[type="tel"], textarea, select, .vTextField {
+  border-radius: 8px; padding: 7px 10px; border: 1px solid var(--border-color); font-size: .9rem;
+}
+input:focus, textarea:focus, select:focus { border-color: #2466c9; box-shadow: 0 0 0 3px rgba(36, 102, 201, .18); outline: none; }
+.button, input[type="submit"], input[type="button"], .submit-row input, a.button, .object-tools a {
+  border-radius: 8px; font-weight: 600; text-transform: none; letter-spacing: 0;
+}
+.submit-row input, .submit-row a.deletelink, .submit-row a.closelink { height: auto; padding: 10px 16px; line-height: 1.2; }
+.submit-row { border-radius: 12px; background: var(--body-bg); border: 1px solid var(--hairline-color); padding: 14px 16px; }
+.object-tools a:link, .object-tools a:visited { padding-top: 7px; padding-bottom: 7px; padding-left: 14px; font-size: .8rem; }
+.object-tools a.addlink, .object-tools a.viewsitelink { padding-right: 30px; background-position: right 10px center; }
+.object-tools a:not(.addlink):not(.viewsitelink) { padding-right: 14px; }
+.submit-row input.default { text-transform: none; }
+fieldset .fieldset-heading, fieldset.module h2, .inline-group .tabular fieldset.module h2 {
+  background: var(--darkened-bg); color: var(--body-medium-color); border: 0;
+  border-bottom: 1px solid var(--hairline-color); font-size: .76rem; font-weight: 650;
+  letter-spacing: .05em; text-transform: uppercase; padding: 11px 16px;
+}
+#nav-sidebar { border-right: 1px solid var(--hairline-color); background: var(--body-bg); }
+#nav-filter { border-radius: 8px; margin: 8px 0; width: 100%; box-sizing: border-box; }
+#changelist #toolbar { background: var(--body-bg); border-bottom: 1px solid var(--hairline-color); padding: 12px 16px; }
+#changelist .actions { padding: 12px 16px; background: var(--body-bg); border-bottom: 1px solid var(--hairline-color); }
+#changelist .paginator { padding: 12px 16px; border-top: 1px solid var(--hairline-color); }
+ul.messagelist li { border-radius: 10px; margin: 12px 28px 0; font-size: .9rem; }
+
+/* Home page: what an administrator comes here to do */
+.brri-lead { max-width: 60em; color: var(--body-medium-color); font-size: .95rem; margin: -6px 0 18px; }
+.brri-tasks { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-bottom: 28px; }
+a.brri-task, a.brri-task:visited {
+  display: flex; flex-direction: column; gap: 6px; padding: 18px; border-radius: 12px;
+  background: var(--body-bg); border: 1px solid var(--hairline-color); border-top: 3px solid var(--primary);
+  color: var(--body-fg); box-shadow: 0 1px 2px rgba(15, 28, 43, .05);
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+a.brri-task:hover { box-shadow: 0 8px 22px rgba(15, 28, 43, .12); transform: translateY(-2px); text-decoration: none; }
+.brri-task .t { font-size: 1.05rem; font-weight: 700; color: var(--body-loud-color); }
+.brri-task .n { font-size: .82rem; font-weight: 650; color: var(--accent); }
+.brri-task .d { font-size: .86rem; color: var(--body-medium-color); line-height: 1.45; flex: 1; }
+.brri-task .go { font-size: .86rem; font-weight: 650; color: var(--link-fg); margin-top: 4px; }
+#content h2.brri-h { font-size: .76rem; text-transform: uppercase; letter-spacing: .05em; color: var(--body-quiet-color); margin: 0 0 10px; }
+
+@media (max-width: 767px) {
+  #header { padding: 10px 16px; }
+  #content { padding: 16px; }
+  div.breadcrumbs { padding: 10px 16px; }
+  .brri-brand small { display: none; }
+}

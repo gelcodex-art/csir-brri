@@ -1,0 +1,90 @@
+{% extends "accidents/base.html" %}
+{% load static %}
+{% block title %}Dashboard · BRRI Accident Data{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" crossorigin="anonymous">
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Dashboard</h1>
+    <p class="sub">Road accidents across Ghana. Use the filters to narrow by date, place or severity.</p>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="{% url 'export' 'xlsx' %}?{{ querystring }}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Export Excel</a>
+    <a class="btn" href="{% url 'accident_new' %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New report</a>
+  </div>
+</div>
+{% include "accidents/_sample_notice.html" %}
+{% include "accidents/_filters.html" %}
+
+{# Ghana is tall and narrow: a portrait map, with the totals and blackspots beside it #}
+<div class="map-layout">
+  <section class="card map-card">
+    <h2>Crash map</h2>
+    <div id="crash-map" class="map ghana-shape"></div>
+    <div class="legend">
+      <span><i style="background:var(--sev-fatal)"></i>Fatal</span>
+      <span><i style="background:var(--sev-hosp)"></i>Hospitalised</span>
+      <span><i style="background:var(--sev-injured)"></i>Injured not hospitalised</span>
+      <span><i style="background:var(--sev-damage)"></i>Damage only / not recorded</span>
+      <span>Rings = blackspots (2+ crashes within ~500 m)</span>
+    </div>
+    <p class="muted" style="margin:10px 0 0;font-size:.86em">{{ map_points|length }} of {{ totals.n }} accidents have GPS coordinates.</p>
+  </section>
+
+  <div class="map-side">
+    <div class="kpis kpis-2x2">
+      <div class="kpi"><span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></span>
+        <div><div class="label">Accidents</div><div class="value">{{ totals.n }}</div></div></div>
+      <div class="kpi fatal"><span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86L7.86 2z"/><path d="M15 9l-6 6M9 9l6 6"/></svg></span>
+        <div><div class="label">Fatal accidents</div><div class="value">{{ totals.fatal }}</div></div></div>
+      <div class="kpi killed"><span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M17 8l5 5M22 8l-5 5"/></svg></span>
+        <div><div class="label">People killed</div><div class="value">{{ totals.killed|default:0 }}</div></div></div>
+      <div class="kpi injured"><span class="kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
+        <div><div class="label">People injured</div><div class="value">{{ totals.injured|default:0 }}</div></div></div>
+    </div>
+    <section class="card table-wrap side-table">
+      <h2>Blackspots (GPS clusters)</h2>
+      <p class="muted" style="margin-top:-4px">Click a location to zoom the map to it.</p>
+      <table><thead><tr><th>Location (approx.)</th><th class="num">Accidents</th><th class="num">Killed</th></tr></thead>
+        {% for b in blackspots %}<tr><td><a href="#" data-zoom="{{ b.lat }},{{ b.lng }}">{{ b.lat|floatformat:4 }}, {{ b.lng|floatformat:4 }}</a></td><td class="num">{{ b.n }}</td><td class="num">{{ b.killed }}</td></tr>
+        {% empty %}<tr><td colspan="3" class="empty">No clusters of 2+ accidents yet.</td></tr>{% endfor %}
+      </table>
+    </section>
+  </div>
+</div>
+
+<div class="charts-2x2">
+  <section class="card"><h2>Accidents per month</h2><div class="chart-box" style="height:340px"><canvas id="c-month"></canvas></div></section>
+  <section class="card"><h2>Accidents by region</h2><div class="chart-box" style="height:340px"><canvas id="c-region"></canvas></div></section>
+  <section class="card"><h2>Accidents by severity</h2><div class="chart-box" style="height:340px"><canvas id="c-severity"></canvas></div></section>
+  <section class="card"><h2>Casualties by road user</h2><div class="chart-box" style="height:340px"><canvas id="c-road_users"></canvas></div></section>
+</div>
+<div class="charts-2x2">
+  <section class="card table-wrap">
+    <h2>Towns with most accidents</h2>
+    <table><thead><tr><th>Town</th><th>District</th><th>Region</th><th class="num">Accidents</th><th class="num">Killed</th></tr></thead>
+      {% for t in town_spots %}<tr><td>{{ t.town__name }}</td><td>{{ t.district__name|default:"" }}</td><td>{{ t.region__name }}</td><td class="num">{{ t.n }}</td><td class="num">{{ t.killed|default:0 }}</td></tr>
+      {% empty %}<tr><td colspan="5" class="empty">No data yet.</td></tr>{% endfor %}
+    </table>
+  </section>
+  <section class="card table-wrap">
+    <h2>Reports by police station</h2>
+    <table><thead><tr><th>Police station</th><th>Region</th><th class="num">Accidents</th><th class="num">Killed</th></tr></thead>
+      {% for s in by_station %}<tr><td>{{ s.police_station__name }}</td><td>{{ s.region__name }}</td><td class="num">{{ s.n }}</td><td class="num">{{ s.killed|default:0 }}</td></tr>
+      {% empty %}<tr><td colspan="4" class="empty">No data yet.</td></tr>{% endfor %}
+    </table>
+  </section>
+</div>
+{{ charts|json_script:"chart-data" }}
+{{ map_points|json_script:"map-data" }}
+{{ blackspots|json_script:"blackspot-data" }}
+{{ stations|json_script:"station-data" }}
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin="anonymous"></script>
+<script src="{% static 'accidents/maps.js' %}?v=18"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" crossorigin="anonymous"></script>
+<script src="{% static 'accidents/dashboard.js' %}?v=20"></script>
+{% endblock %}

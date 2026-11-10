@@ -1,0 +1,49 @@
+{# Site location: the place in words, and a pin on the map (see picker.js). #}
+<section class="card" id="location-section">
+  <h2>{{ title }}</h2>
+  <div class="loc-layout">
+    <div class="loc-side">
+      {% with field=form.site_location_text %}
+      <div class="field{% if field.errors %} has-err{% endif %}">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        <small class="muted">{{ field.help_text }}</small>
+        {% for e in field.errors %}<p class="err">{{ e }}</p>{% endfor %}
+      </div>
+      {% endwith %}
+
+      <div class="loc-status" id="loc-status" role="status">
+        <strong>No pin on the map yet</strong>
+        <span>Zoom in to the place and click the exact spot.</span>
+      </div>
+
+      <ol class="loc-steps">
+        <li>The map opens at the police station you chose above.</li>
+        <li>Move and zoom to where the accident happened. <strong>Satellite</strong> (top right of the map) shows junctions and roundabouts clearly.</li>
+        <li>Click the exact spot. Drag the pin to adjust it.</li>
+      </ol>
+
+      <details class="loc-coords"{% if form.latitude.errors or form.longitude.errors %} open{% endif %}>
+        <summary>Have GPS coordinates? Type them instead</summary>
+        <div class="fields">
+          {% with field=form.latitude %}{% include "accidents/_field.html" %}{% endwith %}
+          {% with field=form.longitude %}{% include "accidents/_field.html" %}{% endwith %}
+        </div>
+      </details>
+    </div>
+
+    <div class="loc-map">
+      <div class="loc-search">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.300-4.300"/></svg>
+        <input type="search" id="loc-search" class="inp" autocomplete="off"
+               placeholder="Search a town, suburb or landmark (optional)" aria-label="Search the map">
+        <ul class="loc-results" id="loc-results" hidden></ul>
+      </div>
+      <div id="pick-map" class="map loc-pick"></div>
+      <div class="loc-actions">
+        <span class="muted">Hold Ctrl and scroll to zoom, or use + and &minus;.</span>
+        <button type="button" class="btn ghost small" id="loc-clear" hidden>Remove pin</button>
+      </div>
+    </div>
+  </div>
+</section>

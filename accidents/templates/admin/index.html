@@ -1,0 +1,39 @@
+{% extends "admin/index.html" %}
+{% load brri_admin %}
+
+{% block coltype %}colM{% endblock %}
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+{% brri_admin_counts as n %}
+<p class="brri-lead">This area is for administrators. Reports are entered, edited and approved in the main app;
+  here you manage who can log in and keep the lists the report form uses correct.</p>
+<div class="brri-tasks">
+  <a class="brri-task" href="{% url 'admin:auth_user_changelist' %}">
+    <span class="t">Analyst accounts</span>
+    <span class="n">{{ n.analysts }} analyst{{ n.analysts|pluralize }} &middot; {{ n.admins }} administrator{{ n.admins|pluralize }}</span>
+    <span class="d">Add a new analyst, reset a forgotten password, or switch off the account of someone who has left.</span>
+    <span class="go">Manage accounts &rarr;</span>
+  </a>
+  <a class="brri-task" href="{% url 'admin:accidents_policestation_changelist' %}?verified__exact=0">
+    <span class="t">Police stations to check</span>
+    <span class="n">{{ n.stations_to_check }} of {{ n.stations }} not yet verified{% if n.stations_from_analysts %} &middot; {{ n.stations_from_analysts }} typed in by analysts{% endif %}</span>
+    <span class="d">Correct the name or district, then tick the stations and choose &ldquo;Mark selected stations as verified&rdquo;.</span>
+    <span class="go">Check stations &rarr;</span>
+  </a>
+  <a class="brri-task" href="{% url 'admin:accidents_accident_changelist' %}">
+    <span class="t">Reports</span>
+    <span class="n">{{ n.reports }} report{{ n.reports|pluralize }}{% if n.samples %} &middot; {{ n.samples }} sample (demo){% endif %}</span>
+    <span class="d">Look up any report, or delete one that was entered by mistake or twice. Editing is done in the main app.</span>
+    <span class="go">Find a report &rarr;</span>
+  </a>
+  <a class="brri-task" href="{% url 'admin:accidents_auditlog_changelist' %}">
+    <span class="t">Change history</span>
+    <span class="n">Read-only record</span>
+    <span class="d">See who created, edited or approved each report, and when. Entries cannot be changed.</span>
+    <span class="go">View history &rarr;</span>
+  </a>
+</div>
+<h2 class="brri-h">All lists</h2>
+{{ block.super }}
+{% endblock %}

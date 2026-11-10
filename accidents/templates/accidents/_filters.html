@@ -1,0 +1,67 @@
+<form method="get" class="card filters" id="filters">
+  <div class="field"><label for="f-from">From</label><input id="f-from" class="inp" type="date" name="date_from" value="{{ f.date_from }}"></div>
+  <div class="field"><label for="f-to">To</label><input id="f-to" class="inp" type="date" name="date_to" value="{{ f.date_to }}"></div>
+  <div class="field"><label for="f-region">Region</label>
+    <select id="f-region" class="inp" name="region"><option value="">All regions</option>
+      {% for r in regions %}<option value="{{ r.id }}" {% if f.region == r.id|stringformat:'s' %}selected{% endif %}>{{ r.name }}</option>{% endfor %}
+    </select></div>
+  <div class="field"><label for="f-location">Location</label>
+    <select id="f-location" class="inp" name="location"><option value="">All locations</option>
+      {% for l in filter_locations %}<option value="{{ l.name }}" data-r="{{ l.region_id }}" {% if f.location|lower == l.name|lower %}selected{% endif %}>{{ l.name|truncatechars:60 }}</option>{% endfor %}
+    </select></div>
+  <div class="field"><label for="f-station">Police station</label>
+    <select id="f-station" class="inp" name="police_station"><option value="">All police stations</option>
+      {% for s in filter_stations %}<option value="{{ s.id }}" data-r="{{ s.region_id }}" data-d="{{ s.district_id|default:'' }}" {% if f.police_station == s.id|stringformat:'s' %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+    </select></div>
+  <div class="field"><label for="f-severity">Severity</label>
+    <select id="f-severity" class="inp" name="severity"><option value="">All</option>
+      {% for v, l in severities %}<option value="{{ v }}" {% if f.severity == v|stringformat:'s' %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select></div>
+  {% if show_status %}
+  <div class="field"><label for="f-status">Status</label>
+    <select id="f-status" class="inp" name="status"><option value="">All</option>
+      {% for v, l in statuses %}<option value="{{ v }}" {% if f.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select></div>
+  <div class="field"><label for="f-q">Search</label><input id="f-q" class="inp" name="q" value="{{ f.q }}" placeholder="Report no., road, town, location, station"></div>
+  {% endif %}
+  <div class="actions"><button class="btn">Apply</button><a class="btn ghost" href="?">Reset</a></div>
+</form>
+<script>
+  // Narrow the Location and Police station lists to the chosen region.
+  // Choosing a location or station also sets its region.
+  (function () {
+    var region = document.getElementById("f-region");
+    var locationSel = document.getElementById("f-location");
+    var station = document.getElementById("f-station");
+    function snapshot(sel) {
+      return Array.prototype.slice.call(sel.options, 1).map(function (o) {
+        return { value: o.value, text: o.text, r: o.dataset.r, d: o.dataset.d || "" };
+      });
+    }
+    var allLocations = snapshot(locationSel), allStations = snapshot(station);
+    function rebuild(sel, items, keep) {
+      var current = keep;
+      sel.length = 1;
+      items.forEach(function (it) {
+        var o = new Option(it.text, it.value);
+        o.dataset.r = it.r;
+        o.dataset.d = it.d;
+        sel.add(o);
+      });
+      sel.value = items.some(function (it) { return it.value === current; }) ? current : "";
+    }
+    function refresh() {
+      var r = region.value;
+      rebuild(locationSel, allLocations.filter(function (x) { return !r || x.r === r; }), locationSel.value);
+      rebuild(station, allStations.filter(function (x) { return !r || x.r === r; }), station.value);
+    }
+    function setRegionFrom(sel, list) {
+      var it = list.filter(function (x) { return x.value === sel.value; })[0];
+      if (it && region.value !== it.r) region.value = it.r;
+    }
+    region.addEventListener("change", refresh);
+    locationSel.addEventListener("change", function () { setRegionFrom(locationSel, allLocations); refresh(); });
+    station.addEventListener("change", function () { setRegionFrom(station, allStations); refresh(); });
+    refresh();
+  })();
+</script>
