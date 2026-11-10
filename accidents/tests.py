@@ -610,3 +610,13 @@ class FirstAdminTests(TestCase):
         self.assertFalse(User.objects.exists())
         self.client.post("/setup/", {**self.good, "setup_code": "open-sesame"})
         self.assertTrue(User.objects.filter(username="ama", is_superuser=True).exists())
+
+    def test_database_problem_page_instead_of_login(self):
+        from unittest import mock
+        from django.db import DatabaseError
+        with mock.patch("accidents.views.User.objects.exists",
+                        side_effect=DatabaseError('relation "auth_user" does not exist')):
+            for url in ("/login/", "/setup/"):
+                r = self.client.get(url)
+                self.assertEqual(r.status_code, 503)
+                self.assertContains(r, "setup-online.bat", status_code=503)

@@ -6,6 +6,7 @@ import uuid
 from collections import Counter
 from datetime import date, datetime
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -35,22 +36,46 @@ from .models import (Accident, AuditLog, District, PassengerCasualty, Pedestrian
 # ---------------------------------------------------------------------------
 # First run: with no accounts at all, the first visitor creates the administrator
 # ---------------------------------------------------------------------------
-def needs_first_admin():
+def database_problem():
+    """None when the accounts table can be read; otherwise a plain-words reason."""
     try:
-        return not User.objects.exists()
-    except DatabaseError:       # tables not created yet: keep the login page working
-        return False
+        User.objects.exists()
+        return None
+    except DatabaseError as exc:
+        text = str(exc).lower()
+        if settings.ON_VERCEL and not settings.DATABASE_URL:
+            return ("DATABASE_URL is not set on Vercel. Add it under Settings > Environment "
+                    "Variables (the Supabase Transaction pooler line), then Redeploy.")
+        if "does not exist" in text or "no such table" in text:
+            return ("The site reached the database, but it is empty: the tables have not been "
+                    "created yet. On the office PC, double-click setup-online.bat and paste the "
+                    "same connection line that is saved in Vercel.")
+        if "password" in text or "authentication" in text:
+            return ("The database refused the password in DATABASE_URL. Correct the line in "
+                    "Vercel (Settings > Environment Variables), then Redeploy.")
+        return ("The site could not connect to the database. Check that DATABASE_URL in Vercel "
+                "is the Supabase Transaction pooler line, then Redeploy.")
+
+
+def _database_page(request, problem):
+    return render(request, "registration/db_problem.html", {"problem": problem}, status=503)
 
 
 class LoginOrSetupView(LoginView):
     def dispatch(self, request, *args, **kwargs):
-        if needs_first_admin():
+        problem = database_problem()
+        if problem:
+            return _database_page(request, problem)
+        if not User.objects.exists():
             return redirect("first_admin")
         return super().dispatch(request, *args, **kwargs)
 
 
 def first_admin(request):
-    if not needs_first_admin():         # closed for good once any account exists
+    problem = database_problem()
+    if problem:
+        return _database_page(request, problem)
+    if User.objects.exists():           # closed for good once any account exists
         return redirect("login")
     form = FirstAdminForm(request.POST or None)
     if request.method == "POST" and form.is_valid():

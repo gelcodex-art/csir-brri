@@ -1,0 +1,16 @@
+{% extends "accidents/base.html" %}
+{% block title %}Database not ready · BRRI Accident Data{% endblock %}
+{% block body_class %}auth{% endblock %}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+{% include "registration/_brand.html" %}
+<section class="auth-panel">
+  <div class="auth-card">
+    <h1>Database not ready</h1>
+    <p class="sub">The system is online, but it cannot use its database yet.</p>
+    <div class="msg error">{{ problem }}</div>
+    <p class="help">Reload this page after fixing it. When the database is ready, this page becomes "Create the administrator".</p>
+  </div>
+</section>
+{% endblock %}
