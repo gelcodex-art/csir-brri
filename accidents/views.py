@@ -574,6 +574,56 @@ def export(request, fmt):
 
 
 # ---------------------------------------------------------------------------
+# Import from Excel (administrators): upload -> summary -> confirm
+# ---------------------------------------------------------------------------
+IMPORT_SHOWN = 300      # rows listed on the summary page
+
+
+@login_required
+def accident_import(request):
+    from .importer import ImportProblem, read_workbook, save_plan
+
+    if not request.user.is_staff:
+        messages.error(request, "Only administrators can import reports from Excel.")
+        return redirect("accident_list")
+
+    ctx = {}
+    if request.method == "POST":
+        token = request.POST.get("token", "")
+        upload = request.FILES.get("file")
+        try:
+            if token:                                   # step 2: confirmed
+                held = cache.get(f"import:{request.user.pk}:{token}")
+                if not held:
+                    raise ImportProblem("That file is no longer held (it is kept for one hour). "
+                                        "Choose the file again.")
+                saved = save_plan(read_workbook(held["data"], request.user), request.user)
+                cache.delete(f"import:{request.user.pk}:{token}")
+                plural = "" if saved == 1 else "s"
+                messages.success(request, f"{saved} report{plural} imported from {held['name']}.")
+                return redirect("accident_list")
+            if not upload:
+                raise ImportProblem("Choose an Excel file first.")
+            data = upload.read()                        # step 1: show what would happen
+            plan = read_workbook(data, request.user)
+            token = uuid.uuid4().hex
+            cache.set(f"import:{request.user.pk}:{token}", {"data": data, "name": upload.name}, 3600)
+            order = {"error": 0, "new": 1, "duplicate": 2}
+            listed = sorted(plan["reports"], key=lambda r: (order[r["state"]], r["row"]))
+            ctx = {"plan": plan, "token": token, "filename": upload.name,
+                   "hidden": max(0, len(listed) - IMPORT_SHOWN),
+                   "rows": [{"row": r["row"], "ref": r["ref"], "state": r["state"],
+                             "region": r["obj"].region if r["obj"].region_id else "",
+                             "date": r["obj"].accident_date, "n_vehicles": len(r["vehicles"]),
+                             "n_casualties": len(r["passengers"]) + len(r["pedestrians"]),
+                             "problems": r["problems"], "notes": r["notes"]}
+                            for r in listed[:IMPORT_SHOWN]]}
+        except ImportProblem as exc:
+            ctx = {"problem": str(exc)}
+    return render(request, "accidents/import.html", ctx)
+
+
+# ---------------------------------------------------------------------------
 # Offline mode was removed. Browsers that installed the old offline service
 # worker fetch this replacement on their next visit: it deletes the offline
 # caches, unregisters itself and reloads open pages from the server.

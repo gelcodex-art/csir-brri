@@ -1,3 +1,4 @@
+import os
 import uuid
 
 from django.contrib.auth.models import User
@@ -620,3 +621,104 @@ class FirstAdminTests(TestCase):
                 r = self.client.get(url)
                 self.assertEqual(r.status_code, 503)
                 self.assertContains(r, "setup-online.bat", status_code=503)
+
+
+@override_settings(CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}})
+class ExcelImportTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_locations", stdout=open(os.devnull, "w"))
+        cls.admin = User.objects.create_superuser("boss", password="pw-12345-test")
+        cls.region = Region.objects.get(name="Ashanti")
+
+    def setUp(self):
+        self.client.login(username="boss", password="pw-12345-test")
+
+    def workbook(self, accidents, vehicles=(), passengers=()):
+        import io
+        from openpyxl import Workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Accidents"
+        ws.append(["1 Report number", "1 Report year", "2 Region", "3 Police station",
+                   "5-7 Date of accident (day/month/year)", "9 Time (24hrs)",
+                   "10 No. casualties killed", "12 Accident severity", "60 Town/village code", "status"])
+        for row in accidents:
+            ws.append(row)
+        ws = wb.create_sheet("Vehicles")
+        ws.append(["accident", "Veh no.", "29 Vehicle type", "36 Driver name"])
+        for row in vehicles:
+            ws.append(row)
+        ws = wb.create_sheet("Passengers")
+        ws.append(["accident", "46 Veh no.", "49 Severity", "Helmet/belt Y/N"])
+        for row in passengers:
+            ws.append(row)
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        buf.name = "reports.xlsx"
+        return buf
+
+    def upload(self, buf):
+        r = self.client.post("/import/", {"file": buf})
+        self.assertEqual(r.status_code, 200)
+        return r
+
+    def test_preview_saves_nothing_then_confirm_imports(self):
+        from datetime import datetime, time
+        r = self.upload(self.workbook(
+            [["790", 2021, "Ashanti", "Brand New Station", datetime(2021, 10, 19), time(14, 30), 1, 1, 101, "reviewed"],
+             ["791", 2021, "Atlantis", None, datetime(2021, 10, 20), None, 0, 4, None, None],
+             ["792", 2021, "Ashanti", None, "not a date", None, 0, 4, None, None]],
+            vehicles=[["790/2021", 1, 5, "Kofi"], ["790/2021", 2, 1, None], ["999/2021", 1, 1, None]],
+            passengers=[["790/2021", 1, 1, True]]))
+        self.assertEqual(Accident.objects.count(), 0)
+        plan = r.context["plan"]
+        self.assertEqual((plan["n_new"], plan["n_error"], plan["orphans"]), (1, 2, 1))
+        self.assertContains(r, "Atlantis")
+
+        r = self.client.post("/import/", {"token": r.context["token"]})
+        self.assertRedirects(r, "/accidents/")
+        a = Accident.objects.get()
+        self.assertEqual((str(a), a.status, a.killed, a.day_of_week, a.town_code),
+                         ("790/2021", "reviewed", 1, 2, "101"))
+        self.assertEqual(a.accident_time.hour, 14)
+        self.assertEqual(a.created_by, self.admin)
+        self.assertEqual(a.vehicles.count(), 2)
+        self.assertTrue(a.passengers.get().helmet_belt)
+        self.assertFalse(a.police_station.verified)
+        self.assertEqual(a.audit.get().action, "imported")
+
+    def test_same_file_twice_adds_nothing(self):
+        from datetime import datetime
+        rows = [["5", 2022, "Ashanti", None, datetime(2022, 1, 5), None, 0, 4, None, None]]
+        r = self.upload(self.workbook(rows))
+        self.client.post("/import/", {"token": r.context["token"]})
+        r = self.upload(self.workbook(rows))
+        self.assertEqual((r.context["plan"]["n_new"], r.context["plan"]["n_duplicate"]), (0, 1), r.context["rows"])
+        self.assertEqual(Accident.objects.count(), 1)
+
+    def test_export_file_can_be_imported_back(self):
+        import io
+        from datetime import date
+        a = Accident.objects.create(report_number="77", report_year=2023, region=self.region,
+                                    accident_date=date(2023, 3, 4), severity=4, road_name="N6")
+        a.vehicles.create(vehicle_no=1, vehicle_type=1, driver_name="Ama")
+        exported = self.client.get("/export/xlsx/").content
+        Accident.objects.all().delete()
+        buf = io.BytesIO(exported)
+        buf.name = "accidents.xlsx"
+        r = self.upload(buf)
+        self.assertEqual(r.context["plan"]["n_new"], 1, r.context["rows"])
+        self.client.post("/import/", {"token": r.context["token"]})
+        b = Accident.objects.get()
+        self.assertEqual((b.road_name, b.severity, b.vehicles.get().driver_name), ("N6", 4, "Ama"))
+
+    def test_not_excel_and_analyst_blocked(self):
+        import io
+        buf = io.BytesIO(b"hello")
+        buf.name = "notes.xlsx"
+        self.assertContains(self.upload(buf), "not an Excel")
+        User.objects.create_user("analyst", password="pw-12345-test")
+        self.client.login(username="analyst", password="pw-12345-test")
+        self.assertRedirects(self.client.get("/import/"), "/accidents/")

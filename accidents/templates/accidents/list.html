@@ -9,6 +9,7 @@
   <div class="actions">
     <a class="btn ghost" href="{% url 'export' 'xlsx' %}?{{ querystring }}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Export Excel</a>
     <a class="btn ghost" href="{% url 'export' 'csv' %}?{{ querystring }}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Export CSV</a>
+    {% if user.is_staff %}<a class="btn ghost" href="{% url 'accident_import' %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 21h16"/></svg>Import Excel</a>{% endif %}
     <a class="btn" href="{% url 'accident_new' %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New report</a>
   </div>
 </div>

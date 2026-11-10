@@ -1,0 +1,84 @@
+{% extends "accidents/base.html" %}
+{% block title %}Import from Excel · BRRI{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Import from Excel</h1>
+    <p class="sub">Add many reports at once from an Excel file in the same layout as "Export Excel".</p>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="{% url 'accident_list' %}">Back to records</a>
+  </div>
+</div>
+
+{% if problem %}<div class="msg error">{{ problem }}</div>{% endif %}
+
+{% if plan %}
+<div class="card">
+  <div class="card-head"><h2>Check before importing: {{ filename }}</h2></div>
+  <p>Nothing has been saved yet.</p>
+  <ul>
+    <li><strong>{{ plan.n_new }}</strong> new report{{ plan.n_new|pluralize }} will be added.</li>
+    <li><strong>{{ plan.n_duplicate }}</strong> already in the system (same report number, year and region) will be skipped.</li>
+    <li><strong>{{ plan.n_error }}</strong> with problems will be skipped. Correct them in the Excel file and import it again.</li>
+    {% if plan.orphans %}<li><strong>{{ plan.orphans }}</strong> vehicle or casualty row{{ plan.orphans|pluralize }} do not match any report in the file and will be skipped.</li>{% endif %}
+  </ul>
+  <div class="actions">
+    {% if plan.n_new %}
+    <form method="post">{% csrf_token %}
+      <input type="hidden" name="token" value="{{ token }}">
+      <button class="btn" type="submit">Import {{ plan.n_new }} report{{ plan.n_new|pluralize }}</button>
+    </form>
+    {% endif %}
+    <a class="btn ghost" href="{% url 'accident_import' %}">Choose another file</a>
+  </div>
+</div>
+
+<div class="card table-wrap table-flush">
+  <table>
+    <thead><tr><th>Excel row</th><th>Report</th><th>Region</th><th>Date</th>
+      <th class="num">Vehicles</th><th class="num">Casualty rows</th><th>Result</th><th>Details</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td>{{ r.row }}</td>
+        <td class="nowrap strong">{{ r.ref }}</td>
+        <td>{{ r.region }}</td>
+        <td class="nowrap">{{ r.date|date:"d M Y" }}</td>
+        <td class="num">{{ r.n_vehicles }}</td>
+        <td class="num">{{ r.n_casualties }}</td>
+        <td>{% if r.state == "new" %}<span class="badge reviewed">Will be added</span>{% elif r.state == "duplicate" %}<span class="badge submitted">Already in system</span>{% else %}<span class="badge query">Problem</span>{% endif %}</td>
+        <td>{% for p in r.problems %}<div>{{ p }}</div>{% endfor %}{% for n in r.notes %}<div class="muted">{{ n }}</div>{% endfor %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if hidden %}<p class="muted">{{ hidden }} more row{{ hidden|pluralize }} not shown. Rows with problems are listed first.</p>{% endif %}
+
+{% else %}
+<div class="card">
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    <div class="field">
+      <label for="id_file">Excel file (.xlsx, up to 4 MB)</label>
+      <input class="inp" id="id_file" type="file" name="file" accept=".xlsx" required>
+    </div>
+    <div class="actions">
+      <button class="btn" type="submit">Check the file</button>
+      <a class="btn ghost" href="{% url 'export' 'xlsx' %}">Download the current records as an example</a>
+    </div>
+  </form>
+</div>
+<div class="card">
+  <h2>How it works</h2>
+  <ul>
+    <li>The file needs an <strong>Accidents</strong> sheet, and can have <strong>Vehicles</strong>, <strong>Passengers</strong> and <strong>Pedestrians</strong> sheets, with the same column headings as the export.</li>
+    <li>Rows on the other sheets are linked to a report by their <strong>accident</strong> column, written as number/year (for example 790/2021).</li>
+    <li>You see a summary first. Nothing is saved until you click Import.</li>
+    <li>Reports already in the system are skipped, so importing the same file twice is safe.</li>
+    <li>Sketch pictures are not imported. Add them on each report afterwards.</li>
+    <li>The reminders of the report form (for example a missing time or GPS location) are not applied. Imported reports keep the status given in the file.</li>
+  </ul>
+</div>
+{% endif %}
+{% endblock %}

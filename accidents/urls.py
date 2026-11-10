@@ -11,6 +11,7 @@ urlpatterns = [
     path("accidents/<int:pk>/edit/", views.accident_edit, name="accident_edit"),
     path("accidents/<int:pk>/review/", views.accident_review, name="accident_review"),
     path("export/<str:fmt>/", views.export, name="export"),
+    path("import/", views.accident_import, name="accident_import"),
     path("api/locations.json", views.locations_api, name="locations_api"),
     path("api/pins.json", views.pins_api, name="pins_api"),
     # Removes the offline service worker from browsers that installed it earlier.
