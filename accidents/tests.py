@@ -681,7 +681,7 @@ class ExcelImportTests(TestCase):
         self.assertRedirects(r, "/accidents/")
         a = Accident.objects.get()
         self.assertEqual((str(a), a.status, a.killed, a.day_of_week, a.town_code),
-                         ("790/2021", "reviewed", 1, 2, "101"))
+                         ("790/2021", "reviewed", 1, 2, "0101"))
         self.assertEqual(a.accident_time.hour, 14)
         self.assertEqual(a.created_by, self.admin)
         self.assertEqual(a.vehicles.count(), 2)
@@ -737,6 +737,84 @@ class ExcelImportTests(TestCase):
         self.client.post("/import/", {"token": r.context["token"]})
         a = Accident.objects.get()
         self.assertEqual((str(a), a.severity, a.vehicles.get().driver_sex), ("31/2024", 4, 1))
+
+    def test_older_records_number_with_year_region_number_town_code(self):
+        import io
+        from datetime import datetime
+        from openpyxl import Workbook
+        kumasi = Town.objects.filter(district__region=self.region).first()
+        Town.objects.filter(pk=kumasi.pk).update(name="Kumasi")
+        wb = Workbook()
+        ws = wb.active
+        ws.append(["Report number", "Region", "Town/village code", "Date of accident (day/month/year)"])
+        ws.append(["237/15", 1, 101, datetime(2015, 6, 7)])           # number/year, region number
+        ws.append(["12/98", None, "0101", datetime(1998, 1, 2)])       # region from the code
+        ws.append(["40", "Ashanti Region (1)", None, datetime(2016, 3, 4)])   # year from the date
+        ws.append(["41/16", 99, None, datetime(2016, 3, 5)])           # no such region
+        ws = wb.create_sheet("v")
+        ws.append(["accident", "Veh no.", "Vehicle type"])
+        ws.append(["237/15", 1, 1])
+        ws.append(["237/2015", 2, 1])
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        buf.name = "old.xlsx"
+        r = self.upload(buf)
+        plan = r.context["plan"]
+        self.assertEqual((plan["n_new"], plan["n_error"], plan["orphans"]), (3, 1, 0), r.context["rows"])
+        self.client.post("/import/", {"token": r.context["token"]})
+        a = Accident.objects.get(report_number="237")
+        self.assertEqual((a.report_year, a.region, a.town_code, a.town.name, a.vehicles.count()),
+                         (2015, self.region, "0101", "Kumasi", 2))
+        b = Accident.objects.get(report_number="12")
+        self.assertEqual((b.report_year, b.region), (1998, self.region))
+        self.assertEqual(Accident.objects.get(report_number="40").report_year, 2016)
+
+    def test_old_accident_database_file(self):
+        import io
+        from datetime import datetime
+        from openpyxl import Workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Attendant_Circumstances"
+        ws.append(["ACCIDENT KEY", "REPORT NUMBER", "REGION", "POLICE STATION", "NO VEHICLES INVOLVED",
+                   "DATE", "TIME", "NO CASUALTIES KILLED", "NO CASUALTIES INJURED", "ACCIDENT SEVERITY",
+                   "COLLISION TYPE", "HIT & RUN", "TOWN/VILLAGE CODE", "KILOMETRE POST", "100M",
+                   "X CO-ORDINATE", "ACCIDENT DESCRIPTION"])
+        ws.append([156742, "101/10", "01", "01086", 1, datetime(2010, 5, 18), "13:35", 0, 2, 2,
+                   "09", 1, "0000", 32, 5, 0, "V1 KNOCKED DOWN A PED."])
+        ws = wb.create_sheet("Vehicle_Details")
+        ws.append(["ACCIDENT KEY", "VEHICLE REFERENCE NUMBER", "VEHICLE TYPE", "REGISTRATION NO",
+                   "DRIVER SEX", "DRIVER/RIDER AGE", "DRIVER/RIDER INJURY", "PLACE OF ISSUE", "DRIVERS ERROR"])
+        ws.append([156742, 1, "05", "05", "1", 45, "?", "08", "01"])
+        ws = wb.create_sheet("Casualty_Details")
+        ws.append(["ACCIDENT KEY", "CASUALTY CLASS", "VEHICLE REFERENCE NO", "CASUALTY SEX", "CASUALTY AGE",
+                   "CASUALTY INJURY", "PASSENGER POSITION IN VEH", "PASSENGER ACTION", "PEDESTRIAN ACTION",
+                   "PEDESTRIAN LOCATION", "DRINK/DRUGS"])
+        ws.append([156742, 1, 1, 1, 45, 3, None, None, None, None, None])      # the driver
+        ws.append([156742, 2, 1, 2, 30, 2, 4, 4, None, None, None])            # a passenger
+        ws.append([156742, 3, 1, 1, 12, 2, None, None, 2, 4, 1])               # a pedestrian
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        buf.name = "NsawamPass.xlsx"
+        r = self.upload(buf)
+        plan = r.context["plan"]
+        self.assertEqual((plan["n_new"], plan["drivers"], plan["station_codes"], plan["orphans"]),
+                         (1, 1, 1, 0), r.context["rows"])
+        self.client.post("/import/", {"token": r.context["token"]})
+        a = Accident.objects.get()
+        self.assertEqual((a.report_number, a.report_year, a.region, a.collision_type, a.km, a.hundred_m),
+                         ("101", 2010, self.region, 9, 32, 5))
+        self.assertEqual((a.town_code, a.x_coordinate, a.accident_time.hour, a.police_station),
+                         ("", "", 13, None))
+        self.assertIn("01086", a.analyst_notes)
+        v = a.vehicles.get()
+        self.assertEqual((v.vehicle_type, v.registration_code, v.registration_no, v.driver_injury,
+                          v.licence_place_of_issue, v.driver_age), (5, 5, "", None, "ER1", 45))
+        ps, pd = a.passengers.get(), a.pedestrians.get()
+        self.assertEqual((ps.position, ps.action, ps.severity), (4, 4, 2))
+        self.assertEqual((pd.action, pd.location, pd.drink_drugs, pd.age), (2, 4, 1, 12))
 
     def test_file_that_is_not_accident_data_is_refused(self):
         import io
