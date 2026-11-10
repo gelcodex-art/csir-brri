@@ -11,7 +11,7 @@
  */
 window.BRRIMap = (function () {
   "use strict";
-  var STATIC = "/static/accidents/geo/";
+  var GEO = "/api/geo/";
   var ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/";
   var TOMTOM_KEY = window.BRRI_TOMTOM_KEY || "";
   var BASEMAPS = {};
@@ -48,7 +48,7 @@ window.BRRIMap = (function () {
   var geoCache = {};
   function loadGeo(name) {
     if (!geoCache[name]) {
-      geoCache[name] = fetch(STATIC + name + ".geojson").then(function (r) {
+      geoCache[name] = fetch(GEO + name + ".json").then(function (r) {
         if (!r.ok) throw new Error(r.status);
         return r.json();
       });

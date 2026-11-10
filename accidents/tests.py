@@ -722,3 +722,27 @@ class ExcelImportTests(TestCase):
         User.objects.create_user("analyst", password="pw-12345-test")
         self.client.login(username="analyst", password="pw-12345-test")
         self.assertRedirects(self.client.get("/import/"), "/accidents/")
+
+
+@override_settings(CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}})
+class GeoFileTests(TestCase):
+    def test_boundary_ids_follow_this_database(self):
+        from django.core.cache import cache
+        cache.clear()
+        # Regions numbered differently from the PC that built the files.
+        Region.objects.create(name="Placeholder")
+        call_command("seed_locations", stdout=open(os.devnull, "w"))
+        Region.objects.filter(name="Placeholder").delete()
+        User.objects.create_user("analyst", password="pw-12345-test")
+        self.client.login(username="analyst", password="pw-12345-test")
+        ashanti = Region.objects.get(name="Ashanti")
+        d = District.objects.create(region=ashanti, name="Kumasi Metropolitan")
+        regions = self.client.get("/api/geo/regions.json").json()
+        ids = {f["properties"]["name"]: f["properties"]["id"] for f in regions["features"]}
+        self.assertEqual(ids["Ashanti"], ashanti.pk)
+        districts = self.client.get("/api/geo/districts.json").json()
+        kma = [f["properties"] for f in districts["features"] if f["properties"]["name"] == d.name]
+        if kma:
+            self.assertEqual((kma[0]["id"], kma[0]["region_id"]), (d.pk, ashanti.pk))
+        self.assertEqual(self.client.get("/api/geo/ghana.json").status_code, 200)
+        self.assertEqual(self.client.get("/api/geo/secrets.json").status_code, 404)

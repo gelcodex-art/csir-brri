@@ -5,6 +5,7 @@ import json
 import uuid
 from collections import Counter
 from datetime import date, datetime
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib import messages
@@ -336,6 +337,50 @@ def locations_json():
 @receiver([post_save, post_delete], sender=PoliceStation)
 def _locations_changed(**kwargs):
     cache.delete(LOCATIONS_CACHE_KEY)
+    cache.delete_many([GEO_CACHE_KEY + n for n in GEO_FILES])
+
+
+# Boundary files for the maps. The files on disk carry the database ids of the
+# PC that built them; another database (e.g. the online one) numbers its regions
+# and districts differently, so the ids are filled in by name when served.
+GEO_FILES = ("ghana", "regions", "districts")
+GEO_CACHE_KEY = "geo-json-v1-"
+GEO_DIR = Path(__file__).resolve().parent / "static" / "accidents" / "geo"
+
+
+def _geo_body(name):
+    hit = cache.get(GEO_CACHE_KEY + name)
+    if hit:
+        return hit
+    data = json.loads((GEO_DIR / f"{name}.geojson").read_text(encoding="utf-8"))
+    if name != "ghana":
+        regions = json.loads((GEO_DIR / "regions.geojson").read_text(encoding="utf-8"))
+        file_region = {f["properties"]["id"]: f["properties"]["name"] for f in regions["features"]}
+        region_id = dict(Region.objects.values_list("name", "id"))
+        district_id = {(r, n): i for i, r, n in District.objects.values_list("id", "region_id", "name")}
+        for f in data["features"]:
+            p = f["properties"]
+            if name == "regions":
+                p["id"] = region_id.get(p.get("name"))
+            else:
+                p["region_id"] = region_id.get(file_region.get(p.get("region_id")))
+                p["id"] = district_id.get((p["region_id"], p.get("name")))
+    body = json.dumps(data, separators=(",", ":")).encode()
+    cache.set(GEO_CACHE_KEY + name, body, None)
+    return body
+
+
+@login_required
+def geo_api(request, name):
+    if name not in GEO_FILES:
+        return HttpResponse(status=404)
+    try:
+        body = _geo_body(name)
+    except FileNotFoundError:        # not packaged with the server: use the plain static file
+        return redirect(f"/static/accidents/geo/{name}.geojson")
+    resp = HttpResponse(body, content_type="application/json")
+    resp["Cache-Control"] = "private, max-age=300"
+    return resp
 
 
 def locations_api(request):

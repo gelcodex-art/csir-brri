@@ -14,6 +14,7 @@ urlpatterns = [
     path("import/", views.accident_import, name="accident_import"),
     path("api/locations.json", views.locations_api, name="locations_api"),
     path("api/pins.json", views.pins_api, name="pins_api"),
+    path("api/geo/<str:name>.json", views.geo_api, name="geo_api"),
     # Removes the offline service worker from browsers that installed it earlier.
     path("sw.js", views.service_worker_removal, name="service_worker_removal"),
 ]
