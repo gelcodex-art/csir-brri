@@ -714,6 +714,43 @@ class ExcelImportTests(TestCase):
         b = Accident.objects.get()
         self.assertEqual((b.road_name, b.severity, b.vehicles.get().driver_name), ("N6", 4, "Ama"))
 
+    def test_any_file_and_sheet_names_recognised_by_columns(self):
+        import io
+        from datetime import datetime
+        from openpyxl import Workbook
+        wb = Workbook()
+        wb.active.title = "Notes"
+        wb.active.append(["anything", "at all"])
+        ws = wb.create_sheet("Sheet7")          # reports, headings without form numbers
+        ws.append(["Report Number", "report year", "Region", "Date of accident (day/month/year)",
+                   "Accident severity"])
+        ws.append(["31", 2024, "Ashanti", datetime(2024, 2, 3), 4])
+        ws = wb.create_sheet("cars")
+        ws.append(["accident", "Veh no.", "Vehicle type", "Sex"])
+        ws.append(["31/2024", 1, 1, 1])
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        buf.name = "kumasi data final (2).xlsx"
+        r = self.upload(buf)
+        self.assertEqual(r.context["plan"]["n_new"], 1, r.context.get("rows"))
+        self.client.post("/import/", {"token": r.context["token"]})
+        a = Accident.objects.get()
+        self.assertEqual((str(a), a.severity, a.vehicles.get().driver_sex), ("31/2024", 4, 1))
+
+    def test_file_that_is_not_accident_data_is_refused(self):
+        import io
+        from openpyxl import Workbook
+        wb = Workbook()
+        wb.active.append(["Staff name", "Salary", "Region"])
+        wb.active.append(["Ama", 1000, "Ashanti"])
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        buf.name = "accidents.xlsx"
+        self.assertContains(self.upload(buf), "does not look like accident data")
+        self.assertEqual(Accident.objects.count(), 0)
+
     def test_not_excel_and_analyst_blocked(self):
         import io
         buf = io.BytesIO(b"hello")

@@ -1,9 +1,10 @@
 """Import accident reports from an Excel file in the same layout as "Export Excel".
 
-Sheets: Accidents, Vehicles, Passengers, Pedestrians (the Codebook sheet is ignored).
-Columns are matched by their heading, so their order does not matter and extra
-columns are ignored. Rows on the other sheets belong to a report through their
-"accident" column, written as number/year (e.g. 790/2021).
+The file name and the sheet names do not matter: each sheet is recognised by its
+column headings (reports, vehicles, passengers, pedestrians); other sheets are
+ignored. Column order does not matter and extra columns are ignored. Vehicle and
+casualty rows belong to a report through their "accident" column, written as
+number/year (e.g. 790/2021).
 
     plan = read_workbook(file_bytes, user)   # nothing is saved; describes what would happen
     save_plan(plan, user)                    # saves the reports marked "new"
@@ -111,27 +112,71 @@ def _convert(field, v):
     return v
 
 
-def _sheet_rows(wb, title, model, required=True):
-    """[(excel row number, {field name: cell value})] for one sheet, matched by heading."""
-    if title not in wb.sheetnames:
-        if required:
-            raise ImportProblem(f'The file has no sheet named "{title}". Use a file in the same '
-                                'layout as "Export Excel".')
-        return []
-    by_heading = {str(f.verbose_name).strip().lower(): f.name for f in model._meta.fields}
-    rows = wb[title].iter_rows(values_only=True)
-    try:
-        headings = next(rows)
-    except StopIteration:
-        return []
-    columns = {i: by_heading[str(h).strip().lower()] for i, h in enumerate(headings)
-               if h is not None and str(h).strip().lower() in by_heading}
-    out = []
-    for n, row in enumerate(rows, start=2):
-        if all(_blank(c) for c in row):
+def _norm(heading):
+    """Heading in a comparable form: lower case, single spaces, no punctuation at the ends."""
+    return re.sub(r"\s+", " ", str(heading)).strip(" .:").lower()
+
+
+def _headings(model):
+    """{heading text: field name}. A heading also matches without its form number
+    ("Report number" as well as "1 Report number") when that is not ambiguous."""
+    full, short, clash = {}, {}, set()
+    for f in model._meta.fields:
+        name = _norm(f.verbose_name)
+        full[name] = f.name
+        bare = re.sub(r"^[\d\-/ ]+", "", name)
+        if bare and bare != name:
+            if bare in short:
+                clash.add(bare)
+            short[bare] = f.name
+    for bare, field in short.items():
+        if bare not in clash and bare not in full:
+            full[bare] = field
+    return full
+
+
+# What each kind of sheet must contain to be recognised (sheet names do not matter).
+KINDS = [
+    ("accidents", Accident, {"report_number", "region", "accident_date"}, "accid"),
+    ("vehicles", Vehicle, {"accident"}, "veh"),
+    ("passengers", PassengerCasualty, {"accident"}, "pass"),
+    ("pedestrians", PedestrianCasualty, {"accident"}, "ped"),
+]
+
+
+def _read_sheets(wb):
+    """{"accidents": (sheet title, rows), ...} - each sheet recognised by its column headings.
+
+    rows is [(excel row number, {field name: cell value})].
+    """
+    found = {}
+    for ws in wb.worksheets:
+        rows = ws.iter_rows(values_only=True)
+        try:
+            headings = next(rows)
+        except StopIteration:
             continue
-        out.append((n, {name: row[i] for i, name in columns.items() if i < len(row)}))
-    return out
+        best = None
+        for kind, model, must, hint in KINDS:
+            known = _headings(model)
+            columns = {i: known[_norm(h)] for i, h in enumerate(headings)
+                       if h is not None and _norm(h) in known}
+            if not must <= set(columns.values()) or len(columns) < len(must) + 1:
+                continue
+            # Most matching columns wins; the sheet name only settles a tie.
+            score = (len(columns), hint in ws.title.lower())
+            if best is None or score > best[2]:
+                best = (kind, columns, score)
+        if best is None or best[0] in found:
+            continue
+        kind, columns, _ = best
+        data = []
+        for n, row in enumerate(rows, start=2):
+            if all(_blank(c) for c in row):
+                continue
+            data.append((n, {name: row[i] for i, name in columns.items() if i < len(row)}))
+        found[kind] = (ws.title, data)
+    return found
 
 
 def _fill(obj, values, problems, notes, label=""):
@@ -202,7 +247,13 @@ def read_workbook(data, user):
     statuses = {code for code, _ in Accident.STATUS_CHOICES}
     reports, by_ref = [], {}
 
-    for n, values in _sheet_rows(wb, "Accidents", Accident):
+    sheets = _read_sheets(wb)
+    if "accidents" not in sheets:
+        raise ImportProblem(
+            "This file does not look like accident data. No sheet has the columns "
+            '"Report number", "Region" and "Date of accident". Use the same column '
+            'headings as "Export Excel".')
+    for n, values in sheets["accidents"][1]:
         problems, notes = [], []
         acc = Accident()
         _fill(acc, values, problems, notes)
@@ -254,11 +305,13 @@ def read_workbook(data, user):
         reports.append(item)
 
     if not reports:
-        raise ImportProblem('The "Accidents" sheet has no reports in it.')
+        raise ImportProblem(f'The sheet "{sheets["accidents"][0]}" has the right columns '
+                            "but no reports in it.")
 
     orphans = 0
-    for title, model, key in CHILD_SHEETS:
-        for n, values in _sheet_rows(wb, title, model, required=False):
+    for _, model, key in CHILD_SHEETS:
+        title, child_rows = sheets.get(key, ("", []))
+        for n, values in child_rows:
             parent = by_ref.get(_text(values.get("accident") or ""))
             if parent is None:
                 orphans += 1

@@ -72,7 +72,9 @@
 <div class="card">
   <h2>How it works</h2>
   <ul>
-    <li>The file needs an <strong>Accidents</strong> sheet, and can have <strong>Vehicles</strong>, <strong>Passengers</strong> and <strong>Pedestrians</strong> sheets, with the same column headings as the export.</li>
+    <li>The file and its sheets can have any name. What matters is the column headings: they must be the same as in the export.</li>
+    <li>One sheet must hold the reports (with at least <strong>Report number</strong>, <strong>Region</strong> and <strong>Date of accident</strong>). Sheets for vehicles, passengers and pedestrians are optional.</li>
+    <li>A file that is not accident data is refused, and nothing is saved.</li>
     <li>Rows on the other sheets are linked to a report by their <strong>accident</strong> column, written as number/year (for example 790/2021).</li>
     <li>You see a summary first. Nothing is saved until you click Import.</li>
     <li>Reports already in the system are skipped, so importing the same file twice is safe.</li>
