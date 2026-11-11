@@ -624,6 +624,32 @@ class FirstAdminTests(TestCase):
 
 
 @override_settings(CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}})
+class FormCodeTests(TestCase):
+    """The report form accepts the codes of the paper form (237/15, region number)."""
+
+    def form(self, **extra):
+        from .forms import AccidentForm
+        region = Region.objects.get_or_create(name="Ashanti")[0]
+        data = {"report_number": "237", "report_year": "2015", "region": region.pk,
+                "accident_date": "2015-06-07", "num_vehicles": 1, "killed": 0, "injured": 0}
+        data.update(extra)
+        return AccidentForm(data)
+
+    def test_number_with_year_and_short_year(self):
+        f = self.form(report_number="237/15", report_year="")
+        f.is_valid()
+        self.assertNotIn("report_year", f.errors)
+        self.assertEqual((f.cleaned_data["report_number"], f.cleaned_data["report_year"]), ("237", 2015))
+        f = self.form(report_year="15")
+        f.is_valid()
+        self.assertEqual(f.cleaned_data["report_year"], 2015)
+
+    def test_region_listed_with_its_number(self):
+        Region.objects.get_or_create(name="Ahafo")
+        labels = [label for _, label in self.form().fields["region"].choices]
+        self.assertEqual(labels[1:], ["1 - Ashanti", "11 - Ahafo"])
+
+
 class ExcelImportTests(TestCase):
     @classmethod
     def setUpTestData(cls):

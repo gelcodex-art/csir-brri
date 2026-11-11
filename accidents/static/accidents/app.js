@@ -374,6 +374,25 @@
     });
   }
 
+  // ---- 1 Report number typed the old way: "237/15" -> number 237, year 2015 ----------
+  var repNo = $("report_number"), repYear = $("report_year");
+  function fullYear(y) {
+    y = Number(y);
+    if (y >= 100) return y;
+    return y <= new Date().getFullYear() % 100 + 1 ? 2000 + y : 1900 + y;
+  }
+  if (repNo && repYear) {
+    repNo.addEventListener("change", function () {
+      var m = /^(.*\S)\s*\/\s*(\d{2}|\d{4})$/.exec(repNo.value.trim());
+      if (!m) return;
+      repNo.value = m[1].trim();
+      repYear.value = fullYear(m[2]);
+    });
+    repYear.addEventListener("change", function () {
+      if (/^\d{1,2}$/.test(repYear.value.trim())) repYear.value = fullYear(repYear.value);
+    });
+  }
+
   // ---- 60 Town/village code: the coding manual's towns for the chosen region ---------
   var townCode = $("town_code");
   var townCodes = JSON.parse((document.getElementById("town-codes") || {}).textContent || "{}");

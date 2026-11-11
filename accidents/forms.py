@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.forms import inlineformset_factory
 
 from . import codebook as cb
+from .importer import _full_year, _split_ref
 from .models import (Accident, PassengerCasualty, PedestrianCasualty, PoliceStation, Region,
                      Vehicle)
 
@@ -147,13 +148,26 @@ class AccidentForm(forms.ModelForm):
         self.fields["bridge_river_name"].label = "15 Bridge - name of the river"
         self.fields["collision_code"].help_text = ("From the coding manual. The first digit is the kind "
                                                    "of collision (1 pedestrian, 4 head on, 5 rear end...).")
+        # 1 Report number: old reports are written with the year attached (237/15).
+        self.fields["report_number"].help_text = ("You can type it with the year, e.g. 237/15. "
+                                                  "The year box is then filled in for you.")
+        self.fields["report_number"].widget.attrs["placeholder"] = "e.g. 237 or 237/15"
+        self.fields["report_year"].help_text = "Two digits are enough: 15 becomes 2015."
+        # 2 Region: listed with its number from the coding manual (1 = Ashanti), in
+        # number order, so the number can be typed on the keyboard to choose it.
+        numbers = {name: number for name, (number, _) in cb.TOWN_CODES.items()}
+        regions = sorted(Region.objects.all(), key=lambda r: (numbers.get(r.name, 99), r.name))
+        self.fields["region"].choices = [("", BLANK)] + [
+            (r.pk, f"{numbers[r.name]} - {r.name}" if r.name in numbers else r.name) for r in regions]
+        self.fields["region"].help_text = "Choose the name, or type the region number (1 = Ashanti)."
         # 60 Town/village code: the manual's towns for the region chosen in 2.
         # The page swaps the list when the region changes (app.js, "town-codes").
         saved = self.instance.town_code or ""
         self.fields["town_code"] = forms.ChoiceField(
             label=Accident._meta.get_field("town_code").verbose_name, required=False,
             choices=_code_list(cb.town_code_choices(self._region_name()), saved),
-            help_text="Towns from the coding manual for the region chosen in 2.",
+            help_text="Towns from the coding manual for the region chosen in 2. "
+                      "You can type the code, e.g. 0101.",
             widget=forms.Select(attrs={"class": "inp"}))
 
     def _region_name(self):
@@ -184,8 +198,18 @@ class AccidentForm(forms.ModelForm):
     def sections_after_people(self):
         return self._section_list(self.SECTIONS[self.SECTIONS_BEFORE_PEOPLE:])
 
+    def clean_report_year(self):
+        year = self.cleaned_data["report_year"]
+        return _full_year(year) if year is not None else year      # 15 -> 2015
+
     def clean(self):
         data = super().clean()
+        # "237/15" typed in the report number: number 237, year 2015.
+        number, year = _split_ref(data.get("report_number") or "")
+        if year:
+            data["report_number"], data["report_year"] = number, year
+            if "report_year" in self.errors:        # the year box was left empty
+                del self.errors["report_year"]
         acc_date = data.get("accident_date")
         if acc_date and acc_date > date.today():
             self.add_error("accident_date", "The accident date is in the future.")
