@@ -1,11 +1,11 @@
 {% extends "admin/base.html" %}
-{% load static %}
+{% load static brri_admin %}
 
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | CSIR-BRRI admin{% endblock %}
 
 {% block extrastyle %}{{ block.super }}
 <link rel="icon" href="{% static 'accidents/favicon.png' %}" type="image/png">
-<link rel="stylesheet" href="{% static 'accidents/admin.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'accidents/admin.css' %}?v=3">
 <script src="{% static 'accidents/password-eye.js' %}?v=1" defer></script>{% endblock %}
 
 {% block branding %}
@@ -15,7 +15,7 @@
 </a>
 {% endblock %}
 
-{% block welcome-msg %}<span class="brri-who">Signed in as <strong>{% firstof user.get_short_name user.get_username %}</strong></span>{% endblock %}
+{% block welcome-msg %}<span class="brri-who"><span class="brri-avatar" aria-hidden="true">{{ user|initial }}</span><span><strong>{% firstof user.get_full_name user.get_username %}</strong><small>Administrator</small></span></span>{% endblock %}
 
 {% block userlinks %}
   <a class="brri-pill" href="{% url 'dashboard' %}">&larr; Back to the app</a>
@@ -23,3 +23,7 @@
   <form id="logout-form" method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Log out</button></form>
   {% include "admin/color_theme_toggle.html" %}
 {% endblock %}
+
+{# The "Home > Users > ..." trail sits above the page title, beside the side menu. #}
+{% block nav-breadcrumbs %}{% endblock %}
+{% block pretitle %}{% if not is_popup %}<nav class="brri-crumbs" aria-label="Breadcrumbs">{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Home</a>{% if title %} &rsaquo; {{ title }}{% endif %}</div>{% endblock %}</nav>{% endif %}{% endblock %}

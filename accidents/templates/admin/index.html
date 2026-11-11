@@ -3,37 +3,89 @@
 
 {% block coltype %}colM{% endblock %}
 {% block sidebar %}{% endblock %}
+{% block nav-sidebar %}{% include "admin/nav_sidebar.html" %}{% endblock %}
+{% block content_title %}{% endblock %}
+{% block breadcrumbs %}{% endblock %}
 
 {% block content %}
 {% brri_admin_counts as n %}
-<p class="brri-lead">This area is for administrators. Reports are entered, edited and approved in the main app;
-  here you manage who can log in and keep the lists the report form uses correct.</p>
-<div class="brri-tasks">
-  <a class="brri-task" href="{% url 'admin:auth_user_changelist' %}">
-    <span class="t">Analyst accounts</span>
-    <span class="n">{{ n.analysts }} analyst{{ n.analysts|pluralize }} &middot; {{ n.admins }} administrator{{ n.admins|pluralize }}</span>
-    <span class="d">Add a new analyst, reset a forgotten password, or switch off the account of someone who has left.</span>
-    <span class="go">Manage accounts &rarr;</span>
+{% brri_recent_activity as activity %}
+<div class="brri-hello">
+  <div>
+    <h1>Welcome, {% firstof user.get_short_name user.get_username %}</h1>
+    <p>Manage who can log in, and keep the lists the report form uses correct. Reports are entered, edited and approved in the main app.</p>
+  </div>
+  <a class="brri-btn" href="{% url 'admin:auth_user_add' %}">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add an account</a>
+</div>
+
+<div class="brri-stats">
+  <a class="brri-stat blue" href="{% url 'admin:accidents_accident_changelist' %}">
+    <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></span>
+    <span class="k">Reports</span>
+    <span class="v">{{ n.reports }}</span>
+    <span class="s">{{ n.approved }} approved{% if n.samples %} &middot; {{ n.samples }} sample{% endif %}</span>
   </a>
-  <a class="brri-task" href="{% url 'admin:accidents_policestation_changelist' %}?verified__exact=0">
-    <span class="t">Police stations to check</span>
-    <span class="n">{{ n.stations_to_check }} of {{ n.stations }} not yet verified{% if n.stations_from_analysts %} &middot; {{ n.stations_from_analysts }} typed in by analysts{% endif %}</span>
-    <span class="d">Correct the name or district, then tick the stations and choose &ldquo;Mark selected stations as verified&rdquo;.</span>
-    <span class="go">Check stations &rarr;</span>
+  <a class="brri-stat amber" href="{% url 'admin:accidents_accident_changelist' %}?status__exact=submitted">
+    <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+    <span class="k">Waiting for review</span>
+    <span class="v">{{ n.waiting }}</span>
+    <span class="s">{{ n.query }} need{{ n.query|pluralize:"s," }} a query</span>
   </a>
-  <a class="brri-task" href="{% url 'admin:accidents_accident_changelist' %}">
-    <span class="t">Reports</span>
-    <span class="n">{{ n.reports }} report{{ n.reports|pluralize }}{% if n.samples %} &middot; {{ n.samples }} sample (demo){% endif %}</span>
-    <span class="d">Look up any report, or delete one that was entered by mistake or twice. Editing is done in the main app.</span>
-    <span class="go">Find a report &rarr;</span>
+  <a class="brri-stat green" href="{% url 'admin:auth_user_changelist' %}">
+    <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.870M16 3.130a4 4 0 0 1 0 7.750"/></svg></span>
+    <span class="k">Accounts</span>
+    <span class="v">{{ n.analysts|add:n.admins }}</span>
+    <span class="s">{{ n.analysts }} analyst{{ n.analysts|pluralize }} &middot; {{ n.admins }} administrator{{ n.admins|pluralize }}</span>
   </a>
-  <a class="brri-task" href="{% url 'admin:accidents_auditlog_changelist' %}">
-    <span class="t">Change history</span>
-    <span class="n">Read-only record</span>
-    <span class="d">See who created, edited or approved each report, and when. Entries cannot be changed.</span>
-    <span class="go">View history &rarr;</span>
+  <a class="brri-stat rose" href="{% url 'admin:accidents_policestation_changelist' %}?verified__exact=0">
+    <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.500-3.400 8-8 9-4.600-1-8-4.500-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+    <span class="k">Stations to check</span>
+    <span class="v">{{ n.stations_to_check }}</span>
+    <span class="s">of {{ n.stations }} police stations</span>
   </a>
 </div>
-<h2 class="brri-h">All lists</h2>
-{{ block.super }}
+
+<div class="brri-cols">
+  <section class="brri-panel">
+    <header><h2>What you can do here</h2></header>
+    <a class="brri-row" href="{% url 'admin:auth_user_changelist' %}">
+      <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
+      <span class="tx"><strong>Manage accounts</strong>
+        <small>Add a new analyst, reset a forgotten password, change a username, or switch off the account of someone who has left.</small></span>
+      <span class="go" aria-hidden="true">&rsaquo;</span>
+    </a>
+    <a class="brri-row" href="{% url 'admin:accidents_policestation_changelist' %}?verified__exact=0">
+      <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.500-3.400 8-8 9-4.600-1-8-4.500-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+      <span class="tx"><strong>Check police stations</strong>
+        <small>Correct the name or district, then tick the stations and choose &ldquo;Mark selected stations as verified&rdquo;.{% if n.stations_from_analysts %} {{ n.stations_from_analysts }} were typed in by analysts.{% endif %}</small></span>
+      <span class="go" aria-hidden="true">&rsaquo;</span>
+    </a>
+    <a class="brri-row" href="{% url 'admin:accidents_accident_changelist' %}">
+      <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.300-4.300"/></svg></span>
+      <span class="tx"><strong>Find or delete a report</strong>
+        <small>Look up any report, or delete one that was entered by mistake or twice. Editing is done in the main app.</small></span>
+      <span class="go" aria-hidden="true">&rsaquo;</span>
+    </a>
+    <a class="brri-row" href="{% url 'accident_import' %}">
+      <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg></span>
+      <span class="tx"><strong>Import reports from Excel</strong>
+        <small>Add many reports at once from an Excel file. You see a summary before anything is saved.</small></span>
+      <span class="go" aria-hidden="true">&rsaquo;</span>
+    </a>
+  </section>
+
+  <section class="brri-panel">
+    <header><h2>Recent activity</h2><a href="{% url 'admin:accidents_auditlog_changelist' %}">View all</a></header>
+    {% for e in activity %}
+    <div class="brri-act">
+      <span class="brri-avatar" aria-hidden="true">{% if e.user %}{{ e.user|initial }}{% else %}?{% endif %}</span>
+      <span class="tx"><strong>Report <a href="{% url 'accident_detail' e.accident_id %}">{{ e.accident }}</a></strong> <em>{{ e.action }}</em>
+        <small>{% if e.user %}{% firstof e.user.get_full_name e.user.get_username %}{% else %}Unknown{% endif %} &middot; {{ e.at|timesince }} ago</small></span>
+    </div>
+    {% empty %}
+    <p class="brri-none">Nothing yet. Each report that is created, edited or approved is listed here.</p>
+    {% endfor %}
+  </section>
+</div>
 {% endblock %}

@@ -536,7 +536,7 @@ class AdminAreaTests(TestCase):
         self.client.login(username="boss", password="pw-12345-test")
 
     def test_only_administrators_get_in_and_one_login_page(self):
-        self.assertContains(self.client.get("/admin/"), "Analyst accounts")
+        self.assertContains(self.client.get("/admin/"), "Manage accounts")
         self.client.logout()
         self.assertRedirects(self.client.get("/admin/login/"), "/login/?next=/admin/")
         self.client.login(username="kofi", password="pw-12345-test")
