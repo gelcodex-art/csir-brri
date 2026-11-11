@@ -16,6 +16,12 @@ STEPS = [
     ("Loading police stations", ["load_police_stations"]),
     ("Adding the extra Kumasi stations",
      ["import_locations", str(HERE / "data" / "kumasi_stations_unverified.csv"), "--stations", "--unverified"]),
+    ("Loading the police station codes", ["load_station_codes"]),
+]
+# "update": for a site that is already set up - only what a new version needs.
+UPDATE_STEPS = [
+    ("Updating the tables", ["migrate", "--noinput"]),
+    ("Loading the police station codes", ["load_station_codes"]),
 ]
 
 
@@ -53,10 +59,14 @@ def main():
         return f"Could not connect: {text}{hint}"
     print("Connected.\n")
 
-    for label, args in STEPS:
+    update = "update" in sys.argv[1:]
+    for label, args in (UPDATE_STEPS if update else STEPS):
         print(f"--- {label} ...")
         if subprocess.run([sys.executable, str(HERE / "manage.py"), *args], cwd=HERE).returncode:
             return f"'{label}' failed. Copy the lines above and send them to get help."
+    if update:
+        print("\nALL DONE. The online database is up to date.")
+        return None
     print("\nALL DONE. Now open https://csir-brri.vercel.app/setup/ and create your administrator.")
     print("If that page sends you to the login page, the DATABASE_URL saved in Vercel is not")
     print("the same line you pasted here: fix it in Vercel, then Redeploy.")

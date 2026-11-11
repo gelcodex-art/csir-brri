@@ -17,7 +17,7 @@ from django.db.models import Count
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Accident, AuditLog, District, PoliceStation, Region, Town
+from .models import Accident, AuditLog, District, PoliceStation, Region, StationCode, Town
 
 # Groups and per-table permissions are not used: an account is either an
 # analyst or an administrator.
@@ -119,25 +119,35 @@ class StationSourceFilter(admin.SimpleListFilter):
     parameter_name = "src"
 
     def lookups(self, request, model_admin):
-        return [("osm", "OpenStreetMap"), ("user", "Added by analysts"), ("csv", "CSV import"),
+        return [("osm", "OpenStreetMap"), ("codes", "BRRI code list"),
+                ("user", "Added by analysts"), ("csv", "CSV import"),
                 ("manual", "Entered in admin")]
 
     def queryset(self, request, qs):
         v = self.value()
         if v == "osm":
             return qs.filter(source__startswith="osm:")
-        if v in ("user", "csv"):
+        if v in ("user", "csv", "codes"):
             return qs.filter(source=v)
         if v == "manual":
             return qs.filter(source="")
         return qs
 
 
+class StationCodeInline(admin.TabularInline):
+    model = StationCode
+    extra = 1
+    verbose_name = "code"
+    verbose_name_plural = "Station codes (region number + station number, e.g. 04086)"
+
+
 @admin.register(PoliceStation)
 class PoliceStationAdmin(admin.ModelAdmin):
-    list_display = ["name", "kind", "district", "region", "verified", "source_label", "reports"]
+    list_display = ["name", "code_list", "kind", "district", "region", "verified", "source_label",
+                    "reports"]
     list_filter = ["verified", StationSourceFilter, "kind", "region"]
-    search_fields = ["name", "district__name"]
+    search_fields = ["name", "district__name", "codes__code"]
+    inlines = [StationCodeInline]
     autocomplete_fields = ["district"]
     readonly_fields = ["source", "added_by"]
     actions = ["mark_verified", "mark_unverified"]
@@ -145,7 +155,11 @@ class PoliceStationAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("district", "region", "added_by").annotate(
-            n_reports=Count("accident"))
+            n_reports=Count("accident", distinct=True)).prefetch_related("codes")
+
+    @admin.display(description="Code")
+    def code_list(self, obj):
+        return ", ".join(c.code for c in obj.codes.all()) or "-"
 
     @admin.display(description="Reports", ordering="n_reports")
     def reports(self, obj):
@@ -155,7 +169,8 @@ class PoliceStationAdmin(admin.ModelAdmin):
     def source_label(self, obj):
         if obj.source.startswith("osm:"):
             return "OpenStreetMap"
-        return {"user": f"Analyst ({obj.added_by or '?'})", "csv": "CSV import"}.get(obj.source, "Admin")
+        return {"user": f"Analyst ({obj.added_by or '?'})", "csv": "CSV import",
+                "codes": "BRRI code list", "import": "Excel import"}.get(obj.source, "Admin")
 
     @admin.action(description="Mark selected stations as verified")
     def mark_verified(self, request, qs):

@@ -27,10 +27,11 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from . import codebook as cb
+from . import station_codes
 from .checks import check_report
 from .forms import (AccidentForm, FirstAdminForm, PassengerFormSet, PedestrianFormSet, ReviewForm,
                     VehicleFormSet)
-from .models import (Accident, AuditLog, District, PassengerCasualty, PedestrianCasualty,
+from .models import (Accident, AuditLog, District, PassengerCasualty, PedestrianCasualty, StationCode,
                      PoliceStation, Region, Town, Vehicle)
 
 
@@ -303,7 +304,7 @@ def accident_review(request, pk):
 # ---------------------------------------------------------------------------
 # Create / edit
 # ---------------------------------------------------------------------------
-LOCATIONS_CACHE_KEY = "locations-json-v1"
+LOCATIONS_CACHE_KEY = "locations-json-v2"
 
 
 def locations_json():
@@ -311,6 +312,7 @@ def locations_json():
     hit = cache.get(LOCATIONS_CACHE_KEY)
     if hit:
         return hit
+    codes = station_codes.codes_by_station()
     payload = {
         "regions": list(Region.objects.values_list("id", "name")),
         "districts": list(District.objects.values_list("id", "region_id", "name", "assembly_type")),
@@ -319,9 +321,9 @@ def locations_json():
                    float(ln) if ln is not None else None]
                   for i, d, n, k, c, la, ln in Town.objects.order_by("name").values_list(
                       "id", "district_id", "name", "kind", "code", "latitude", "longitude")],
-        # [id, region_id, district_id, name, kind, lat, lng]
+        # [id, region_id, district_id, name, kind, lat, lng, codes ("02041 12001")]
         "stations": [[i, r, d, n, k, float(la) if la is not None else None,
-                      float(ln) if ln is not None else None]
+                      float(ln) if ln is not None else None, " ".join(codes.get(i, []))]
                      for i, r, d, n, k, la, ln in PoliceStation.objects.order_by("name").values_list(
                          "id", "region_id", "district_id", "name", "kind", "latitude", "longitude")],
     }
@@ -335,6 +337,7 @@ def locations_json():
 @receiver([post_save, post_delete], sender=District)
 @receiver([post_save, post_delete], sender=Town)
 @receiver([post_save, post_delete], sender=PoliceStation)
+@receiver([post_save, post_delete], sender=StationCode)
 def _locations_changed(**kwargs):
     cache.delete(LOCATIONS_CACHE_KEY)
     cache.delete_many([GEO_CACHE_KEY + n for n in GEO_FILES])

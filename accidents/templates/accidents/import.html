@@ -22,7 +22,7 @@
     <li><strong>{{ plan.n_duplicate }}</strong> already in the system (same report number, year and region) will be skipped.</li>
     <li><strong>{{ plan.n_error }}</strong> with problems will be skipped. Correct them in the Excel file and import it again.</li>
     {% if plan.drivers %}<li><strong>{{ plan.drivers }}</strong> driver row{{ plan.drivers|pluralize }} on the casualty sheet are not added again: each driver is already on the vehicle row.</li>{% endif %}
-    {% if plan.station_codes %}<li><strong>{{ plan.station_codes }}</strong> report{{ plan.station_codes|pluralize }} give the police station as a code. The code is kept in the report's analyst notes until the station code list is added to the system.</li>{% endif %}
+    {% if plan.station_codes %}<li><strong>{{ plan.station_codes }}</strong> report{{ plan.station_codes|pluralize }} give a police station code that is not in the code list. The code is kept in the report's analyst notes and the station is left empty.</li>{% endif %}
     {% if plan.orphans %}<li><strong>{{ plan.orphans }}</strong> vehicle or casualty row{{ plan.orphans|pluralize }} do not match any report in the file and will be skipped.</li>{% endif %}
   </ul>
   <div class="actions">
@@ -78,7 +78,7 @@
     <li>One sheet must hold the reports (with at least <strong>Report number</strong> and <strong>Date of accident</strong>). Sheets for vehicles, passengers and pedestrians are optional.</li>
     <li>Files from the accident database are also read (sheets with headings such as ACCIDENT KEY, REPORT NUMBER, DATE).</li>
     <li>A file that is not accident data is refused, and nothing is saved.</li>
-    <li>Codes are read as they are written: a report number with the year attached (<strong>237/15</strong> is report 237 of 2015), the region as its number (<strong>1</strong> is Ashanti), and the town as its town/village code (<strong>0101</strong> is Ashanti, Kumasi).</li>
+    <li>Codes are read as they are written: a report number with the year attached (<strong>237/15</strong> is report 237 of 2015), the region as its number (<strong>1</strong> is Ashanti), the town as its town/village code (<strong>0101</strong> is Ashanti, Kumasi), and the police station as its code (<strong>04086</strong> is Nsawam).</li>
     <li>Rows on the other sheets are linked to a report by their <strong>accident</strong> column, written as number/year (for example 790/2021).</li>
     <li>You see a summary first. Nothing is saved until you click Import.</li>
     <li>Reports already in the system are skipped, so importing the same file twice is safe.</li>

@@ -97,6 +97,22 @@ class PoliceStation(models.Model):
         return self.name
 
 
+class StationCode(models.Model):
+    """The code BRRI writes for a police station: region number + station number
+    ("04086" = Eastern, Nsawam). A station can have two: its code in the old
+    region and its code in the new one. See station_codes.py."""
+    code = models.CharField(max_length=5, unique=True,
+                            help_text="Five digits: region number, then station number (04086).")
+    station = models.ForeignKey(PoliceStation, on_delete=models.CASCADE, related_name="codes")
+
+    class Meta:
+        ordering = ["code"]
+        verbose_name = "station code"
+
+    def __str__(self):
+        return self.code
+
+
 # ---------------------------------------------------------------------------
 # Accident report (fields 1-28 and 59-69)
 # ---------------------------------------------------------------------------

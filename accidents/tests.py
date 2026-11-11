@@ -475,7 +475,7 @@ class AccidentFlowTests(TestCase):
         PoliceStation.objects.create(region=self.region, district=self.district, name="X Police Station",
                                      kind="mttd", latitude=6.7, longitude=-1.6)
         s = self.client.get("/api/locations.json").json()["stations"][0]
-        self.assertEqual(s, [s[0], self.region.pk, self.district.pk, "X Police Station", "mttd", 6.7, -1.6])
+        self.assertEqual(s, [s[0], self.region.pk, self.district.pk, "X Police Station", "mttd", 6.7, -1.6, ""])
         self.assertEqual(len(self.client.get("/").context["stations"]), 1)
 
     def test_import_stations_csv(self):
@@ -866,6 +866,71 @@ class ExcelImportTests(TestCase):
 
 
 @override_settings(CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}})
+class StationCodeTests(TestCase):
+    """Police station codes (04086 = Eastern, Nsawam): loader, import, form, page data."""
+
+    @classmethod
+    def setUpTestData(cls):
+        from django.core.management import call_command
+        from .models import PoliceStation
+        cls.boss = User.objects.create_user("boss", password="pw-12345-test", is_staff=True,
+                                            is_superuser=True)
+        cls.eastern = Region.objects.create(name="Eastern")
+        cls.bono_east = Region.objects.create(name="Bono East")
+        Region.objects.create(name="Bono")
+        cls.suhum = PoliceStation.objects.create(region=cls.eastern, name="Suhum Police Station",
+                                                 source="osm:node/1")
+        call_command("load_station_codes", verbosity=0)
+        call_command("load_station_codes", verbosity=0)          # twice changes nothing
+
+    def station(self, code):
+        from .models import StationCode
+        return StationCode.objects.get(code=code).station
+
+    def test_loader_matches_adds_and_joins_old_and_new_codes(self):
+        self.assertEqual(self.station("04091"), self.suhum)                 # found by name
+        nsawam = self.station("04086")
+        self.assertEqual((nsawam.name, nsawam.region, nsawam.verified),
+                         ("Nsawam Police Station", self.eastern, True))    # added
+        self.assertEqual(self.station("02041"), self.station("12001"))      # Techiman, old and new
+        self.assertEqual(self.station("12001").region, self.bono_east)
+
+    def test_import_and_form_use_the_code(self):
+        import io
+        from datetime import datetime
+        from openpyxl import Workbook
+        from .forms import AccidentForm
+        wb = Workbook()
+        wb.active.append(["Report number", "Region", "Police station", "Date of accident (day/month/year)"])
+        wb.active.append(["5/22", 4, 4086, datetime(2022, 3, 4)])
+        wb.active.append(["6/22", 4, "04999", datetime(2022, 3, 5)])       # not on the list
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        buf.name = "codes.xlsx"
+        self.client.login(username="boss", password="pw-12345-test")
+        r = self.client.post("/import/", {"file": buf})
+        self.assertEqual((r.context["plan"]["n_new"], r.context["plan"]["station_codes"]), (2, 1))
+        self.client.post("/import/", {"token": r.context["token"]})
+        self.assertEqual(Accident.objects.get(report_number="5").police_station, self.station("04086"))
+        other = Accident.objects.get(report_number="6")
+        self.assertIsNone(other.police_station)
+        self.assertIn("04999", other.analyst_notes)
+
+        data = {"report_number": "7", "report_year": "2022", "region": self.eastern.pk,
+                "accident_date": "2022-06-07", "num_vehicles": 1, "killed": 0, "injured": 0}
+        f = AccidentForm({**data, "station_code": "4086"})
+        f.is_valid()
+        self.assertEqual(f.cleaned_data["police_station"], self.station("04086"))
+        f = AccidentForm({**data, "station_code": "04999"})
+        f.is_valid()
+        self.assertIn("station_code", f.errors)
+
+        row = [s for s in self.client.get("/api/locations.json").json()["stations"]
+               if s[0] == self.station("12001").pk][0]
+        self.assertEqual(row[7], "02041 12001")
+
+
 class GeoFileTests(TestCase):
     def test_boundary_ids_follow_this_database(self):
         from django.core.cache import cache

@@ -12,7 +12,7 @@
   var $ = function (name) { return form.querySelector('[name="' + name + '"]'); };
 
   // ---- 2-3 Region -> police station dropdown, from /api/locations.json ------------
-  // Stations: [id, region_id, district_id, name, kind, lat, lng]
+  // Stations: [id, region_id, district_id, name, kind, lat, lng, codes ("02041 12001")]
   var region = $("region"), station = $("police_station"), newStation = $("new_police_station");
   var stations = [];
 
@@ -28,7 +28,7 @@
     inRegion.forEach(function (s) {
       var o = document.createElement("option");
       o.value = s[0];
-      o.textContent = s[3];
+      o.textContent = s[3] + (s[7] ? "  (" + s[7].split(" ").join(", ") + ")" : "");
       station.appendChild(o);
     });
     // Last choice: opens the box for typing a station that is not listed.
@@ -62,7 +62,52 @@
     var opt = station.options[station.selectedIndex];
     if (!(opt && opt.dataset.other)) newStation.value = "";
     showNewStation(true);
+    showStationCode();
   });
+
+  // ---- 3 Police station code (04086): chooses the region and the station ------------
+  var stationCode = $("station_code");
+  var codeNote = null;
+  function sayCode(text, bad) {
+    if (!stationCode) return;
+    if (!codeNote) {
+      codeNote = document.createElement("p");
+      stationCode.closest(".field").appendChild(codeNote);
+    }
+    codeNote.className = bad ? "err" : "muted";
+    codeNote.textContent = text;
+    codeNote.hidden = !text;
+  }
+  function stationByCode(code) {
+    return stations.filter(function (s) { return s[7] && s[7].split(" ").indexOf(code) >= 0; })[0];
+  }
+  /** The code box follows the station chosen from the list. */
+  function showStationCode() {
+    if (!stationCode) return;
+    var s = stations.filter(function (x) { return String(x[0]) === station.value; })[0];
+    var codes = s && s[7] ? s[7].split(" ") : [];
+    if (codes.indexOf(stationCode.value) < 0) stationCode.value = codes[0] || "";
+    sayCode("");
+  }
+  function useStationCode() {
+    var typed = stationCode.value.trim();
+    if (!typed) { sayCode(""); return; }
+    if (!/^\d{3,5}$/.test(typed)) { sayCode("A station code is five digits, for example 04086.", true); return; }
+    var code = ("00000" + typed).slice(-5);
+    var s = stationByCode(code);
+    stationCode.value = code;
+    if (!s) { sayCode("Code " + code + " is not in the code list. Choose the station from the list below.", true); return; }
+    if (region.value !== String(s[1])) {
+      region.value = String(s[1]);
+      region.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    station.value = String(s[0]);
+    newStation.value = "";
+    station.dispatchEvent(new Event("change", { bubbles: true }));
+    stationCode.value = code;
+    sayCode(s[3]);
+  }
+  if (stationCode) stationCode.addEventListener("change", useStationCode);
   showNewStation(false);
 
   var initialStation = station.value;
@@ -74,6 +119,7 @@
     stations = payload.stations;
     station.disabled = false;
     refreshStations(initialStation);
+    if (stationCode && stationCode.value && !station.value) useStationCode();
   }).catch(function (e) {
     console.error(e);
     station.disabled = false;

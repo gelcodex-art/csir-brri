@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.forms import inlineformset_factory
 
 from . import codebook as cb
+from . import station_codes as sc
 from .importer import _full_year, _split_ref
 from .models import (Accident, PassengerCasualty, PedestrianCasualty, PoliceStation, Region,
                      Vehicle)
@@ -81,6 +82,14 @@ class AccidentForm(forms.ModelForm):
         widget=forms.TextInput(attrs={"placeholder": "e.g. Dzodze Police Station"}),
         help_text="It is added to the station list (marked unverified) for this region.")
 
+    # 3 The station as its code (04086): the page then chooses the region and station.
+    station_code = forms.CharField(
+        label="3 Police station code", max_length=5, required=False,
+        widget=forms.TextInput(attrs={"placeholder": "e.g. 04086", "inputmode": "numeric",
+                                      "autocomplete": "off"}),
+        help_text="If the report gives the station as a code, type it here: the region and "
+                  "the station are chosen for you. Otherwise choose the station below.")
+
     # 5-7 Day/Month/Year are one date picker. 8 Day of week is worked out from it.
     day_of_week_display = forms.CharField(
         label="8 Day of week", required=False, disabled=True,
@@ -91,7 +100,7 @@ class AccidentForm(forms.ModelForm):
     LOCATION_SECTION = "Site location"
     SECTIONS = [
         ("Report (1)", ["report_number", "report_year"]),
-        ("Where (2-3)", ["region", "road_name", "police_station",
+        ("Where (2-3)", ["region", "road_name", "station_code", "police_station",
                          "new_police_station"]),
         # Drawn by _location.html: the typed description plus the map pin.
         (LOCATION_SECTION, ["site_location_text", "latitude", "longitude"]),
@@ -111,7 +120,8 @@ class AccidentForm(forms.ModelForm):
     ]
     SECTIONS_BEFORE_PEOPLE = 7
     # Form-only fields -> what the record detail page shows instead.
-    DETAIL_FIELDS = {"day_of_week_display": "day_of_week", "new_police_station": None}
+    DETAIL_FIELDS = {"day_of_week_display": "day_of_week", "new_police_station": None,
+                     "station_code": None}
 
     class Meta:
         model = Accident
@@ -148,7 +158,11 @@ class AccidentForm(forms.ModelForm):
         self.fields["bridge_river_name"].label = "15 Bridge - name of the river"
         self.fields["collision_code"].help_text = ("From the coding manual. The first digit is the kind "
                                                    "of collision (1 pedestrian, 4 head on, 5 rear end...).")
-        # 1 Report number: old reports are written with the year attached (237/15).
+        if self.instance.police_station_id and not self.is_bound:
+            mine = sc.codes_by_station().get(self.instance.police_station_id)
+            if mine:
+                self.initial["station_code"] = mine[0]
+        # 1 Report number: reports are often written with the year attached (237/15).
         self.fields["report_number"].help_text = ("You can type it with the year, e.g. 237/15. "
                                                   "The year box is then filled in for you.")
         self.fields["report_number"].widget.attrs["placeholder"] = "e.g. 237 or 237/15"
@@ -216,6 +230,16 @@ class AccidentForm(forms.ModelForm):
         elif acc_date and acc_date.year < 1990:
             self.add_error("accident_date", "The accident date is before 1990 - check.")
         region = data.get("region")
+        # 3 A station code is used when no station was chosen from the list.
+        typed = (data.get("station_code") or "").strip()
+        if typed and not data.get("police_station"):
+            found = sc.stations_by_code().get(sc.clean_code(typed))
+            if found is None:
+                self.add_error("station_code", f"Station code {typed} is not in the code list. "
+                                               "Choose the station from the list below.")
+            else:
+                data["police_station"] = found
+                data["new_police_station"] = ""
         station = data.get("police_station")
         new_station = re.sub(r"\s+", " ", data.get("new_police_station") or "").strip()
         data["new_police_station"] = new_station

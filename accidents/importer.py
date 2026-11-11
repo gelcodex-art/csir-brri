@@ -29,6 +29,7 @@ from django.core.exceptions import ValidationError
 from django.db import models, transaction
 
 from . import codebook as cb
+from . import station_codes as sc
 from .models import (Accident, AuditLog, District, PassengerCasualty, PedestrianCasualty,
                      PoliceStation, Region, Town, Vehicle)
 
@@ -326,6 +327,7 @@ class _Places:
         self.regions = {r.name.lower(): r for r in Region.objects.all()}
         self.districts = {(d.region_id, d.name.lower()): d for d in District.objects.all()}
         self.stations = {(s.region_id, s.name.lower()): s for s in PoliceStation.objects.all()}
+        self.station_codes = sc.stations_by_code()         # {"04086": station}
         self._towns = {}
 
     SIZE = ["city", "town", "suburb", "village", "hamlet", "locality"]
@@ -417,11 +419,15 @@ def read_workbook(data, user):
                     acc.district = acc.town.district
             name = _text(values.get("police_station") or "")
             if name.isdigit():
-                # A station code. The code list is not in the system yet, so the code is
-                # kept in the notes, to be turned into the station later.
-                station_codes += 1
-                acc.analyst_notes = (acc.analyst_notes + "\n" if acc.analyst_notes else "") + \
-                    f"Police station code: {name}"
+                # A station code (04086). One that is not on the code list is kept in
+                # the notes, so that nothing written on the report is lost.
+                acc.police_station = places.station_codes.get(sc.clean_code(name))
+                if acc.police_station is None:
+                    station_codes += 1
+                    acc.analyst_notes = (acc.analyst_notes + "\n" if acc.analyst_notes else "") + \
+                        f"Police station code: {name}"
+                    notes.append(f"3 Police station code {name} is not in the code list; the "
+                                 "code is kept in the analyst notes, the station is left empty.")
             elif name:
                 acc.police_station = places.stations.get((region.pk, name.lower()))
                 if acc.police_station is None:
