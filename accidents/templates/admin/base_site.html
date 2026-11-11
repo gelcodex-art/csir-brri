@@ -5,7 +5,8 @@
 
 {% block extrastyle %}{{ block.super }}
 <link rel="icon" href="{% static 'accidents/favicon.png' %}" type="image/png">
-<link rel="stylesheet" href="{% static 'accidents/admin.css' %}?v=2">{% endblock %}
+<link rel="stylesheet" href="{% static 'accidents/admin.css' %}?v=2">
+<script src="{% static 'accidents/password-eye.js' %}?v=1" defer></script>{% endblock %}
 
 {% block branding %}
 <a class="brri-brand" href="{% url 'admin:index' %}">
