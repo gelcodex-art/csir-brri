@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#c0004b">
   <title>{% block title %}CSIR-BRRI Road Accident Data{% endblock %}</title>
   <link rel="icon" href="{% static 'accidents/favicon.png' %}" type="image/png">
-  <link rel="stylesheet" href="{% static 'accidents/app.css' %}?v=20">
+  <link rel="stylesheet" href="{% static 'accidents/app.css' %}?v=21">
   {% if tomtom_key %}<script>window.BRRI_TOMTOM_KEY = "{{ tomtom_key|escapejs }}";</script>{% endif %}
   {% block head %}{% endblock %}
 </head>
@@ -34,6 +34,10 @@
       <a href="{% url 'accident_list' %}" class="tab{% if u == 'accident_list' or u == 'accident_detail' or u == 'accident_edit' or u == 'accident_review' %} active{% endif %}"{% if u == 'accident_list' %} aria-current="page"{% endif %}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>
         <span>Records</span>
+      </a>
+      <a href="{% url 'analysis' %}" class="tab{% if u == 'analysis' %} active{% endif %}"{% if u == 'analysis' %} aria-current="page"{% endif %}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        <span>Analysis</span>
       </a>
       {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="tab">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>

@@ -232,6 +232,63 @@ class AccidentFlowTests(TestCase):
                      "Driver error", "Region summary"):
             self.assertNotIn(gone, html)
 
+    # ---- Analysis page -----------------------------------------------------------------
+    def analysis_rows(self, query):
+        """{row label: [cell text, ...]} of the analysis table for a query string."""
+        r = self.client.get("/analysis/?" + query)
+        self.assertEqual(r.status_code, 200)
+        return {row["label"]: [c["t"] for c in row["cells"]] for row in r.context["result"]["rows"]}
+
+    def test_analysis_counts_by_one_field(self):
+        self.client.post("/accidents/new/", self.payload())
+        self.client.post("/accidents/new/", self.payload(report_number="124"))
+        r = self.client.get("/analysis/")                       # default: accidents by region
+        self.assertContains(r, "Accidents by region")
+        self.assertEqual(self.analysis_rows(""), {"Ashanti": ["2", "100.0%"]})
+        self.assertEqual(self.analysis_rows("count=killed&rows=weather"), {"Rain": ["2", "100.0%"]})
+        self.assertEqual(self.analysis_rows("count=vehicles&rows=vehicle_type"),
+                         {"Car": ["2", "50.0%"], "Minibus": ["2", "50.0%"]})
+        self.assertEqual(self.analysis_rows("rows=year"), {"2026": ["2", "100.0%"]})
+        self.assertEqual(self.analysis_rows("rows=hour"), {"18:00-18:59": ["2", "100.0%"]})
+        # The page filters apply.
+        self.assertEqual(self.analysis_rows("date_to=2026-01-01"), {})
+        # A vehicle field cannot group accidents: the page falls back to region.
+        self.assertIn("Ashanti", self.analysis_rows("count=accidents&rows=vehicle_type"))
+
+    def test_analysis_compares_two_fields(self):
+        self.client.post("/accidents/new/", self.payload())
+        self.client.post("/accidents/new/", self.payload(report_number="124"))
+        # Each report: driver of vehicle 1 hospitalised, one passenger killed.
+        rows = self.analysis_rows("count=casualties&rows=road_user&compare=injury")
+        self.assertEqual(rows, {"Drivers and riders": ["0", "2", "2"], "Passengers": ["2", "0", "2"]})
+        r = self.client.get("/analysis/?count=casualties&rows=road_user&compare=injury")
+        self.assertEqual(r.context["result"]["columns"], ["Fatal", "Hospitalised", "Total"])
+        self.assertEqual([c["t"] for c in r.context["result"]["total"]], ["2", "2", "4"])
+        rows = self.analysis_rows("count=casualties&rows=road_user&compare=injury&show=row")
+        self.assertEqual(rows["Passengers"], ["100.0%", "0.0%", "2"])
+        rows = self.analysis_rows("count=vehicles&rows=vehicle_type&compare=driver_error")
+        self.assertEqual(rows["Minibus"], ["2", "0", "2"])         # Too Fast, Not recorded, Total
+        self.assertEqual(rows["Car"], ["0", "2", "2"])
+
+    def test_analysis_compares_two_periods_and_downloads(self):
+        self.client.post("/accidents/new/", self.payload())                    # 2 Nov 2026
+        self.client.post("/accidents/new/", self.payload(report_number="124", accident_date="2026-10-05"))
+        self.client.post("/accidents/new/", self.payload(report_number="125", accident_date="2026-10-06"))
+        q = "compare=period&date_from=2026-10-01&date_to=2026-10-31&b_from=2026-11-01&b_to=2026-11-30"
+        self.assertEqual(self.analysis_rows(q), {"Ashanti": ["2", "1", "-1", "-50.0%"]})
+        r = self.client.get("/analysis/?compare=period&date_from=2026-10-01")   # dates missing
+        self.assertIsNone(r.context["result"])
+        self.assertContains(r, "enter all four dates")
+        lines = self.client.get(f"/analysis/?{q}&download=csv").content.decode("utf-8-sig").splitlines()
+        self.assertEqual(lines[1], "Region,1 Oct 2026 to 31 Oct 2026,1 Nov 2026 to 30 Nov 2026,Change,% change")
+        self.assertEqual(lines[2], "Ashanti,2,1,-1,-50.0")
+
+    def test_analysis_many_columns_are_folded(self):
+        from . import analysis
+        keys, folded = analysis._fold(list(range(20)), {k: k for k in range(20)}, 12)
+        self.assertEqual(keys, list(range(9, 20)) + [analysis.OTHERS])
+        self.assertEqual(folded, list(range(9)))
+
     def test_review(self):
         self.client.post("/accidents/new/", self.payload())
         a = Accident.objects.get()

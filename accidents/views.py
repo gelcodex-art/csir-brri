@@ -26,6 +26,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from . import analysis
 from . import codebook as cb
 from . import station_codes
 from .checks import check_report
@@ -94,9 +95,9 @@ def first_admin(request):
 # ---------------------------------------------------------------------------
 # Shared filtering (list, dashboard, export all use the same query string)
 # ---------------------------------------------------------------------------
-def filtered_accidents(request):
+def filtered_accidents(request, params=None):
     qs = Accident.objects.select_related("region", "district", "town", "police_station")
-    g = request.GET
+    g = request.GET if params is None else params
     if g.get("date_from"):
         qs = qs.filter(accident_date__gte=g["date_from"])
     if g.get("date_to"):
@@ -220,6 +221,47 @@ def dashboard(request):
            "map_points": map_points, "blackspots": blackspots, "town_spots": town_spots,
            **filter_context(request)}
     return render(request, "accidents/dashboard.html", ctx)
+
+
+# ---------------------------------------------------------------------------
+# Analysis: count by one field, compare by a second field or across two periods
+# ---------------------------------------------------------------------------
+@login_required
+def analysis_page(request):
+    ch = analysis.choices(request.GET)
+    result, problem = None, ""
+    if ch["compare"] == "period":
+        if not all([ch["a_from"], ch["a_to"], ch["b_from"], ch["b_to"]]):
+            problem = ("To compare two periods, enter all four dates: From and To in the "
+                       "filters for the first period, and the second period's dates below.")
+        elif ch["a_from"] > ch["a_to"] or ch["b_from"] > ch["b_to"]:
+            problem = "A period's From date must not be after its To date."
+        else:
+            second = request.GET.copy()
+            second["date_from"], second["date_to"] = ch["b_from"].isoformat(), ch["b_to"].isoformat()
+            result = analysis.build(ch, filtered_accidents(request),
+                                    filtered_accidents(request, second))
+    else:
+        result = analysis.build(ch, filtered_accidents(request))
+
+    if result and request.GET.get("download") == "csv":
+        resp = HttpResponse(content_type="text/csv")
+        resp["Content-Disposition"] = 'attachment; filename="analysis.csv"'
+        resp.write("﻿")  # Excel-friendly UTF-8
+        w = csv.writer(resp)
+        w.writerow([result["title"]])
+        w.writerow([result["row_label"]] + result["columns"])
+        for r in result["rows"]:
+            w.writerow([r["label"]] + [c["v"] for c in r["cells"]])
+        w.writerow([result.get("total_label", "Total")] + [c["v"] for c in result["total"]])
+        return resp
+
+    return render(request, "accidents/analysis.html", {
+        "ch": ch, "result": result, "problem": problem,
+        "counts": [(k, label) for k, (label, _) in analysis.COUNTS.items()],
+        "variables": analysis.variables_for(ch["count"]),
+        **filter_context(request),
+    })
 
 
 # ---------------------------------------------------------------------------
