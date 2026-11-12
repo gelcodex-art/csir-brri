@@ -1,6 +1,6 @@
 <form method="get" class="card filters" id="filters">
-  <div class="field"><label for="f-from">From</label><input id="f-from" class="inp" type="date" name="date_from" value="{{ f.date_from }}"></div>
-  <div class="field"><label for="f-to">To</label><input id="f-to" class="inp" type="date" name="date_to" value="{{ f.date_to }}"></div>
+  {% include "accidents/_datebox.html" with id="f-from" name="date_from" label="From" value=date_from_text %}
+  {% include "accidents/_datebox.html" with id="f-to" name="date_to" label="To" value=date_to_text %}
   <div class="field"><label for="f-region">Region</label>
     <select id="f-region" class="inp" name="region"><option value="">All regions</option>
       {% for r in regions %}<option value="{{ r.id }}" {% if f.region == r.id|stringformat:'s' %}selected{% endif %}>{{ r.name }}</option>{% endfor %}
@@ -64,4 +64,38 @@
     station.addEventListener("change", function () { setRegionFrom(station, allStations); refresh(); });
     refresh();
   })();
+</script>
+<script>
+  // Date boxes: typed as day/month/year (31/12/2025). The calendar button opens
+  // the browser's date picker and writes the chosen day back in that format.
+  document.addEventListener("DOMContentLoaded", function () {
+    function two(n) { return (n < 10 ? "0" : "") + n; }
+    function read(text) {            // -> [year, month, day] or null
+      var m = /^(\d{1,2})[\/.\- ]?(\d{1,2})[\/.\- ]?(\d{4}|\d{2})$/.exec(text.trim());
+      if (!m) return null;
+      var d = +m[1], mo = +m[2], y = +m[3] < 100 ? 2000 + +m[3] : +m[3];
+      var real = new Date(y, mo - 1, d);
+      return real.getFullYear() === y && real.getMonth() === mo - 1 && real.getDate() === d ? [y, mo, d] : null;
+    }
+    document.querySelectorAll(".datebox").forEach(function (box) {
+      var text = box.querySelector("input.inp"), native = box.querySelector(".cal-native");
+      function tidy() {
+        var v = read(text.value);
+        if (v) text.value = two(v[2]) + "/" + two(v[1]) + "/" + v[0];
+        text.setCustomValidity(v || !text.value.trim() ? "" : "Type the date as day/month/year, for example 31/12/2025.");
+      }
+      text.addEventListener("change", tidy);
+      text.addEventListener("input", function () { text.setCustomValidity(""); });
+      box.querySelector(".cal").addEventListener("click", function () {
+        var v = read(text.value);
+        native.value = v ? v[0] + "-" + two(v[1]) + "-" + two(v[2]) : "";
+        if (native.showPicker) native.showPicker(); else native.focus();
+      });
+      native.addEventListener("change", function () {
+        var p = native.value.split("-");
+        if (p.length === 3) { text.value = p[2] + "/" + p[1] + "/" + p[0]; tidy(); }
+      });
+      tidy();
+    });
+  });
 </script>

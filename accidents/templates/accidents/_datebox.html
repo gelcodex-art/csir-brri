@@ -1,0 +1,8 @@
+{# A date typed as day/month/year, with a calendar button. with id= name= label= value= [form=] #}
+<div class="field"><label for="{{ id }}">{{ label }}</label>
+  <span class="datebox">
+    <input id="{{ id }}" class="inp" name="{{ name }}" value="{{ value }}" placeholder="dd/mm/yyyy" inputmode="numeric" autocomplete="off" maxlength="10"{% if form %} form="{{ form }}"{% endif %}>
+    <button type="button" class="cal" aria-label="Choose {{ label|lower }} date from a calendar" tabindex="-1"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button>
+    <input type="date" class="cal-native" tabindex="-1" aria-hidden="true">
+  </span>
+</div>

@@ -98,10 +98,12 @@ def first_admin(request):
 def filtered_accidents(request, params=None):
     qs = Accident.objects.select_related("region", "district", "town", "police_station")
     g = request.GET if params is None else params
-    if g.get("date_from"):
-        qs = qs.filter(accident_date__gte=g["date_from"])
-    if g.get("date_to"):
-        qs = qs.filter(accident_date__lte=g["date_to"])
+    # Dates are typed day/month/year; a date that cannot be read is left out.
+    date_from, date_to = analysis.parse_date(g.get("date_from")), analysis.parse_date(g.get("date_to"))
+    if date_from:
+        qs = qs.filter(accident_date__gte=date_from)
+    if date_to:
+        qs = qs.filter(accident_date__lte=date_to)
     if g.get("region"):
         qs = qs.filter(region_id=g["region"])
     if g.get("location"):
@@ -133,10 +135,18 @@ def site_locations():
     return sorted(seen.values(), key=lambda x: x["name"].lower())
 
 
+def date_text(text):
+    """A date from the query string as it is shown in a date box: day/month/year."""
+    day = analysis.parse_date(text)
+    return day.strftime("%d/%m/%Y") if day else (text or "")
+
+
 def filter_context(request):
     params = request.GET.copy()
     params.pop("page", None)
     return {
+        "date_from_text": date_text(request.GET.get("date_from")),
+        "date_to_text": date_text(request.GET.get("date_to")),
         "sample_count": Accident.objects.filter(is_sample=True).count(),
         "regions": Region.objects.all(),
         "filter_locations": site_locations(),
@@ -254,12 +264,25 @@ def analysis_page(request):
         for r in result["rows"]:
             w.writerow([r["label"]] + [c["v"] for c in r["cells"]])
         w.writerow([result.get("total_label", "Total")] + [c["v"] for c in result["total"]])
+        if result.get("findings"):
+            w.writerow([])
+            w.writerow(["What this shows"])
+            for line in result["findings"]:
+                w.writerow([line])
+        for test in result["tests"]:
+            w.writerow([])
+            w.writerow([test["name"], test["detail"]])
         return resp
 
     return render(request, "accidents/analysis.html", {
         "ch": ch, "result": result, "problem": problem,
         "counts": [(k, label) for k, (label, _) in analysis.COUNTS.items()],
+        "nums": [(k, v[0]) for k, v in analysis.NUMS.items()],
+        "b_from_text": date_text(request.GET.get("b_from")),
+        "b_to_text": date_text(request.GET.get("b_to")),
         "variables": analysis.variables_for(ch["count"]),
+        "questions": analysis.questions(request.GET),
+        "chosen": any(request.GET.get(k) for k in analysis.ANALYSIS_KEYS),
         **filter_context(request),
     })
 

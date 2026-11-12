@@ -13,7 +13,8 @@ Double-click `start.bat`, then open http://127.0.0.1:8000
 | `accidents/codebook.py` | Every coded field on the form (the single source of truth) |
 | `accidents/models.py` | Database tables: Accident, Vehicle, PassengerCasualty, PedestrianCasualty, Region/District/Town, PoliceStation, AuditLog |
 | `accidents/views.py` | Dashboard, data entry, review, Excel/CSV export, location list API |
-| `accidents/analysis.py` | Analysis page: counts by any coded field, compared by a second field or across two periods |
+| `accidents/analysis.py` | Analysis page: frequency tables, cross-tables with a chi-square test, two periods compared, and averages by group |
+| `accidents/stats.py` | Probabilities for those tests (chi-square, F, normal); no extra package needed |
 | `accidents/static/accidents/app.js` | Report form: location dropdowns, town search, GPS map |
 | `accidents/static/accidents/maps.js` | Shared map setup: background tiles with fallback, region/district boundaries |
 | `accidents/static/accidents/csir-emblem.png` | CSIR seal used in the header (also `favicon.png`) |

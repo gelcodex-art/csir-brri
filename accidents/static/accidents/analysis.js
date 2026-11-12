@@ -16,6 +16,8 @@
   // Colours are given to the columns in a fixed order (see --cat-1..8 in app.css).
   var COLORS = [1, 2, 3, 4, 5, 6, 7, 8].map(function (i) { return v("--cat-" + i); });
   var many = chart.series.length > 1;
+  var line = !!chart.line;
+  var TREND = v("--muted");
   var unit = chart.percent ? "%" : "";
 
   Chart.defaults.font.family = 'system-ui, -apple-system, "Segoe UI", sans-serif';
@@ -36,7 +38,8 @@
     chart.series.forEach(function (s, i) {
       var item = document.createElement("span");
       var swatch = document.createElement("i");
-      swatch.style.background = COLORS[i % COLORS.length];
+      if (s.trend) swatch.className = "dash";
+      else swatch.style.background = COLORS[i % COLORS.length];
       item.appendChild(swatch);
       item.appendChild(document.createTextNode(s.name));
       legend.appendChild(item);
@@ -45,16 +48,32 @@
 
   var valueAxis = {
     beginAtZero: true, stacked: chart.stacked, grid: { color: v("--grid") }, border: { display: false },
-    ticks: { precision: 0, callback: function (val) { return val.toLocaleString() + unit; } },
+    ticks: { precision: chart.decimals ? 2 : 0, callback: function (val) { return val.toLocaleString() + unit; } },
   };
   if (chart.percent && chart.stacked) valueAxis.max = 100;
   var groupAxis = { stacked: chart.stacked, grid: { display: false }, border: { color: v("--axis") } };
 
   new Chart(canvas, {
-    type: "bar",
+    type: line ? "line" : "bar",
     data: {
       labels: chart.labels,
       datasets: chart.series.map(function (s, i) {
+        if (line) {
+          // The trend is a grey dashed line with no dots; the counts are solid lines with dots.
+          var c = s.trend ? TREND : COLORS[i % COLORS.length];
+          // A period not fully covered (e.g. this month, not over yet): dashed and hollow.
+          var part = chart.partial || [];
+          var isPart = function (j) { return part.indexOf(j) !== -1; };
+          return {
+            segment: s.trend ? {} : {
+              borderDash: function (ctx) { return isPart(ctx.p0DataIndex) || isPart(ctx.p1DataIndex) ? [3, 3] : undefined; },
+            },
+            pointBackgroundColor: s.trend ? c : chart.labels.map(function (_, j) { return isPart(j) ? v("--surface") : c; }),
+            label: s.name, data: s.data, borderColor: c, backgroundColor: c, fill: false,
+            borderWidth: 2, borderDash: s.trend ? [6, 4] : [], tension: 0, spanGaps: true,
+            pointRadius: s.trend || chart.labels.length > 40 ? 0 : 3, pointHoverRadius: s.trend ? 0 : 5,
+          };
+        }
         return {
           label: s.name, data: s.data, backgroundColor: COLORS[i % COLORS.length],
           // Stacked segments are separated by a thin line of the card colour.
@@ -71,10 +90,11 @@
       plugins: {
         legend: { display: false },
         tooltip: {
+          filter: function (item) { return item.raw !== null; },
           callbacks: {
             label: function (ctx) {
               var n = chart.horizontal ? ctx.parsed.x : ctx.parsed.y;
-              return " " + ctx.dataset.label + ": " + n.toLocaleString() + unit;
+              return " " + ctx.dataset.label + ": " + n.toLocaleString(undefined, { maximumFractionDigits: 1 }) + unit;
             },
           },
         },

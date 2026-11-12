@@ -248,12 +248,74 @@ class AccidentFlowTests(TestCase):
         self.assertEqual(self.analysis_rows("count=killed&rows=weather"), {"Rain": ["2", "100.0%"]})
         self.assertEqual(self.analysis_rows("count=vehicles&rows=vehicle_type"),
                          {"Car": ["2", "50.0%"], "Minibus": ["2", "50.0%"]})
-        self.assertEqual(self.analysis_rows("rows=year"), {"2026": ["2", "100.0%"]})
-        self.assertEqual(self.analysis_rows("rows=hour"), {"18:00-18:59": ["2", "100.0%"]})
-        # The page filters apply.
+        # Fields with an order (time, age) also get a running %.
+        self.assertEqual(self.analysis_rows("rows=year"), {"2026": ["2", "100.0%", "100.0%"]})
+        self.assertEqual(self.analysis_rows("rows=hour"), {"18:00-18:59": ["2", "100.0%", "100.0%"]})
+        # Some reports have the field empty: "% of recorded" leaves them out.
+        Accident.objects.filter(report_number="124").update(weather=None)
+        r = self.client.get("/analysis/?rows=weather")
+        self.assertEqual(r.context["result"]["columns"], ["Accidents", "% of total", "% of recorded"])
+        self.assertEqual(self.analysis_rows("rows=weather"),
+                         {"Rain": ["1", "50.0%", "100.0%"], "Not recorded": ["1", "50.0%", ""]})
+        # The page filters apply; dates are typed day/month/year.
         self.assertEqual(self.analysis_rows("date_to=2026-01-01"), {})
+        self.assertEqual(self.analysis_rows("date_to=01/11/2026"), {})
+        self.assertIn("Ashanti", self.analysis_rows("date_from=02/11/2026&date_to=02/11/2026"))
         # A vehicle field cannot group accidents: the page falls back to region.
         self.assertIn("Ashanti", self.analysis_rows("count=accidents&rows=vehicle_type"))
+
+    def test_analysis_questions_and_plain_findings(self):
+        self.client.post("/accidents/new/", self.payload())
+        self.client.post("/accidents/new/", self.payload(report_number="124"))
+        r = self.client.get("/analysis/?region=%d" % self.region.pk)
+        self.assertContains(r, "Start with a question")
+        self.assertContains(r, "What this shows")
+        self.assertIn("2 accidents in this selection.", r.context["result"]["findings"])
+        # A question sets the analysis choices and keeps the filters.
+        links = [q for _, items in r.context["questions"] for q in items]
+        dark = next(q for q in links if "in the dark" in q["text"])
+        self.assertIn("region=%d" % self.region.pk, dark["url"])
+        r = self.client.get("/analysis/" + dark["url"])
+        self.assertEqual(r.context["ch"]["row"].key, "light_conditions")
+        self.assertEqual(r.context["ch"]["show"], "row")
+        self.assertTrue(next(q for _, items in r.context["questions"] for q in items
+                             if "in the dark" in q["text"])["active"])
+        # Every ready-made question opens.
+        for q in links:
+            self.assertEqual(self.client.get("/analysis/" + q["url"]).status_code, 200, q["text"])
+
+    def test_analysis_trend_over_time(self):
+        from collections import Counter
+        from datetime import date
+        from . import analysis
+        ch = {"row": analysis.BY_KEY["year"], "by_size": False, "compare": "",
+              "a_from": None, "a_to": None}
+        keys = [2020, 2021, 2022, 2023, 2024]
+        totals = Counter({2020: 10, 2021: 21, 2022: 29, 2023: 41, 2024: 50})
+        test, fitted, found, guide, _ = analysis._trend(ch, keys, totals, "accidents",
+                                                        today=date(2026, 6, 1))
+        self.assertIn("going up: about 10.0 more each year", test["headline"])
+        self.assertIn("Busiest year: 2024 with 50. Quietest: 2020 with 10.", found)
+        self.assertAlmostEqual(fitted[0], 10.2)
+        # A year that is not over yet is left out of the trend line.
+        totals[2025] = 3
+        test, fitted, found, _, partial = analysis._trend(ch, keys + [2025], totals, "accidents",
+                                                          today=date(2025, 6, 1))
+        self.assertIsNone(fitted[-1])
+        self.assertEqual(partial, [5])
+        # Years with no reports at all are pointed out.
+        gap = Counter({2018: 30, 2019: 0, 2020: 0, 2021: 0, 2022: 40, 2023: 45})
+        test, *_ = analysis._trend(ch, list(gap), gap, "accidents", today=date(2026, 6, 1))
+        self.assertIn("no reports at all from 2019 to 2021", test["warning"])
+        self.assertTrue(any("2025 is left out" in line for line in found))
+        # Missing months show as 0 on the line.
+        month = analysis.BY_KEY["month"]
+        self.assertEqual(len(analysis._timeline(month, [date(2025, 11, 1), date(2026, 2, 1), None])), 5)
+        # Split by month draws a line.
+        self.client.post("/accidents/new/", self.payload())
+        r = self.client.get("/analysis/?rows=month")
+        self.assertTrue(r.context["result"]["chart"]["line"])
+        self.assertFalse(self.client.get("/analysis/?rows=region").context["result"]["chart"]["line"])
 
     def test_analysis_compares_two_fields(self):
         self.client.post("/accidents/new/", self.payload())
@@ -275,13 +337,78 @@ class AccidentFlowTests(TestCase):
         self.client.post("/accidents/new/", self.payload(report_number="124", accident_date="2026-10-05"))
         self.client.post("/accidents/new/", self.payload(report_number="125", accident_date="2026-10-06"))
         q = "compare=period&date_from=2026-10-01&date_to=2026-10-31&b_from=2026-11-01&b_to=2026-11-30"
-        self.assertEqual(self.analysis_rows(q), {"Ashanti": ["2", "1", "-1", "-50.0%"]})
+        self.assertEqual(self.analysis_rows(q), {"Ashanti": ["2", "1", "-1", "-50.0%", "Too few to tell"]})
         r = self.client.get("/analysis/?compare=period&date_from=2026-10-01")   # dates missing
         self.assertIsNone(r.context["result"])
         self.assertContains(r, "enter all four dates")
         lines = self.client.get(f"/analysis/?{q}&download=csv").content.decode("utf-8-sig").splitlines()
-        self.assertEqual(lines[1], "Region,1 Oct 2026 to 31 Oct 2026,1 Nov 2026 to 30 Nov 2026,Change,% change")
-        self.assertEqual(lines[2], "Ashanti,2,1,-1,-50.0")
+        self.assertEqual(lines[1], "Region,01/10/2026 to 31/10/2026,01/11/2026 to 30/11/2026,"
+                                   "Change,% change,More than chance?")
+        self.assertEqual(lines[2], "Ashanti,2,1,-1,-50.0,Too few to tell")
+
+    def test_analysis_averages_by_group(self):
+        self.client.post("/accidents/new/", self.payload())
+        self.client.post("/accidents/new/", self.payload(report_number="124"))
+        Vehicle = Accident.vehicles.rel.related_model
+        for v, age in zip(Vehicle.objects.order_by("pk"), (20, 30, 40, 60)):
+            Vehicle.objects.filter(pk=v.pk).update(driver_age=age)
+        r = self.client.get("/analysis/?mode=summary&num=driver_age&rows=vehicle_type")
+        res = r.context["result"]
+        self.assertEqual(res["columns"],
+                         ["Number recorded", "Mean", "Median", "Std. deviation", "Lowest", "Highest"])
+        rows = {row["label"]: [c["t"] for c in row["cells"]] for row in res["rows"]}
+        self.assertEqual(rows["Minibus"], ["2", "30.00", "30.0", "14.14", "20.0", "40.0"])   # 20 and 40
+        self.assertEqual(rows["Car"], ["2", "45.00", "45.0", "21.21", "30.0", "60.0"])       # 30 and 60
+        self.assertEqual([c["t"] for c in res["total"]][:3], ["4", "37.50", "35.0"])
+        self.assertEqual(res["tests"][0]["name"], "Analysis of variance (one-way)")
+        self.assertIn("F(1, 2) = 0.69", res["tests"][0]["detail"])
+        self.assertContains(r, "An average (mean, median)")
+        # People killed per accident, by region: one group, so no test.
+        r = self.client.get("/analysis/?mode=summary&num=killed")
+        self.assertEqual([c["t"] for c in r.context["result"]["rows"][0]["cells"]][:2], ["2", "1.00"])
+        self.assertEqual(r.context["result"]["tests"], [])
+
+    def test_analysis_statistics_match_published_values(self):
+        from . import analysis, stats
+        # 5% points from standard tables.
+        for value, expected in ((stats.chi2_p(3.841, 1), 0.05), (stats.chi2_p(18.307, 10), 0.05),
+                                (stats.f_p(4.001, 1, 60), 0.05), (stats.f_p(3.098, 3, 20), 0.05),
+                                (stats.normal_p(1.96), 0.05), (stats.chi2_p(6.635, 1), 0.01)):
+            self.assertAlmostEqual(value, expected, places=3)
+        # 2 x 2 table 10 20 / 30 40: chi-square 0.794 on 1 degree of freedom.
+        table = {("a", "x"): 10, ("a", "y"): 20, ("b", "x"): 30, ("b", "y"): 40}
+        row, col = analysis.BY_KEY["weather"], analysis.BY_KEY["severity"]
+        test, marks, found = analysis._association(row, col, ["a", "b", None], ["x", "y"],
+                                                   lambda r, c: table.get((r, c), 0), "accidents", str)
+        self.assertIn("Chi-square = 0.79, degrees of freedom = 1, p = 0.373", test["detail"])
+        self.assertIn("No clear link", test["headline"])
+        self.assertEqual(marks, {})
+        # A strong pattern is reported and its cells are marked.
+        table = {("a", "x"): 50, ("a", "y"): 5, ("b", "x"): 5, ("b", "y"): 50}
+        test, marks, found = analysis._association(row, col, ["a", "b"], ["x", "y"],
+                                                   lambda r, c: table[(r, c)], "accidents", str)
+        self.assertIn("Code a: 90.9% are x, higher than the 50.0% across all groups.", found)
+        self.assertIn("are related", test["headline"])
+        self.assertIn("p < 0.001", test["detail"])
+        self.assertEqual(marks[("a", "x")], "hi")
+        self.assertEqual(marks[("a", "y")], "lo")
+
+    def test_dates_are_day_month_year(self):
+        from .analysis import parse_date
+        from datetime import date
+        self.assertEqual(parse_date("31/12/2025"), date(2025, 12, 31))
+        self.assertEqual(parse_date("1/2/26"), date(2026, 2, 1))
+        self.assertEqual(parse_date("2025-12-31"), date(2025, 12, 31))
+        self.assertIsNone(parse_date("31/02/2025"))
+        self.assertIsNone(parse_date("soon"))
+        self.client.post("/accidents/new/", self.payload())                    # 2 Nov 2026
+        refs = lambda q: [a.report_number for a in self.client.get("/accidents/?" + q).context["page"]]
+        self.assertEqual(refs("date_from=02/11/2026&date_to=02/11/2026"), ["123"])
+        self.assertEqual(refs("date_from=03/11/2026"), [])
+        self.assertEqual(refs("date_from=nonsense"), ["123"])                  # unreadable: ignored
+        page = self.client.get("/?date_from=2026-11-02")                       # old links still work
+        self.assertContains(page, 'name="date_from" value="02/11/2026" placeholder="dd/mm/yyyy"')
+        self.assertNotContains(page, 'type="date" name=')
 
     def test_analysis_many_columns_are_folded(self):
         from . import analysis

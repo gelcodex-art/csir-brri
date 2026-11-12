@@ -5,7 +5,7 @@
 <div class="page-head">
   <div>
     <h1>Analysis</h1>
-    <p class="sub">Count accidents, vehicles or casualties by any field on the form, and compare the groups side by side.</p>
+    <p class="sub">Pick a question, or build your own table. Every answer comes with a chart, the numbers, and what they mean in plain words.</p>
   </div>
   {% if result %}
   <div class="actions">
@@ -14,34 +14,67 @@
   {% endif %}
 </div>
 {% include "accidents/_sample_notice.html" %}
+<details class="card ask" id="ask"{% if not chosen %} open{% endif %}>
+  <summary>Start with a question</summary>
+  <div class="ask-groups">
+    {% for group, items in questions %}
+    <div>
+      <h3>{{ group }}</h3>
+      <ul>
+        {% for q in items %}<li><a href="{{ q.url }}"{% if q.active %} class="active" aria-current="true"{% endif %}>{{ q.text }}</a></li>{% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="muted hint">A question sets the boxes below for you. The filters (dates, region and so on) stay as you set them, so you can ask the same question about one region or one year.</p>
+</details>
 {% include "accidents/_filters.html" %}
+<h2 class="section-label">Or build your own</h2>
 
 {# These boxes belong to the filter form above (form="filters"), so one Apply sends everything. #}
 <section class="card analysis-pick" id="analysis-pick">
   <div class="field">
-    <label for="a-count">Count</label>
+    <label for="a-mode">I want to see</label>
+    <select id="a-mode" class="inp" name="mode" form="filters" data-auto>
+      <option value="counts">How many (counts, %)</option>
+      <option value="summary" {% if ch.mode == "summary" %}selected{% endif %}>An average (mean, median)</option>
+    </select>
+  </div>
+  {% if ch.mode == "summary" %}
+  <div class="field">
+    <label for="a-num">The average of</label>
+    <select id="a-num" class="inp" name="num" form="filters" data-auto>
+      {% for key, label in nums %}<option value="{{ key }}" {% if key == ch.num %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  {% else %}
+  <div class="field">
+    <label for="a-count">Count the</label>
     <select id="a-count" class="inp" name="count" form="filters" data-auto>
       {% for key, label in counts %}<option value="{{ key }}" {% if key == ch.count %}selected{% endif %}>{{ label }}</option>{% endfor %}
     </select>
   </div>
+  {% endif %}
   <div class="field">
-    <label for="a-rows">Group by</label>
+    <label for="a-rows">Split by</label>
     <select id="a-rows" class="inp" name="rows" form="filters" data-auto>
       {% for group, vars in variables %}<optgroup label="{{ group }}">
         {% for v in vars %}<option value="{{ v.key }}" {% if v.key == ch.row.key %}selected{% endif %}>{{ v.label }}</option>{% endfor %}
       </optgroup>{% endfor %}
     </select>
   </div>
+  {% if ch.mode == "counts" %}
   <div class="field">
-    <label for="a-compare">Compare by</label>
+    <label for="a-compare">And compare with</label>
     <select id="a-compare" class="inp" name="compare" form="filters" data-auto>
-      <option value="">Nothing (one column)</option>
+      <option value="">Nothing (one field)</option>
       <option value="period" {% if ch.compare == "period" %}selected{% endif %}>Two periods (before and after)</option>
       {% for group, vars in variables %}<optgroup label="{{ group }}">
         {% for v in vars %}{% if v.key != ch.row.key %}<option value="{{ v.key }}" {% if v.key == ch.compare %}selected{% endif %}>{{ v.label }}</option>{% endif %}{% endfor %}
       </optgroup>{% endfor %}
     </select>
   </div>
+  {% endif %}
   {% if ch.col %}
   <div class="field">
     <label for="a-show">Show as</label>
@@ -49,20 +82,35 @@
       <option value="n">Numbers</option>
       <option value="row" {% if ch.show == "row" %}selected{% endif %}>% of each row</option>
       <option value="col" {% if ch.show == "col" %}selected{% endif %}>% of each column</option>
+      <option value="total" {% if ch.show == "total" %}selected{% endif %}>% of the whole table</option>
     </select>
   </div>
   {% endif %}
+  <div class="field">
+    <label for="a-sort">Order of groups</label>
+    <select id="a-sort" class="inp" name="sort" form="filters" data-auto>
+      <option value="">Usual order</option>
+      <option value="size" {% if ch.by_size %}selected{% endif %}>Largest first</option>
+    </select>
+  </div>
   {% if ch.compare == "period" %}
-  <div class="field"><label for="a-bfrom">Second period: from</label><input id="a-bfrom" class="inp" type="date" name="b_from" form="filters" value="{{ f.b_from }}"></div>
-  <div class="field"><label for="a-bto">Second period: to</label><input id="a-bto" class="inp" type="date" name="b_to" form="filters" value="{{ f.b_to }}"></div>
+  {% include "accidents/_datebox.html" with id="a-bfrom" name="b_from" label="Second period: from" value=b_from_text form="filters" %}
+  {% include "accidents/_datebox.html" with id="a-bto" name="b_to" label="Second period: to" value=b_to_text form="filters" %}
   <p class="muted hint">The first period is the From and To dates in the filters above. All the other filters apply to both periods.</p>
   {% endif %}
+  {% if ch.row.kind != "year" and ch.row.kind != "month" and ch.compare != "period" %}<p class="muted hint">To see the trend over time as a line graph, set "Split by" to Year or Month (each month in turn).</p>{% endif %}
   <div class="actions"><button class="btn" form="filters">Show</button></div>
 </section>
 
 {% if problem %}<div class="msg warning">{{ problem }}</div>{% endif %}
 
 {% if result %}
+{% if result.findings %}
+<section class="card findings">
+  <h2>What this shows</h2>
+  <ul>{% for line in result.findings %}<li>{{ line }}</li>{% endfor %}</ul>
+</section>
+{% endif %}
 <section class="card">
   <h2>{{ result.title }}</h2>
   {% if result.chart.empty %}
@@ -73,6 +121,17 @@
   {% if result.chart.cut %}<p class="muted hint">The chart shows the {{ result.chart.cut }} largest groups. The table below has all of them.</p>{% endif %}
   {% endif %}
 </section>
+
+{% for t in result.tests %}
+<section class="card test-result">
+  <h2>{{ t.question }}</h2>
+  <p class="headline">{{ t.headline }}</p>
+  {% if t.warning %}<p class="msg warning">{{ t.warning }}</p>{% endif %}
+  <details class="figures"><summary>The figures, for a written report</summary>
+    <p class="muted detail">{{ t.name }}. {{ t.detail }}</p>
+  </details>
+</section>
+{% endfor %}
 
 <section class="card table-wrap table-flush analysis-table">
   <table>
@@ -89,11 +148,18 @@
     {% endif %}
   </table>
 </section>
+{% if result.marks %}<p class="muted hint"><span class="key hi">▲</span> clearly more than expected if the two fields were not related &nbsp; <span class="key lo">▼</span> clearly fewer than expected.</p>{% endif %}
 {% if result.note %}<p class="muted hint">{{ result.note }}</p>{% endif %}
+{% if result.guide %}
+<details class="card guide">
+  <summary>How to read this table</summary>
+  <dl>{% for term, meaning in result.guide %}<dt>{{ term }}</dt><dd>{{ meaning }}</dd>{% endfor %}</dl>
+</details>
+{% endif %}
 {{ result.chart|json_script:"analysis-data" }}
 {% endif %}
 {% endblock %}
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" crossorigin="anonymous"></script>
-<script src="{% static 'accidents/analysis.js' %}?v=1"></script>
+<script src="{% static 'accidents/analysis.js' %}?v=4"></script>
 {% endblock %}
