@@ -26,8 +26,9 @@
   </ul>
   <div class="actions">
     {% if plan.n_new %}
-    <form method="post">{% csrf_token %}
+    <form method="post" class="import-confirm">{% csrf_token %}
       <input type="hidden" name="token" value="{{ token }}">
+      {% include "accidents/_import_approval.html" %}
       <button class="btn" type="submit">Import {{ plan.n_new }} report{{ plan.n_new|pluralize }}</button>
     </form>
     {% endif %}
@@ -87,6 +88,7 @@
       <label for="id_file">Excel file (.xlsx, up to {{ max_mb }} MB)</label>
       <input class="inp" id="id_file" type="file" name="file" accept=".xlsx" required>
     </div>
+    {% include "accidents/_import_approval.html" %}
     <p class="muted" id="import-progress" hidden></p>
     <div class="actions">
       <button class="btn" type="submit" id="import-submit">Check the file</button>
@@ -109,7 +111,8 @@
     <li>You see a summary first. Nothing is saved until you click Import.</li>
     <li>Reports already in the system are skipped, so importing the same file twice is safe.</li>
     <li>Sketch pictures are not imported. Add them on each report afterwards.</li>
-    <li>The reminders of the report form (for example a missing time or GPS location) are not applied. Imported reports keep the status given in the file.</li>
+    <li>You say whether the file's reports are <strong>already approved</strong> (they are saved as Approved) or <strong>submitted for approval</strong> (they are saved as Submitted and wait for someone who can approve reports).</li>
+    <li>The reminders of the report form (for example a missing time or GPS location) are not applied.</li>
   </ul>
 </div>
 {% endif %}

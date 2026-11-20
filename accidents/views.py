@@ -800,12 +800,22 @@ def _join_chunks(user, upload_id, total):
 
 @login_required
 def accident_import(request):
-    from .importer import (MAX_BYTES, ImportProblem, make_plan, pack, read_sheets, save_plan,
-                           unpack)
+    from .importer import (APPROVAL_CHOICES, APPROVED, MAX_BYTES, ImportProblem, make_plan, pack,
+                           read_sheets, save_plan, unpack)
 
     if not request.user.is_staff:
         messages.error(request, "Only administrators can import reports from Excel.")
         return redirect("accident_list")
+
+    may_approve = access.can(request.user, access.APPROVE)
+    choices = [c for c in APPROVAL_CHOICES if may_approve or c[0] != APPROVED]
+
+    def approval_given():
+        value = request.POST.get("approval", "")
+        if value not in {c[0] for c in choices}:
+            raise ImportProblem("Say whether the reports in the file are already approved or "
+                                "submitted for approval.")
+        return value
 
     ctx = {}
     if request.method == "POST":
@@ -817,11 +827,16 @@ def accident_import(request):
                 if not held or "sheets" not in held:
                     raise ImportProblem("That file is no longer held (it is kept for one hour). "
                                         "Choose the file again.")
-                saved = save_plan(make_plan(unpack(held["sheets"]), request.user), request.user)
+                approval = approval_given()
+                saved = save_plan(make_plan(unpack(held["sheets"]), request.user), request.user,
+                                  approval)
                 cache.delete(f"import:{request.user.pk}:{token}")
                 plural = "" if saved == 1 else "s"
-                messages.success(request, f"{saved} report{plural} imported from {held['name']}.")
+                how = "approved" if approval == APPROVED else "submitted for approval"
+                messages.success(request, f"{saved} report{plural} imported from {held['name']}, "
+                                          f"saved as {how}.")
                 return redirect("accident_list")
+            approval = approval_given()
             upload_id = request.POST.get("upload_id", "")
             if upload_id:                               # step 1, file sent in pieces
                 try:
@@ -844,7 +859,7 @@ def accident_import(request):
                       3600)
             order = {"error": 0, "new": 1, "duplicate": 2}
             listed = sorted(plan["reports"], key=lambda r: (order[r["state"]], r["row"]))
-            ctx = {"plan": plan, "token": token, "filename": name,
+            ctx = {"plan": plan, "token": token, "filename": name, "approval": approval,
                    "hidden": max(0, len(listed) - IMPORT_SHOWN),
                    "rows": [{"row": r["row"], "ref": r["ref"], "state": r["state"],
                              "region": r["obj"].region if r["obj"].region_id else "",
@@ -854,7 +869,8 @@ def accident_import(request):
                             for r in listed[:IMPORT_SHOWN]]}
         except ImportProblem as exc:
             ctx = {"problem": str(exc)}
-    ctx.update(chunk_size=IMPORT_CHUNK, max_bytes=MAX_BYTES, max_mb=MAX_BYTES // (1024 * 1024))
+    ctx.update(chunk_size=IMPORT_CHUNK, max_bytes=MAX_BYTES, max_mb=MAX_BYTES // (1024 * 1024),
+               approval_choices=choices)
     return render(request, "accidents/import.html", ctx)
 
 

@@ -1,0 +1,10 @@
+<fieldset class="field approval-choice">
+  <legend>Have the reports in this file been approved already?</legend>
+  {% for value, label, help in approval_choices %}
+  <label class="approval-option">
+    <input type="radio" name="approval" value="{{ value }}" required{% if approval == value %} checked{% endif %}>
+    <span><strong>{{ label }}</strong><small>{{ help }}</small></span>
+  </label>
+  {% endfor %}
+  {% if approval_choices|length == 1 %}<p class="muted">Your account cannot approve reports, so imported reports wait for approval.</p>{% endif %}
+</fieldset>

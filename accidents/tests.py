@@ -932,7 +932,7 @@ class ExcelImportTests(TestCase):
         return buf
 
     def upload(self, buf):
-        r = self.client.post("/import/", {"file": buf})
+        r = self.client.post("/import/", {"file": buf, "approval": "approved"})
         self.assertEqual(r.status_code, 200)
         return r
 
@@ -949,7 +949,7 @@ class ExcelImportTests(TestCase):
         self.assertEqual((plan["n_new"], plan["n_error"], plan["orphans"]), (1, 2, 1))
         self.assertContains(r, "Atlantis")
 
-        r = self.client.post("/import/", {"token": r.context["token"]})
+        r = self.client.post("/import/", {"token": r.context["token"], "approval": "approved"})
         self.assertRedirects(r, "/accidents/")
         a = Accident.objects.get()
         self.assertEqual((str(a), a.status, a.killed, a.day_of_week, a.town_code),
@@ -961,11 +961,35 @@ class ExcelImportTests(TestCase):
         self.assertFalse(a.police_station.verified)
         self.assertEqual(a.audit.get().action, "imported")
 
+    def test_asks_if_the_file_is_approved_or_submitted(self):
+        from datetime import datetime
+        rows = [["31", 2023, "Ashanti", None, datetime(2023, 2, 1), None, 0, 4, None, "reviewed"]]
+        page = self.client.get("/import/")
+        self.assertContains(page, "Have the reports in this file been approved already?")
+        self.assertContains(page, "Submitted for approval")
+        # No answer: nothing is checked or saved.
+        r = self.client.post("/import/", {"file": self.workbook(rows)})
+        self.assertContains(r, "already approved or submitted for approval")
+        self.assertNotIn("plan", r.context)
+        # Submitted for approval: saved as Submitted even though the file says reviewed.
+        r = self.client.post("/import/", {"file": self.workbook(rows), "approval": "submitted"})
+        self.assertContains(r, 'value="submitted" required checked')
+        self.client.post("/import/", {"token": r.context["token"], "approval": "submitted"})
+        a = Accident.objects.get()
+        self.assertEqual((a.status, a.reviewed_by), ("submitted", None))
+        self.assertIn("submitted for approval", a.audit.get().note)
+        # Already approved: saved as Approved, by the importer.
+        rows[0][0] = "32"
+        r = self.client.post("/import/", {"file": self.workbook(rows), "approval": "approved"})
+        self.client.post("/import/", {"token": r.context["token"], "approval": "approved"})
+        b = Accident.objects.get(report_number="32")
+        self.assertEqual((b.status, b.reviewed_by), ("reviewed", self.admin))
+
     def test_same_file_twice_adds_nothing(self):
         from datetime import datetime
         rows = [["5", 2022, "Ashanti", None, datetime(2022, 1, 5), None, 0, 4, None, None]]
         r = self.upload(self.workbook(rows))
-        self.client.post("/import/", {"token": r.context["token"]})
+        self.client.post("/import/", {"token": r.context["token"], "approval": "approved"})
         r = self.upload(self.workbook(rows))
         self.assertEqual((r.context["plan"]["n_new"], r.context["plan"]["n_duplicate"]), (0, 1), r.context["rows"])
         self.assertEqual(Accident.objects.count(), 1)
@@ -982,7 +1006,7 @@ class ExcelImportTests(TestCase):
         buf.name = "accidents.xlsx"
         r = self.upload(buf)
         self.assertEqual(r.context["plan"]["n_new"], 1, r.context["rows"])
-        self.client.post("/import/", {"token": r.context["token"]})
+        self.client.post("/import/", {"token": r.context["token"], "approval": "approved"})
         b = Accident.objects.get()
         self.assertEqual((b.road_name, b.severity, b.vehicles.get().driver_name), ("N6", 4, "Ama"))
 
@@ -1006,7 +1030,7 @@ class ExcelImportTests(TestCase):
         buf.name = "kumasi data final (2).xlsx"
         r = self.upload(buf)
         self.assertEqual(r.context["plan"]["n_new"], 1, r.context.get("rows"))
-        self.client.post("/import/", {"token": r.context["token"]})
+        self.client.post("/import/", {"token": r.context["token"], "approval": "approved"})
         a = Accident.objects.get()
         self.assertEqual((str(a), a.severity, a.vehicles.get().driver_sex), ("31/2024", 4, 1))
 
@@ -1034,7 +1058,7 @@ class ExcelImportTests(TestCase):
         r = self.upload(buf)
         plan = r.context["plan"]
         self.assertEqual((plan["n_new"], plan["n_error"], plan["orphans"]), (3, 1, 0), r.context["rows"])
-        self.client.post("/import/", {"token": r.context["token"]})
+        self.client.post("/import/", {"token": r.context["token"], "approval": "approved"})
         a = Accident.objects.get(report_number="237")
         self.assertEqual((a.report_year, a.region, a.town_code, a.town.name, a.vehicles.count()),
                          (2015, self.region, "0101", "Kumasi", 2))
@@ -1074,7 +1098,7 @@ class ExcelImportTests(TestCase):
         plan = r.context["plan"]
         self.assertEqual((plan["n_new"], plan["drivers"], plan["station_codes"], plan["orphans"]),
                          (1, 1, 1, 0), r.context["rows"])
-        self.client.post("/import/", {"token": r.context["token"]})
+        self.client.post("/import/", {"token": r.context["token"], "approval": "approved"})
         a = Accident.objects.get()
         self.assertEqual((a.report_number, a.report_year, a.region, a.collision_type, a.km, a.hundred_m),
                          ("101", 2010, self.region, 9, 32, 5))
@@ -1130,7 +1154,7 @@ class ExcelImportTests(TestCase):
         notes = " ".join(n for row in r.context["rows"] for n in row["notes"])
         self.assertIn('Excel had changed "11/20" into a date', notes)
         self.assertIn("7695v2) is on several rows with different details", notes)
-        self.client.post("/import/", {"token": r.context["token"]})
+        self.client.post("/import/", {"token": r.context["token"], "approval": "approved"})
         a = Accident.objects.get(analyst_notes__contains="01999")
         self.assertEqual((a.report_number, a.report_year, a.x_coordinate, a.police_station),
                          ("11", 2020, "", None))
@@ -1188,7 +1212,7 @@ class ExcelImportTests(TestCase):
                          {"Ashanti"})
         plan = r.context["plan"]
         self.assertEqual((plan["n_new"], plan["n_error"]), (len(forms) + 1, 1), r.context["rows"])
-        self.client.post("/import/", {"token": r.context["token"]})
+        self.client.post("/import/", {"token": r.context["token"], "approval": "approved"})
         self.assertTrue(Accident.objects.filter(report_number="6", report_year=2020).exists())
         # A report saved earlier as "06" is still found as a possible duplicate of "6".
         old = Accident.objects.create(report_number="06", report_year=2021, region=self.region,
@@ -1223,7 +1247,7 @@ class ExcelImportTests(TestCase):
                          ["7/2024", "7/2024", "9/2024", "512/2024", "512/2024"])
         self.assertTrue(any("also on row 3 (accident key 2)" in n for n in by_row[2]["notes"]))
         self.assertTrue(any("casualty 2c1 is left out" in n for n in by_row[3]["notes"]))
-        self.client.post("/import/", {"token": r.context["token"]})
+        self.client.post("/import/", {"token": r.context["token"], "approval": "approved"})
         a = Accident.objects.get(report_number="7", accident_date__month=1)
         self.assertEqual((a.km, a.hundred_m, a.pedestrians.count() + a.passengers.count()), (73, 5, 1))
         self.assertEqual(a.passengers.get().severity, 9)              # 0 = injured
@@ -1237,7 +1261,7 @@ class ExcelImportTests(TestCase):
     def test_unknown_station_codes_page_links_reports(self):
         from .models import PoliceStation, StationCode
         r = self.upload(self.flat_workbook())
-        self.client.post("/import/", {"token": r.context["token"]})
+        self.client.post("/import/", {"token": r.context["token"], "approval": "approved"})
         r = self.client.get("/station-codes/unknown/")
         self.assertContains(r, "01999")
         self.assertEqual([(c["code"], c["reports"], c["station"]) for c in r.context["rows"]],
@@ -1261,10 +1285,10 @@ class ExcelImportTests(TestCase):
                 "upload_id": "abc123", "index": i, "total": total,
                 "chunk": SimpleUploadedFile("part", data[i * size:(i + 1) * size])})
             self.assertEqual(r.status_code, 200)
-        r = self.client.post("/import/", {"upload_id": "abc123", "total": total, "name": "big.xlsx"})
+        r = self.client.post("/import/", {"upload_id": "abc123", "total": total, "name": "big.xlsx", "approval": "approved"})
         self.assertEqual(r.context["plan"]["n_new"], 2)
         self.assertContains(r, "big.xlsx")
-        r = self.client.post("/import/", {"upload_id": "abc123", "total": total, "name": "big.xlsx"})
+        r = self.client.post("/import/", {"upload_id": "abc123", "total": total, "name": "big.xlsx", "approval": "approved"})
         self.assertContains(r, "did not arrive")                     # pieces are used once
         r = self.client.post("/import/chunk/", {"upload_id": "../x", "index": 0, "total": 1,
                                                 "chunk": SimpleUploadedFile("part", b"1")})
@@ -1436,9 +1460,9 @@ class StationCodeTests(TestCase):
         buf.seek(0)
         buf.name = "codes.xlsx"
         self.client.login(username="boss", password="pw-12345-test")
-        r = self.client.post("/import/", {"file": buf})
+        r = self.client.post("/import/", {"file": buf, "approval": "approved"})
         self.assertEqual((r.context["plan"]["n_new"], r.context["plan"]["station_codes"]), (2, 1))
-        self.client.post("/import/", {"token": r.context["token"]})
+        self.client.post("/import/", {"token": r.context["token"], "approval": "approved"})
         self.assertEqual(Accident.objects.get(report_number="5").police_station, self.station("04086"))
         other = Accident.objects.get(report_number="6")
         self.assertIsNone(other.police_station)

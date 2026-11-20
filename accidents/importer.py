@@ -726,12 +726,34 @@ def make_plan(sheets, user):
             "n_notes": sum(1 for r in reports if r["notes"] and r["state"] == "new")}
 
 
-def save_plan(plan, user):
-    """Save every report marked "new". Returns how many were saved."""
+APPROVED, SUBMITTED = "approved", "submitted"
+APPROVAL_CHOICES = [
+    (APPROVED, "Already approved",
+     "The reports in this file have been checked and approved. They are saved as Approved."),
+    (SUBMITTED, "Submitted for approval",
+     "The reports still have to be checked. They are saved as Submitted and wait for approval."),
+]
+
+
+def save_plan(plan, user, approval=None):
+    """Save every report marked "new". Returns how many were saved.
+
+    approval: APPROVED - the file's reports were approved already (status
+    Approved; approved by the person named in the file, else the importer);
+    SUBMITTED - they wait for approval (status Submitted). None keeps the
+    status written in the file."""
     todo = [r for r in plan["reports"] if r["state"] == "new"]
+    note = {APPROVED: "From an Excel file, already approved",
+            SUBMITTED: "From an Excel file, submitted for approval"}.get(approval, "From an Excel file")
     with transaction.atomic():
         for r in todo:
             acc = r["obj"]
+            if approval == APPROVED:
+                acc.status = Accident.STATUS_REVIEWED
+                acc.reviewed_by = acc.reviewed_by or user
+            elif approval == SUBMITTED:
+                acc.status = Accident.STATUS_SUBMITTED
+                acc.reviewed_by = None
             if r["new_station"]:
                 acc.police_station, _ = PoliceStation.objects.get_or_create(
                     region=acc.region, name=r["new_station"],
@@ -745,6 +767,6 @@ def save_plan(plan, user):
                     children.append(child)
             model.objects.bulk_create(children, batch_size=1000)
         AuditLog.objects.bulk_create(
-            [AuditLog(accident=r["obj"], user=user, action="imported", note="From an Excel file")
+            [AuditLog(accident=r["obj"], user=user, action="imported", note=note)
              for r in todo], batch_size=1000)
     return len(todo)

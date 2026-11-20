@@ -268,6 +268,15 @@ input[type="file"]::file-selector-button:hover { background: var(--surface-2); }
 .field label { display: block; font-size: .82rem; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
 .field small { display: block; margin-top: 4px; font-size: .8rem; line-height: 1.35; }
 .field.wide { grid-column: 1 / -1; }
+.approval-choice { border: 0; margin: 14px 0; padding: 0; min-width: 0; }
+.approval-choice legend { font-size: .82rem; font-weight: 600; color: var(--ink-2); margin-bottom: 8px; padding: 0; }
+.field .approval-option { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 8px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--surface); cursor: pointer; font-weight: 400; }
+.approval-option input { margin-top: 3px; accent-color: var(--accent); }
+.approval-option:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+.approval-option strong { display: block; color: var(--ink-1, inherit); font-size: .92rem; }
+.approval-option small { margin-top: 2px; color: var(--muted); }
+.import-confirm { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; max-width: 640px; }
 .field .err, .errorlist { color: var(--err-ink); font-size: .84rem; font-weight: 600; margin: 4px 0 0; padding: 0; list-style: none; }
 .field.has-err .inp { border-color: var(--err-ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--err-ink) 14%, transparent); }
 .btn {
