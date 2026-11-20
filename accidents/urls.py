@@ -16,6 +16,7 @@ urlpatterns = [
     path("import/", views.accident_import, name="accident_import"),
     path("import/chunk/", views.accident_import_chunk, name="accident_import_chunk"),
     path("station-codes/unknown/", views.station_codes_waiting, name="station_codes_waiting"),
+    path("update-database/", views.update_database, name="update_database"),
     path("api/locations.json", views.locations_api, name="locations_api"),
     path("api/pins.json", views.pins_api, name="pins_api"),
     path("api/geo/<str:name>.json", views.geo_api, name="geo_api"),

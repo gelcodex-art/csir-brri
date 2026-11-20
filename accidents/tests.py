@@ -1407,6 +1407,21 @@ class StationCodeTests(TestCase):
         self.assertEqual(self.station("04003").name, "Nkurakan Police Station")
         self.assertEqual(self.station("04091"), suhum)
 
+    def test_admin_home_offers_the_update_and_runs_it(self):
+        from .models import StationCode
+        StationCode.objects.filter(code="04086").delete()                  # as on an old database
+        self.client.login(username="boss", password="pw-12345-test")
+        self.assertContains(self.client.get("/admin/"), "Update the database")
+        r = self.client.post("/update-database/", follow=True)
+        self.assertContains(r, "The database is up to date")
+        self.assertTrue(StationCode.objects.filter(code="04086").exists())
+        self.assertNotContains(self.client.get("/admin/"), "Update the database")
+        self.client.logout()
+        full_account("kofi", password="pw-12345-test")
+        self.client.login(username="kofi", password="pw-12345-test")
+        self.client.post("/update-database/")
+        self.assertFalse(self.client.get("/admin/").status_code == 200)
+
     def test_import_and_form_use_the_code(self):
         import io
         from datetime import datetime

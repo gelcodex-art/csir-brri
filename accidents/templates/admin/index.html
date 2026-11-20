@@ -10,6 +10,16 @@
 {% block content %}
 {% brri_admin_counts as n %}
 {% brri_recent_activity as activity %}
+{% brri_update_needed as upd %}
+{% if upd.any %}
+<form class="brri-update" method="post" action="{% url 'update_database' %}">{% csrf_token %}
+  <div>
+    <strong>The database needs updating for this version.</strong>
+    <span>{% if upd.migrations %}{{ upd.migrations }} table change{{ upd.migrations|pluralize }}{% if upd.codes %} and {% endif %}{% endif %}{% if upd.codes %}{{ upd.codes }} police station code{{ upd.codes|pluralize }} (new or corrected){% endif %} not applied yet. New stations do not show until this is done.</span>
+  </div>
+  <button class="brri-btn" type="submit">Update the database</button>
+</form>
+{% endif %}
 <div class="brri-hello">
   <div>
     <h1>Welcome, {% firstof user.get_short_name user.get_username %}</h1>

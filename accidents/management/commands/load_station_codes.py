@@ -12,7 +12,6 @@ import re
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.db.models import Count
 
 from accidents import codebook as cb
 from accidents import station_codes as sc
@@ -88,11 +87,6 @@ class Command(BaseCommand):
                 have[code].save(update_fields=["station"])
                 moved += 1
         # Stations made from the list that no code or report uses any more.
-        unused = (PoliceStation.objects.filter(source="codes")
-                  .annotate(nc=Count("codes"), nr=Count("accident")).filter(nc=0, nr=0))
-        removed = unused.count()
-        unused.delete()
-
         def station_for(code):
             """The station a code stands for, found by name or added."""
             nonlocal made, matched
@@ -127,6 +121,15 @@ class Command(BaseCommand):
                 continue
             have[code] = StationCode.objects.create(code=code, station=st)
             linked += 1
+
+        # Stations made from the list that no code or report uses any more
+        # (left over after a code moved to its corrected station).
+        used = set(StationCode.objects.values_list("station_id", flat=True)) | set(
+            Accident.objects.exclude(police_station=None).values_list("police_station_id", flat=True))
+        unused = [pk for pk in PoliceStation.objects.filter(source="codes").values_list("pk", flat=True)
+                  if pk not in used]
+        removed = len(unused)
+        PoliceStation.objects.filter(pk__in=unused).delete()
 
         # Reports imported before the list existed carry the code in their notes.
         filled = sc.link_reports()

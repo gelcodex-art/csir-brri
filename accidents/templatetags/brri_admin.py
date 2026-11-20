@@ -28,6 +28,13 @@ def brri_admin_counts():
 
 
 @register.simple_tag
+def brri_update_needed():
+    """What a new version still has to change in the database (see upkeep.py)."""
+    from .. import upkeep
+    return upkeep.pending()
+
+
+@register.simple_tag
 def brri_stations_to_check():
     """Shown beside "Police stations" in the side menu."""
     return PoliceStation.objects.filter(verified=False).count()

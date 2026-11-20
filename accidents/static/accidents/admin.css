@@ -305,6 +305,19 @@ a.brri-btn, a.brri-btn:visited {
   transition: background .15s ease, box-shadow .15s ease;
 }
 a.brri-btn:hover, a.brri-btn:focus { background: var(--button-hover-bg); color: #fff; text-decoration: none; box-shadow: var(--brri-shadow-up); }
+button.brri-btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; border: 0; cursor: pointer;
+  background: var(--button-bg); color: #fff; font-weight: 650; font-size: .9rem; box-shadow: var(--brri-shadow);
+}
+button.brri-btn:hover, button.brri-btn:focus { background: var(--button-hover-bg); }
+.brri-update {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 20px; padding: 14px 18px; border-radius: var(--brri-radius);
+  background: #fff7e6; border: 1px solid #f0c36d; color: #5c3d00;
+}
+.brri-update strong { display: block; margin-bottom: 2px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .brri-update { background: #3a2c10; border-color: #8a6a20; color: #f6dfa8; } }
+:root[data-theme="dark"] .brri-update { background: #3a2c10; border-color: #8a6a20; color: #f6dfa8; }
 
 .brri-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
 a.brri-stat, a.brri-stat:visited {

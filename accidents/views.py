@@ -880,6 +880,24 @@ def station_codes_waiting(request):
         "ready": sum(r["reports"] for r in rows if r["station"])})
 
 
+@login_required
+@require_POST
+def update_database(request):
+    """Admin home page button: apply table changes and the corrected station code
+    list of a new version (what setup-online.bat does, without the office PC)."""
+    from . import upkeep
+    if not request.user.is_superuser:
+        messages.error(request, "Only administrators can update the database.")
+        return redirect("accident_list")
+    try:
+        done = upkeep.run()
+    except Exception as exc:                      # show the reason instead of a crash page
+        messages.error(request, f"The update stopped: {exc}")
+    else:
+        messages.success(request, f"The database is up to date. {done}")
+    return redirect("admin:index")
+
+
 # ---------------------------------------------------------------------------
 # Offline mode was removed. Browsers that installed the old offline service
 # worker fetch this replacement on their next visit: it deletes the offline
