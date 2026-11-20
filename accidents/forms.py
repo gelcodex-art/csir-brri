@@ -10,7 +10,7 @@ from django.forms import inlineformset_factory
 
 from . import codebook as cb
 from . import station_codes as sc
-from .importer import _full_year, _split_ref
+from .importer import _full_year, _split_ref, plain_number
 from .models import (Accident, PassengerCasualty, PedestrianCasualty, PoliceStation, Region,
                      Vehicle)
 
@@ -224,6 +224,8 @@ class AccidentForm(forms.ModelForm):
             data["report_number"], data["report_year"] = number, year
             if "report_year" in self.errors:        # the year box was left empty
                 del self.errors["report_year"]
+        if data.get("report_number"):
+            data["report_number"] = plain_number(data["report_number"])     # 06 -> 6
         acc_date = data.get("accident_date")
         if acc_date and acc_date > date.today():
             self.add_error("accident_date", "The accident date is in the future.")

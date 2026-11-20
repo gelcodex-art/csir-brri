@@ -11,6 +11,7 @@ urlpatterns = [
     path("accidents/<int:pk>/edit/", views.accident_edit, name="accident_edit"),
     path("accidents/<int:pk>/review/", views.accident_review, name="accident_review"),
     path("analysis/", views.analysis_page, name="analysis"),
+    path("analysis/foreign-vehicles/", views.fatality_index_page, name="fatality_index"),
     path("export/<str:fmt>/", views.export, name="export"),
     path("import/", views.accident_import, name="accident_import"),
     path("import/chunk/", views.accident_import_chunk, name="accident_import_chunk"),

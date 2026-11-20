@@ -287,6 +287,58 @@ def analysis_page(request):
     })
 
 
+@login_required
+def fatality_index_page(request):
+    """Ready-made study: Fatality Index, foreign- against Ghanaian-registered vehicles."""
+    from . import fatality
+    alpha_text = request.GET.get("alpha", "0.05")
+    if alpha_text not in fatality.ALPHAS:
+        alpha_text = "0.05"
+    result = fatality.build(filtered_accidents(request), float(alpha_text))
+
+    if request.GET.get("download") == "csv":
+        resp = HttpResponse(content_type="text/csv")
+        resp["Content-Disposition"] = 'attachment; filename="fatality-index.csv"'
+        resp.write("﻿")  # Excel-friendly UTF-8
+        w = csv.writer(resp)
+        w.writerow(["Registration group", "Killed", "Injured", "Total casualties",
+                    "Fatality Index (killed per 100)", "CI lower (Wilson)", "CI upper (Wilson)"])
+        for r in result["rows"]:
+            w.writerow([r["label"], r["killed"], r["injured"], r["total"], r["fi"], r["low"], r["high"]])
+        if result["ok"]:
+            w.writerow([])
+            for name, key in (("Two-proportion z", "z"), ("p-value, z", "p_z"),
+                              ("Pearson chi-square", "chi2"), ("p-value, Pearson", "p_chi2"),
+                              ("Yates chi-square", "yates"), ("p-value, Yates", "p_yates"),
+                              ("Fisher's exact p", "p_fisher"), ("Phi", "phi"),
+                              ("Excess deaths", "excess")):
+                w.writerow([name, result[key]])
+            for name, key in (("Difference in FI (pp)", "diff"), ("Risk ratio", "rr"),
+                              ("Odds ratio", "or")):
+                if key in result:
+                    w.writerow([name] + list(result[key]))
+        w.writerow([])
+        w.writerow(["Year", "Foreign killed", "Foreign casualties", "FI foreign",
+                    "Ghanaian killed", "Ghanaian casualties", "FI Ghanaian", "Difference (pp)",
+                    "Pearson p"])
+        for r in result["years"]["rows"]:
+            w.writerow([r["year"], r["a"], r["n1"], r["fi1"], r["c"], r["n2"], r["fi2"],
+                        r["diff"], r["p"]])
+        if "mh_or" in result["years"]:
+            w.writerow(["Mantel-Haenszel OR", result["years"]["mh_or"]])
+            w.writerow(["CMH chi-square", result["years"]["cmh"], "p", result["years"]["p_cmh"]])
+        w.writerow([])
+        for line in result["statement"]:
+            w.writerow([line])
+        return resp
+
+    return render(request, "accidents/fatality_index.html", {
+        "r": result, "headline": fatality.headline(result), "alpha": alpha_text,
+        "alphas": fatality.ALPHAS, "confidence": round(100 * (1 - float(alpha_text))),
+        **filter_context(request),
+    })
+
+
 # ---------------------------------------------------------------------------
 # List / detail
 # ---------------------------------------------------------------------------

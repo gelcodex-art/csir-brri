@@ -164,6 +164,9 @@ DRIVER_ERROR = {  # 45
 
 INJURY_SEVERITY = {  # 49 & 55
     1: "Fatal", 2: "Hospitalised", 3: "Injured Not-Hospitalised",
+    # Not on the paper form: data recoded as killed / not killed (the old database's
+    # one-sheet export writes CASUALTY INJURY as 1 = killed, 0 = injured).
+    9: "Injured (not known if hospitalised)",
 }
 
 PASSENGER_POSITION = {  # 50
@@ -332,6 +335,12 @@ VEHICLE_REG_CODE = {
     9: "VR - Volta", 10: "WR - Western", 11: "GA, GP - Army", 12: "Foreign",
     13: "Temporary", 14: "Unregistered / Unlicensed",
 }
+
+# Where the vehicle is registered. The old accident database writes it as
+# "Vehicle Registration": 0 = Ghanaian, 1 = foreign ("NA" or "?" = not known).
+REGISTERED_IN = {1: "Ghana", 2: "Foreign"}
+REG_CODES_GHANA = list(range(1, 12))       # region letters and army plates (1-11)
+REG_CODE_FOREIGN = 12
 
 # ---------------------------------------------------------------------------
 # 39 / pedestrian NATIONALITY

@@ -69,6 +69,13 @@ def _full_year(year):
     return 2000 + year if year <= date.today().year % 100 + 1 else 1900 + year
 
 
+def plain_number(text):
+    """A report number without its leading zeros: "06" and "006" are report 6.
+    Numbers with letters or other signs ("A12", "12B") are kept as written."""
+    text = (text or "").strip()
+    return str(int(text)) if text.isdigit() else text
+
+
 def _split_ref(text):
     """'237/15' or '237/2015' -> ('237', 2015). (text, None) when there is no year part."""
     m = re.match(r"^(.*\S)\s*/\s*(\d{2}|\d{4})$", text.strip())
@@ -79,10 +86,13 @@ REGION_BY_NUMBER = {number: name for name, (number, _) in cb.TOWN_CODES.items()}
 
 
 def _region_name(text):
-    """Region as written in older records: its number ("1"), or "Ashanti Region (1)"."""
+    """Region as written in older records: its number, or "Ashanti Region (1)".
+    A number is a number however it is written: 5, 05, 005, 5.0 and "Region 05"
+    are all region 5."""
     text = text.strip()
-    if re.fullmatch(r"\d{1,2}", text):
-        return REGION_BY_NUMBER.get(int(text), text)
+    m = re.fullmatch(r"(?:region|r)?\s*0*(\d{1,2})(?:\.0*)?", text, flags=re.I)
+    if m:
+        return REGION_BY_NUMBER.get(int(m.group(1)), text)
     text = re.sub(r"\s*\(\s*\d+\s*\)\s*$", "", text)            # "Ashanti Region (1)"
     return re.sub(r"\s+region$", "", text, flags=re.I).strip()
 
@@ -107,6 +117,8 @@ def _old_style(values, notes):
         values["report_number"] = number
         if _blank(values.get("report_year")):
             values["report_year"] = year
+    if not _blank(values.get("report_number")):
+        values["report_number"] = plain_number(_text(values["report_number"]))   # 06 -> 6
     if not _blank(values.get("report_year")):
         try:
             values["report_year"] = _full_year(float(values["report_year"]))
@@ -144,6 +156,9 @@ def _old_vehicle(values):
     place = _text(values.get("licence_place_of_issue") or "")
     if place.isdigit():
         values["licence_place_of_issue"] = LICENCE_OFFICE.get(int(place), place)
+    written = values.get("_registration")
+    if not _blank(written) and _blank(values.get("registered_in")):
+        values["registered_in"] = OLD_REGISTRATION.get(_text(written))   # other values: unknown
     return values
 
 
@@ -252,7 +267,9 @@ OLD_VEHICLE = {
     "driver nationality": "driver_nationality", "driver/rider injury": "driver_injury",
     "licence number": "licence_no", "drinking and driving": "drink_drugs",
     "drivers error": "driver_error", "vehiclekey": "_vkey",
+    "vehicle registration": "_registration",          # 0 = Ghanaian, 1 = foreign
 }
+OLD_REGISTRATION = {"0": 1, "1": 2}                   # -> codebook.REGISTERED_IN
 OLD_CASUALTY = {
     "accident key": "accident", "casualty class": "_class", "vehicle reference no": "vehicle_no",
     "casualty sex": "sex", "casualty age": "age", "casualty injury": "severity",
@@ -413,6 +430,7 @@ def _identity(item):
 
 
 def _identity_of(number, year, region_id, station):
+    number = plain_number(number)                   # 06 and 6 are the same report
     if station.startswith("s"):                     # a known station: it fixes the region
         return (number, year, station)
     return (number, year, region_id, station)
@@ -592,6 +610,8 @@ def make_plan(sheets, user):
             continue
         kind = _text(values.get("_class") or "")
         values = dict(values)
+        if values.get("severity") is not None and _text(values["severity"]) == "0":
+            values["severity"] = 9          # recoded data: 1 = killed, 0 = injured
         if values.get("_differs"):
             parent["notes"].append(f"Casualty {_text(values.get('_ckey'))} is on several rows "
                                    "with different details; the first row is used.")

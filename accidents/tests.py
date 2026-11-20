@@ -1037,17 +1037,18 @@ class ExcelImportTests(TestCase):
         ws.append(["No.", "ACCIDENT KEY", "REPORT NUMBER", "REGION", "POLICE STATION", "DATE", "TIME",
                    "ACCIDENT SEVERITY", "X CO-ORDINATE", "Casualtykey", "CASUALTY CLASS",
                    "VEHICLE REFERENCE NO", "CASUALTY AGE", "CASUALTY INJURY",
-                   "VEHICLE REFERENCE NUMBER", "Vehiclekey", "VEHICLE TYPE", "DRIVER/RIDER AGE"])
+                   "VEHICLE REFERENCE NUMBER", "Vehiclekey", "VEHICLE TYPE", "DRIVER/RIDER AGE",
+                   "Vehicle Registration"])
         acc = [7695, datetime(2026, 11, 20), "01", "01999", datetime(2020, 11, 8), time(8, 40), 2, "NA"]
         n = 0
         for cas in (["7695c1", 1, 1, 36, 2], ["7695c2", 2, 1, 26, 3]):   # driver, passenger
-            for veh in ([1, "7695v1", "01", 36], [2, "7695v2", "05", 19]):
+            for veh in ([1, "7695v1", "01", 36, "0"], [2, "7695v2", "05", 19, 1]):
                 n += 1
                 ws.append([n] + acc + cas + veh)
-        ws.append([n + 1] + acc + ["7695c2", 2, 1, 26, 3] + [2, "7695v2", "06", 19])   # differs
+        ws.append([n + 1] + acc + ["7695c2", 2, 1, 26, 3] + [2, "7695v2", "06", 19, 1])   # differs
         # The same report number at another station, an accident without casualties.
         ws.append([n + 2, 8000, "11/20", "01", "01001", datetime(2020, 3, 1), None, 4, None,
-                   "NA", "NA", "NA", "NA", "NA", 1, "8000v1", "01", 40])
+                   "NA", "NA", "NA", "NA", "NA", 1, "8000v1", "01", 40, "NA"])
         buf = io.BytesIO()
         wb.save(buf)
         buf.seek(0)
@@ -1076,6 +1077,8 @@ class ExcelImportTests(TestCase):
         self.assertContains(self.client.get(f"/accidents/{a.pk}/"),
                             "Code 01999 - not in the code list (Ashanti Region)")
         self.assertEqual(sorted(a.vehicles.values_list("vehicle_type", flat=True)), [1, 5])
+        self.assertEqual(sorted(a.vehicles.values_list("vehicle_no", "registered_in")),
+                         [(1, 1), (2, 2)])                    # 0 = Ghana, 1 = foreign
         self.assertEqual(list(a.passengers.values_list("age", "severity")), [(26, 3)])
         b = Accident.objects.exclude(pk=a.pk).get()
         self.assertEqual((str(b), b.passengers.count(), b.vehicles.count()), ("11/2020", 0, 1))
@@ -1102,6 +1105,35 @@ class ExcelImportTests(TestCase):
         r = self.upload(self.flat_workbook())
         self.assertEqual(r.context["plan"]["n_new"], 2)
         self.assertNotIn(y, b.possible_duplicates())
+
+    def test_numbers_with_leading_zeros_are_the_same(self):
+        import io
+        from datetime import date, datetime
+        from openpyxl import Workbook
+        forms = ["01", "1", 1, 1.0, "1.0", "001", "Region 01", "Ashanti Region (01)"]
+        wb = Workbook()
+        wb.active.append(["Report number", "Region", "Date of accident (day/month/year)"])
+        for i, f in enumerate(forms, start=1):
+            wb.active.append([f"{100 + i}/20", f, datetime(2020, 1, i)])
+        wb.active.append(["06/20", "01", datetime(2020, 2, 1)])
+        wb.active.append(["6/20", "1", datetime(2020, 2, 2)])        # the same report
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        buf.name = "zeros.xlsx"
+        r = self.upload(buf)
+        self.assertEqual({row["region"].name for row in r.context["rows"] if row["region"]},
+                         {"Ashanti"})
+        plan = r.context["plan"]
+        self.assertEqual((plan["n_new"], plan["n_error"]), (len(forms) + 1, 1), r.context["rows"])
+        self.client.post("/import/", {"token": r.context["token"]})
+        self.assertTrue(Accident.objects.filter(report_number="6", report_year=2020).exists())
+        # A report saved earlier as "06" is still found as a possible duplicate of "6".
+        old = Accident.objects.create(report_number="06", report_year=2021, region=self.region,
+                                      accident_date=date(2021, 1, 1))
+        new = Accident.objects.create(report_number="6", report_year=2021, region=self.region,
+                                      accident_date=date(2021, 1, 2))
+        self.assertEqual(list(new.possible_duplicates()), [old])
 
     def test_unknown_station_codes_page_links_reports(self):
         from .models import PoliceStation, StationCode
@@ -1160,6 +1192,76 @@ class ExcelImportTests(TestCase):
         User.objects.create_user("analyst", password="pw-12345-test")
         self.client.login(username="analyst", password="pw-12345-test")
         self.assertRedirects(self.client.get("/import/"), "/accidents/")
+
+
+class FatalityIndexTests(TestCase):
+    """The Fatality Index study (foreign- against Ghanaian-registered vehicles)."""
+
+    def test_figures_match_the_analysis_workbook(self):
+        # Obj4_Analysis of the 2020-2024 file: a=271, b=1131, c=11538, d=66963.
+        from . import fatality as fx
+        r = fx.compare(271, 1131, 11538, 66963, 0.05)
+        for key, want in (("z", 4.843572059855647), ("p_z", 1.2752544127359045e-06),
+                          ("chi2", 23.460190299014283), ("yates", 23.093893960325236),
+                          ("p_yates", 1.542798633013562e-06), ("p_fisher", 2.8899303656537057e-06),
+                          ("phi", 0.017135004490722822), ("excess", 64.9354148354798),
+                          ("min_expected", 207.20395980125903)):
+            self.assertAlmostEqual(r[key] / want, 1, places=6, msg=key)
+        for key, want in (("diff", (4.631627306382299, 2.5498318380867953, 6.713422774677802)),
+                          ("rr", (1.3151216633544087, 1.1801885141237778, 1.465481970656319)),
+                          ("or", (1.3906282688089133, 1.2162026826285022, 1.590069656671842))):
+            for got, w in zip(r[key], want):
+                self.assertAlmostEqual(got, w, places=9, msg=key)
+        self.assertAlmostEqual(r["rows"][0]["low"], 17.34745427411072, places=9)   # Wilson
+        self.assertAlmostEqual(r["rows"][1]["high"], 14.94732477826311, places=9)
+        self.assertTrue(r["significant"])
+        y = fx.by_year({2020: (71, 267, 2420, 14974), 2021: (60, 190, 2685, 13301),
+                        2022: (48, 245, 2135, 13651), 2023: (50, 215, 1996, 10643),
+                        2024: (42, 214, 2302, 14394)})
+        self.assertAlmostEqual(y["mh_or"], 1.3936839040588431, places=9)
+        self.assertAlmostEqual(y["cmh"], 23.71065822955131, places=9)
+        self.assertEqual((y["higher"], y["compared"]), (5, 5))
+        self.assertAlmostEqual(fx.fisher_p(3, 1, 1, 3), 0.48571428571428565, places=12)   # 4x4 table
+
+    def test_page_groups_crashes_by_their_vehicles(self):
+        from datetime import date
+        from .models import PassengerCasualty, PedestrianCasualty
+        region = Region.objects.create(name="Ashanti")
+        user = User.objects.create_user("an", password="pw-12345-test")
+
+        def crash(n, regs, killed, injured, year=2021):
+            a = Accident.objects.create(report_number=str(n), report_year=year, region=region,
+                                        accident_date=date(year, 5, 1))
+            for i, (reg_in, reg_code) in enumerate(regs, start=1):
+                a.vehicles.create(vehicle_no=i, registered_in=reg_in, registration_code=reg_code,
+                                  driver_injury=4)
+            for _ in range(killed):
+                PassengerCasualty.objects.create(accident=a, severity=1)
+            for _ in range(injured):
+                PedestrianCasualty.objects.create(accident=a, severity=9)
+            return a
+
+        crash(1, [(1, None), (2, None)], 2, 3)          # a foreign vehicle: foreign group
+        crash(2, [(None, 12)], 1, 1)                    # registration code 12: foreign
+        crash(3, [(1, None), (None, 5)], 1, 9)          # all Ghanaian
+        crash(4, [(1, None)], 0, 10, year=2022)         # Ghanaian
+        crash(5, [(1, None), (None, None)], 5, 0)       # one not known: left out
+        g = Accident.objects.get(report_number="3").vehicles.get(vehicle_no=1)
+        g.driver_injury = 1                             # a killed driver is a casualty too
+        g.save()
+        self.client.login(username="an", password="pw-12345-test")
+        r = self.client.get("/analysis/foreign-vehicles/").context["r"]
+        self.assertEqual([(x["label"], x["killed"], x["total"]) for x in r["rows"]],
+                         [("Foreign", 3, 7), ("Ghanaian", 2, 21), ("Total", 5, 28)])
+        self.assertEqual((r["left_out"], r["crashes"]["left_out"]), (5, 1))
+        self.assertEqual([(y["year"], y["n1"], y["n2"]) for y in r["years"]["rows"]],
+                         [(2021, 7, 11), (2022, 0, 10)])
+        page = self.client.get("/analysis/foreign-vehicles/?alpha=0.01")
+        self.assertContains(page, "Result statement")
+        self.assertContains(page, "99% CI")
+        csv_text = self.client.get("/analysis/foreign-vehicles/?download=csv").content.decode()
+        self.assertIn("Foreign,3,4,7", csv_text)
+        self.assertContains(self.client.get("/analysis/"), "/analysis/foreign-vehicles/")
 
 
 @override_settings(CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}})

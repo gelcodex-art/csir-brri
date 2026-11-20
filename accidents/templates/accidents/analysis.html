@@ -27,6 +27,10 @@
     {% endfor %}
   </div>
   <p class="muted hint">A question sets the boxes below for you. The filters (dates, region and so on) stay as you set them, so you can ask the same question about one region or one year.</p>
+  <h3>Ready-made studies</h3>
+  <ul>
+    <li><a href="{% url 'fatality_index' %}?{{ querystring }}">Are casualties of crashes with a foreign-registered vehicle more likely to be killed? (Fatality Index, with significance tests)</a></li>
+  </ul>
 </details>
 {% include "accidents/_filters.html" %}
 <h2 class="section-label">Or build your own</h2>

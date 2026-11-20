@@ -242,7 +242,12 @@ class Accident(models.Model):
 
         Each police station numbers its own reports from 1, so report 2/2024 of
         Nsawam and report 2/2024 of Suhum are two different reports."""
-        same_report = models.Q(report_number=self.report_number, report_year=self.report_year)
+        # 06 and 6 are the same report number (reports saved before leading zeros
+        # were dropped may still have them).
+        number = (self.report_number or "").strip()
+        same_number = (models.Q(report_number__regex=rf"^0*{int(number)}$") if number.isdigit()
+                       else models.Q(report_number=self.report_number))
+        same_report = same_number & models.Q(report_year=self.report_year)
         if self.police_station_id:
             same_report &= models.Q(police_station_id=self.police_station_id)
         else:
@@ -267,6 +272,7 @@ class Vehicle(models.Model):
     vehicle_type = coded(cb.VEHICLE_TYPE, "29 Vehicle type")
     registration_no = models.CharField("30 Registration no.", max_length=20, blank=True)
     registration_code = coded(cb.VEHICLE_REG_CODE, "30 Registration code")
+    registered_in = coded(cb.REGISTERED_IN, "30 Registered in")
     ownership = coded(cb.OWNERSHIP_USAGE, "31 Ownership/usage")
     manoeuvre = coded(cb.VEHICLE_MANOEUVRE, "32 Vehicle manoeuvre")
     damage = coded(cb.VEHICLE_DAMAGE, "33 Vehicle damage")

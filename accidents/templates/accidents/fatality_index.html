@@ -1,0 +1,148 @@
+{% extends "accidents/base.html" %}
+{% load brri_stats %}
+{% block title %}Foreign vehicles: Fatality Index · BRRI Accident Data{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Foreign vs Ghanaian vehicles: Fatality Index</h1>
+    <p class="sub">Are casualties of crashes involving a foreign-registered vehicle more likely to be killed than casualties of crashes involving only Ghanaian-registered vehicles?</p>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="{% url 'analysis' %}">Back to Analysis</a>
+    {% if r.n %}<a class="btn ghost" href="?{{ querystring }}&amp;download=csv"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Download (CSV)</a>{% endif %}
+  </div>
+</div>
+{% include "accidents/_sample_notice.html" %}
+{% include "accidents/_filters.html" %}
+<section class="card analysis-pick">
+  <div class="field">
+    <label for="fi-alpha">Significance level (α)</label>
+    <select id="fi-alpha" class="inp" name="alpha" form="filters" data-auto>
+      {% for a in alphas %}<option value="{{ a }}" {% if a == alpha %}selected{% endif %}>{{ a }}</option>{% endfor %}
+    </select>
+  </div>
+  <p class="muted hint">The filters above choose the reports (for example 2020 to 2024, or one region). H₀: the Fatality Index is the same in both groups. H₁: it differs (two-tailed).</p>
+  <div class="actions"><button class="btn" form="filters">Show</button></div>
+</section>
+
+{% if not r.n %}
+<div class="card"><p>No casualties can be classified for these filters. A casualty is counted when the crash's vehicles have "30 Registered in" (or a registration code) and the casualty's injury is recorded.</p></div>
+{% else %}
+
+{% if headline %}
+<section class="card findings">
+  <h2>What this shows</h2>
+  <p class="headline">{{ headline }}</p>
+  {% if r.min_expected < 5 %}<p class="msg warning">The smallest expected count is below 5, so the large-sample tests are not reliable: go by Fisher's exact test.</p>{% endif %}
+</section>
+{% elif not r.ok %}
+<div class="msg warning">One of the groups has no casualties, or nobody (or everybody) was killed, so the groups cannot be compared.</div>
+{% endif %}
+
+<section class="card">
+  <h2>1. The casualties studied</h2>
+  <div class="table-wrap table-flush">
+    <table>
+      <tbody>
+        <tr><td>Casualties with their injury recorded</td><td class="num">{{ r.all_casualties|num:0 }}</td></tr>
+        <tr><td>Less: crash has no foreign vehicle but a vehicle whose registration is not known{% if r.no_vehicle %} (or no vehicle recorded: {{ r.no_vehicle|num:0 }}){% endif %}</td><td class="num">{{ r.left_out|num:0 }}</td></tr>
+        <tr><td><strong>Classified casualties, N</strong></td><td class="num"><strong>{{ r.n|num:0 }}</strong></td></tr>
+        <tr><td>&nbsp;&nbsp;Foreign group, n₁ (a vehicle in the crash is foreign-registered)</td><td class="num">{{ r.n1|num:0 }}</td></tr>
+        <tr><td>&nbsp;&nbsp;Ghanaian group, n₂ (every vehicle Ghanaian-registered)</td><td class="num">{{ r.n2|num:0 }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted hint">Crashes: {{ r.crashes.foreign|num:0 }} foreign, {{ r.crashes.ghanaian|num:0 }} Ghanaian, {{ r.crashes.left_out|num:0 }} left out.{% if r.no_injury %} {{ r.no_injury|num:0 }} passenger or pedestrian casualt{{ r.no_injury|pluralize:"y,ies" }} without an injury recorded are not counted.{% endif %}</p>
+</section>
+
+<section class="card">
+  <h2>2. Killed and injured by registration group</h2>
+  <div class="table-wrap table-flush">
+    <table>
+      <thead><tr><th>Registration group</th><th class="num">Killed</th><th class="num">Injured (serious/slight)</th><th class="num">Total casualties</th><th class="num">Fatality Index (killed per 100)</th><th class="num">{{ confidence }}% CI lower (Wilson)</th><th class="num">{{ confidence }}% CI upper (Wilson)</th></tr></thead>
+      <tbody>
+      {% for row in r.rows %}
+        <tr{% if forloop.last %} class="strong"{% endif %}><td>{{ row.label }}</td><td class="num">{{ row.killed|num:0 }}</td><td class="num">{{ row.injured|num:0 }}</td><td class="num">{{ row.total|num:0 }}</td><td class="num">{{ row.fi|num:1 }}</td><td class="num">{{ row.low|num:1 }}</td><td class="num">{{ row.high|num:1 }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% if r.ok %}
+<section class="card">
+  <h2>3. Is the difference more than chance?</h2>
+  <div class="table-wrap table-flush">
+    <table>
+      <thead><tr><th>Quantity</th><th class="num">Value</th><th>Comment</th></tr></thead>
+      <tbody>
+        <tr><td>Proportion killed, foreign group (p̂₁)</td><td class="num">{{ r.p1|num:4 }}</td><td></td></tr>
+        <tr><td>Proportion killed, Ghanaian group (p̂₂)</td><td class="num">{{ r.p2|num:4 }}</td><td></td></tr>
+        <tr><td>Pooled proportion killed under H₀ (p̂)</td><td class="num">{{ r.pooled|num:4 }}</td><td></td></tr>
+        <tr><td>Smallest expected cell count (should be 5 or more)</td><td class="num">{{ r.min_expected|num:1 }}</td><td>{% if r.min_expected >= 5 %}Met: large-sample tests are valid{% else %}Not met: rely on Fisher's exact test{% endif %}</td></tr>
+        <tr><td>Pooled standard error</td><td class="num">{{ r.se|num:5 }}</td><td></td></tr>
+        <tr><td>Two-proportion z statistic</td><td class="num">{{ r.z|num:2 }}</td><td>p = {{ r.p_z|pval }} (two-tailed)</td></tr>
+        <tr><td>Pearson χ², 1 df</td><td class="num">{{ r.chi2|num:2 }}</td><td>p = {{ r.p_chi2|pval }}</td></tr>
+        <tr><td>Yates continuity-corrected χ²</td><td class="num">{{ r.yates|num:2 }}</td><td>p = {{ r.p_yates|pval }}</td></tr>
+        <tr><td>Fisher's exact test, two-sided</td><td class="num"></td><td>p = {{ r.p_fisher|pval }}</td></tr>
+        <tr class="strong"><td>Decision at α = {{ alpha }} (all the tests)</td><td class="num">{% if r.significant %}Reject H₀{% else %}Do not reject H₀{% endif %}</td><td>{% if r.significant %}The Fatality Index differs significantly between the groups{% else %}No significant difference found{% endif %}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2>4. How big is the difference?</h2>
+  <div class="table-wrap table-flush">
+    <table>
+      <thead><tr><th>Measure</th><th class="num">Estimate</th><th class="num">{{ confidence }}% CI lower</th><th class="num">{{ confidence }}% CI upper</th></tr></thead>
+      <tbody>
+        <tr><td>Difference in Fatality Index, foreign − Ghanaian (percentage points)</td><td class="num">{{ r.diff.0|num:2 }}</td><td class="num">{{ r.diff.1|num:2 }}</td><td class="num">{{ r.diff.2|num:2 }}</td></tr>
+        <tr><td>Risk ratio of death, foreign / Ghanaian</td>{% if r.rr %}<td class="num">{{ r.rr.0|num:2 }}</td><td class="num">{{ r.rr.1|num:2 }}</td><td class="num">{{ r.rr.2|num:2 }}</td>{% else %}<td class="num" colspan="3">Not possible: no deaths in a group</td>{% endif %}</tr>
+        <tr><td>Odds ratio of death, foreign vs Ghanaian (Woolf)</td>{% if r.or %}<td class="num">{{ r.or.0|num:2 }}</td><td class="num">{{ r.or.1|num:2 }}</td><td class="num">{{ r.or.2|num:2 }}</td>{% else %}<td class="num" colspan="3">Not possible: a cell of the table is 0</td>{% endif %}</tr>
+        <tr><td>Phi coefficient (φ)</td><td class="num">{{ r.phi|num:3 }}</td><td></td><td></td></tr>
+        <tr><td>Excess deaths in the foreign group at the Ghanaian-group rate</td><td class="num">{{ r.excess|num:0 }}</td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+{% if r.years.rows %}
+<section class="card">
+  <h2>5. Year by year (Cochran–Mantel–Haenszel)</h2>
+  <div class="table-wrap table-flush">
+    <table>
+      <thead><tr><th>Year</th><th class="num">Foreign killed</th><th class="num">Foreign casualties</th><th class="num">FI foreign</th><th class="num">Ghanaian killed</th><th class="num">Ghanaian casualties</th><th class="num">FI Ghanaian</th><th class="num">Difference (pp)</th><th class="num">Pearson χ² p</th></tr></thead>
+      <tbody>
+      {% for y in r.years.rows %}
+        <tr><td>{{ y.year }}</td><td class="num">{{ y.a|num:0 }}</td><td class="num">{{ y.n1|num:0 }}</td><td class="num">{{ y.fi1|num:1 }}</td><td class="num">{{ y.c|num:0 }}</td><td class="num">{{ y.n2|num:0 }}</td><td class="num">{{ y.fi2|num:1 }}</td><td class="num">{{ y.diff|num:1 }}</td><td class="num">{{ y.p|pval }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p>FI was higher for the foreign group in <strong>{{ r.years.higher }} of {{ r.years.compared }}</strong> year{{ r.years.compared|pluralize }}.
+    {% if r.years.mh_or %}Year-adjusted Mantel–Haenszel odds ratio <strong>{{ r.years.mh_or|num:2 }}</strong>; CMH χ²(1) = {{ r.years.cmh|num:2 }}, p = {{ r.years.p_cmh|pval }}.{% endif %}</p>
+</section>
+{% endif %}
+
+{% if r.statement %}
+<section class="card">
+  <h2>6. Result statement</h2>
+  {% for line in r.statement %}<p>{{ line }}</p>{% endfor %}
+  <p class="muted hint">Updates with the filters, ready to copy into a written report.</p>
+</section>
+{% endif %}
+
+<details class="card guide">
+  <summary>How the groups are made</summary>
+  <dl>
+    <dt>Casualty</dt><dd>An injured driver or rider, a passenger or a pedestrian. Killed = injury 1 (Fatal); injured = 2 (Hospitalised) or 3 (Injured not hospitalised).</dd>
+    <dt>Foreign group</dt><dd>At least one vehicle in the crash is registered abroad: "30 Registered in" is Foreign, or the registration code is 12 (Foreign).</dd>
+    <dt>Ghanaian group</dt><dd>Every vehicle in the crash is registered in Ghana: "Registered in" is Ghana, or the registration code is a region or the army (1 to 11).</dd>
+    <dt>Left out</dt><dd>No foreign vehicle, but at least one vehicle whose registration is not known (also temporary or unregistered plates).</dd>
+    <dt>Fatality Index</dt><dd>Killed per 100 casualties.</dd>
+  </dl>
+</details>
+{% endif %}
+{% endblock %}

@@ -65,7 +65,8 @@ AGE_BANDS = [(5, "0-5"), (15, "6-15"), (25, "16-25"), (35, "26-35"), (45, "36-45
              (55, "46-55"), (65, "56-65")]
 AGE_LABELS = {i: label for i, (_, label) in enumerate(AGE_BANDS, start=1)}
 AGE_LABELS[len(AGE_BANDS) + 1] = "Over 65"
-INJURY = {1: "Fatal", 2: "Hospitalised", 3: "Injured Not-Hospitalised", 4: "Uninjured"}
+INJURY = {1: "Fatal", 2: "Hospitalised", 3: "Injured Not-Hospitalised", 4: "Uninjured",
+          9: cb.INJURY_SEVERITY[9]}
 
 MAX_COLUMNS = 12        # table columns before the smallest are added up as "All others"
 MAX_SERIES = 8          # colours on the chart
@@ -199,6 +200,8 @@ VARS = [
 
     Var("vehicle_type", "Vehicle type", "The vehicle", {VEH: "vehicle_type"},
         codes=cb.VEHICLE_TYPE),
+    Var("registered_in", "Registered in (Ghana / foreign)", "The vehicle", {VEH: "registered_in"},
+        codes=cb.REGISTERED_IN),
     Var("ownership", "Ownership / usage", "The vehicle", {VEH: "ownership"},
         codes=cb.OWNERSHIP_USAGE),
     Var("manoeuvre", "Vehicle manoeuvre", "The vehicle", {VEH: "manoeuvre"},
