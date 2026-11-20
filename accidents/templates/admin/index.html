@@ -61,6 +61,12 @@
         <small>Correct the name or district, then tick the stations and choose &ldquo;Mark selected stations as verified&rdquo;.{% if n.stations_from_analysts %} {{ n.stations_from_analysts }} were typed in by analysts.{% endif %}</small></span>
       <span class="go" aria-hidden="true">&rsaquo;</span>
     </a>
+    <a class="brri-row" href="{% url 'station_codes_waiting' %}">
+      <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16M4 15h16M10 3L8 21M16 3l-2 18"/></svg></span>
+      <span class="tx"><strong>Unknown police station codes</strong>
+        <small>{% if n.unknown_code_reports %}{{ n.unknown_code_reports }} report{{ n.unknown_code_reports|pluralize }} give a station code that is not in the code list. See the codes, add them to a station, then link the reports.{% else %}Every station code on the reports is in the code list.{% endif %}</small></span>
+      <span class="go" aria-hidden="true">&rsaquo;</span>
+    </a>
     <a class="brri-row" href="{% url 'admin:accidents_accident_changelist' %}">
       <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.300-4.300"/></svg></span>
       <span class="tx"><strong>Find or delete a report</strong>

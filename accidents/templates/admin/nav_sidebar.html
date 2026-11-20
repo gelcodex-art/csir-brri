@@ -31,6 +31,9 @@
   <a href="{{ u_stations }}"{% if u_stations in request.path %} class="on" aria-current="page"{% endif %}>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.500-3.400 8-8 9-4.600-1-8-4.500-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
     <span>Police stations</span>{% if to_check %}<b title="{{ to_check }} not yet verified">{{ to_check }}</b>{% endif %}</a>
+  <a href="{% url 'station_codes_waiting' %}">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16M4 15h16M10 3L8 21M16 3l-2 18"/></svg>
+    <span>Unknown station codes</span></a>
   <a href="{{ u_regions }}"{% if u_regions in request.path %} class="on" aria-current="page"{% endif %}>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>
     <span>Regions</span></a>

@@ -12,11 +12,10 @@ from django.db import transaction
 
 from accidents import codebook as cb
 from accidents import station_codes as sc
-from accidents.models import Accident, PoliceStation, Region, StationCode
+from accidents.models import PoliceStation, Region, StationCode
 
 NOISE = re.compile(r"\b(police|station|post|headquarters|hq|district|divisional|municipal|command)\b")
 PREFER = ["station", "district_hq", "divisional_hq", "post", "mttd", "regional_hq", "national_hq"]
-NOTE = re.compile(r"^Police station code: (\d+)\s*$", re.M)
 
 
 def key(name):
@@ -76,16 +75,7 @@ class Command(BaseCommand):
             linked += 1
 
         # Reports imported before the list existed carry the code in their notes.
-        filled = 0
-        for acc in Accident.objects.filter(police_station__isnull=True,
-                                           analyst_notes__contains="Police station code:"):
-            m = NOTE.search(acc.analyst_notes)
-            code = sc.clean_code(m.group(1)) if m else ""
-            if code in have:
-                notes = NOTE.sub("", acc.analyst_notes).strip()
-                Accident.objects.filter(pk=acc.pk).update(police_station=have[code].station,
-                                                          analyst_notes=notes)
-                filled += 1
+        filled = sc.link_reports()
 
         self.stdout.write(self.style.SUCCESS(
             f"{len(have)} station codes in the system ({linked} added now: {matched} matched "

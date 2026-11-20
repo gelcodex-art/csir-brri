@@ -27,7 +27,7 @@
         <td>{{ a.accident_time|time:"H:i"|default:"" }}</td>
         <td>{{ a.region }}</td><td>{{ a.site_location_text|truncatechars:60|default:"" }}</td>
         <td>{{ a.road_name }}</td>
-        <td>{{ a.police_station|default:"" }}</td>
+        <td>{% if a.police_station %}{{ a.police_station }}{% elif a.unknown_station_code %}<span class="muted" title="This station code is not in the code list">Code {{ a.unknown_station_code }} (not in the list){% if a.region %}, {{ a.region }}{% endif %}</span>{% endif %}</td>
         <td>{% if a.severity %}<span class="sev sev-{{ a.severity }}">{{ a.get_severity_display }}</span>{% endif %}</td>
         <td class="num">{{ a.killed }}</td><td class="num">{{ a.injured }}</td>
         <td><span class="badge {{ a.status }}">{{ a.get_status_display }}</span></td>

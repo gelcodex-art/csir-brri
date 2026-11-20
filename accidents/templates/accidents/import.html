@@ -19,7 +19,7 @@
   <p>Nothing has been saved yet.</p>
   <ul>
     <li><strong>{{ plan.n_new }}</strong> new report{{ plan.n_new|pluralize }} will be added.</li>
-    <li><strong>{{ plan.n_duplicate }}</strong> already in the system (same report number, year and region) will be skipped.</li>
+    <li><strong>{{ plan.n_duplicate }}</strong> already in the system (same report number and year at the same police station) will be skipped.</li>
     <li><strong>{{ plan.n_error }}</strong> with problems will be skipped. Correct them in the Excel file and import it again.</li>
     {% if plan.drivers %}<li><strong>{{ plan.drivers }}</strong> driver row{{ plan.drivers|pluralize }} on the casualty sheet are not added again: each driver is already on the vehicle row.</li>{% endif %}
     {% if plan.station_codes %}<li><strong>{{ plan.station_codes }}</strong> report{{ plan.station_codes|pluralize }} give a police station code that is not in the code list. The code is kept in the report's analyst notes and the station is left empty.</li>{% endif %}
@@ -35,6 +35,27 @@
     <a class="btn ghost" href="{% url 'accident_import' %}">Choose another file</a>
   </div>
 </div>
+
+{% if plan.unknown_codes %}
+<div class="card">
+  <div class="card-head"><h2>Police station codes not in the code list</h2></div>
+  <p>These {{ plan.unknown_codes|length }} code{{ plan.unknown_codes|length|pluralize }} are not in the system yet. The reports are still imported: each keeps its code in the analyst notes and its station is left empty.
+    After the import they are listed under <a href="{% url 'station_codes_waiting' %}">Unknown station codes</a>, where they can be linked once the code is added to a station.</p>
+  <div class="table-wrap table-flush">
+    <table>
+      <thead><tr><th>Code</th><th>Region</th><th class="num">Reports</th></tr></thead>
+      <tbody>
+      {% for c in plan.unknown_codes %}
+        <tr><td class="nowrap strong">{{ c.code }}</td>
+          <td>{% for name, n in c.regions %}<div>{{ name }}{% if c.regions|length > 1 %} <span class="muted">({{ n }})</span>{% endif %}</div>{% endfor %}
+            {% if c.code_region and c.code_region != c.region %}<div class="muted">The code's first two digits are {{ c.code_region }}</div>{% elif not c.code_region %}<div class="muted">The first two digits are not a region number</div>{% endif %}</td>
+          <td class="num">{{ c.reports }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
 
 <div class="card table-wrap table-flush">
   <table>
@@ -60,13 +81,16 @@
 
 {% else %}
 <div class="card">
-  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+  <form method="post" enctype="multipart/form-data" id="import-form"
+        data-chunk-url="{% url 'accident_import_chunk' %}" data-chunk-size="{{ chunk_size }}"
+        data-max-bytes="{{ max_bytes }}">{% csrf_token %}
     <div class="field">
-      <label for="id_file">Excel file (.xlsx, up to 4 MB)</label>
+      <label for="id_file">Excel file (.xlsx, up to {{ max_mb }} MB)</label>
       <input class="inp" id="id_file" type="file" name="file" accept=".xlsx" required>
     </div>
+    <p class="muted" id="import-progress" hidden></p>
     <div class="actions">
-      <button class="btn" type="submit">Check the file</button>
+      <button class="btn" type="submit" id="import-submit">Check the file</button>
       <a class="btn ghost" href="{% url 'export' 'xlsx' %}">Download the current records as an example</a>
     </div>
   </form>
@@ -77,6 +101,9 @@
     <li>The file and its sheets can have any name. What matters is the column headings: they must be the same as in the export.</li>
     <li>One sheet must hold the reports (with at least <strong>Report number</strong> and <strong>Date of accident</strong>). Sheets for vehicles, passengers and pedestrians are optional.</li>
     <li>Files from the accident database are also read (sheets with headings such as ACCIDENT KEY, REPORT NUMBER, DATE).</li>
+    <li>They can also be on one sheet, where a report is repeated on a row for every vehicle and casualty (with the columns Vehiclekey and Casualtykey). Each report, vehicle and casualty is taken once.</li>
+    <li>Each police station numbers its own reports from 1, so reports are told apart by their police station: 2/2024 of Nsawam and 2/2024 of Suhum are two different reports.</li>
+    <li>Police station codes that are not in the code list are shown before you import, and afterwards under <a href="{% url 'station_codes_waiting' %}">Unknown station codes</a>.</li>
     <li>A file that is not accident data is refused, and nothing is saved.</li>
     <li>Codes are read as they are written: a report number with the year attached (<strong>237/15</strong> is report 237 of 2015), the region as its number (<strong>1</strong> is Ashanti), the town as its town/village code (<strong>0101</strong> is Ashanti, Kumasi), and the police station as its code (<strong>04086</strong> is Nsawam).</li>
     <li>Rows on the other sheets are linked to a report by their <strong>accident</strong> column, written as number/year (for example 790/2021).</li>
@@ -87,4 +114,67 @@
   </ul>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Large files are sent in pieces: the online host refuses one upload over about 4.5 MB.
+(function () {
+  var form = document.getElementById("import-form");
+  if (!form || !window.fetch || !window.Blob) return;
+  var input = document.getElementById("id_file");
+  var progress = document.getElementById("import-progress");
+  var button = document.getElementById("import-submit");
+  var size = parseInt(form.dataset.chunkSize, 10);
+  var maxBytes = parseInt(form.dataset.maxBytes, 10);
+  var csrf = form.querySelector("[name=csrfmiddlewaretoken]").value;
+
+  function say(text) { progress.hidden = false; progress.textContent = text; }
+  function hidden(name, value) {
+    var el = document.createElement("input");
+    el.type = "hidden"; el.name = name; el.value = value; form.appendChild(el);
+  }
+
+  form.addEventListener("submit", async function (event) {
+    var file = input.files[0];
+    if (!file || file.size <= size) return;           // small file: send it the normal way
+    event.preventDefault();
+    if (file.size > maxBytes) {
+      say("The file is larger than " + Math.round(maxBytes / 1048576) + " MB. Split it into smaller files.");
+      return;
+    }
+    button.disabled = true;
+    var id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()).replace(/[^a-zA-Z0-9]/g, "");
+    var total = Math.ceil(file.size / size);
+    try {
+      for (var i = 0; i < total; i++) {
+        say("Sending the file: part " + (i + 1) + " of " + total + "…");
+        var body = new FormData();
+        body.append("upload_id", id);
+        body.append("index", i);
+        body.append("total", total);
+        body.append("chunk", file.slice(i * size, (i + 1) * size), "part");
+        var resp = await fetch(form.dataset.chunkUrl, {
+          method: "POST", body: body, credentials: "same-origin",
+          headers: {"X-CSRFToken": csrf}});
+        if (!resp.ok) {
+          var msg = "";
+          try { msg = (await resp.json()).error; } catch (e) {}
+          throw new Error(msg || "The server did not accept part " + (i + 1) + ".");
+        }
+      }
+    } catch (err) {
+      say((err && err.message) || "The file could not be sent. Check the connection and try again.");
+      button.disabled = false;
+      return;
+    }
+    say("File sent. Checking it, this can take a few minutes for a large file…");
+    hidden("upload_id", id);
+    hidden("total", total);
+    hidden("name", file.name);
+    input.disabled = true;                             // do not send the whole file again
+    form.submit();
+  });
+})();
+</script>
 {% endblock %}

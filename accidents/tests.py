@@ -1026,6 +1026,119 @@ class ExcelImportTests(TestCase):
         self.assertEqual((ps.position, ps.action, ps.severity), (4, 4, 2))
         self.assertEqual((pd.action, pd.location, pd.drink_drugs, pd.age), (2, 4, 1, 12))
 
+    def flat_workbook(self):
+        """The old database's one-sheet export: one row per accident x vehicle x casualty."""
+        import io
+        from datetime import datetime, time
+        from openpyxl import Workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws.append(["No.", "ACCIDENT KEY", "REPORT NUMBER", "REGION", "POLICE STATION", "DATE", "TIME",
+                   "ACCIDENT SEVERITY", "X CO-ORDINATE", "Casualtykey", "CASUALTY CLASS",
+                   "VEHICLE REFERENCE NO", "CASUALTY AGE", "CASUALTY INJURY",
+                   "VEHICLE REFERENCE NUMBER", "Vehiclekey", "VEHICLE TYPE", "DRIVER/RIDER AGE"])
+        acc = [7695, datetime(2026, 11, 20), "01", "01999", datetime(2020, 11, 8), time(8, 40), 2, "NA"]
+        n = 0
+        for cas in (["7695c1", 1, 1, 36, 2], ["7695c2", 2, 1, 26, 3]):   # driver, passenger
+            for veh in ([1, "7695v1", "01", 36], [2, "7695v2", "05", 19]):
+                n += 1
+                ws.append([n] + acc + cas + veh)
+        ws.append([n + 1] + acc + ["7695c2", 2, 1, 26, 3] + [2, "7695v2", "06", 19])   # differs
+        # The same report number at another station, an accident without casualties.
+        ws.append([n + 2, 8000, "11/20", "01", "01001", datetime(2020, 3, 1), None, 4, None,
+                   "NA", "NA", "NA", "NA", "NA", 1, "8000v1", "01", 40])
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        buf.name = "Testx.xlsx"
+        return buf
+
+    def test_one_sheet_database_file(self):
+        r = self.upload(self.flat_workbook())
+        plan = r.context["plan"]
+        self.assertEqual((plan["n_new"], plan["n_error"], plan["drivers"]), (2, 0, 1), r.context["rows"])
+        # The code list is not loaded in these tests, so both codes are unknown.
+        self.assertEqual([(c["code"], c["reports"], c["region"], c["regions"])
+                          for c in plan["unknown_codes"]],
+                         [("01001", 1, "Ashanti", [("Ashanti", 1)]),
+                          ("01999", 1, "Ashanti", [("Ashanti", 1)])])
+        self.assertContains(r, "Police station codes not in the code list")
+        notes = " ".join(n for row in r.context["rows"] for n in row["notes"])
+        self.assertIn('Excel had changed "11/20" into a date', notes)
+        self.assertIn("7695v2) is on several rows with different details", notes)
+        self.client.post("/import/", {"token": r.context["token"]})
+        a = Accident.objects.get(analyst_notes__contains="01999")
+        self.assertEqual((a.report_number, a.report_year, a.x_coordinate, a.police_station),
+                         ("11", 2020, "", None))
+        # The code and the region are shown where the station would be.
+        self.assertContains(self.client.get("/accidents/"), "Code 01999 (not in the list), Ashanti")
+        self.assertContains(self.client.get(f"/accidents/{a.pk}/"),
+                            "Code 01999 - not in the code list (Ashanti Region)")
+        self.assertEqual(sorted(a.vehicles.values_list("vehicle_type", flat=True)), [1, 5])
+        self.assertEqual(list(a.passengers.values_list("age", "severity")), [(26, 3)])
+        b = Accident.objects.exclude(pk=a.pk).get()
+        self.assertEqual((str(b), b.passengers.count(), b.vehicles.count()), ("11/2020", 0, 1))
+        r = self.upload(self.flat_workbook())                      # again: nothing new
+        self.assertEqual((r.context["plan"]["n_new"], r.context["plan"]["n_duplicate"]), (0, 2))
+
+    def test_same_report_number_at_other_stations_is_a_different_report(self):
+        from datetime import date
+        from .models import PoliceStation
+        nsawam = PoliceStation.objects.create(region=self.region, name="Nsawam")
+        suhum = PoliceStation.objects.create(region=self.region, name="Suhum")
+        make = lambda st, **kw: Accident.objects.create(                      # noqa: E731
+            report_number="2", report_year=2024, region=self.region, police_station=st,
+            accident_date=date(2024, 1, 2), **kw)
+        a, b = make(nsawam), make(suhum, accident_time="10:00")
+        self.assertEqual(list(a.possible_duplicates()), [])
+        c = make(nsawam, accident_time="11:00")
+        self.assertEqual(list(a.possible_duplicates()), [c])
+        # No station: told apart by the station code kept in the notes.
+        x = make(None, analyst_notes="Police station code: 01999", accident_time="12:00")
+        y = make(None, analyst_notes="Police station code: 01001", accident_time="13:00")
+        self.assertEqual(list(x.possible_duplicates()), [])
+        # The importer: reports already saved at another station do not block the import.
+        r = self.upload(self.flat_workbook())
+        self.assertEqual(r.context["plan"]["n_new"], 2)
+        self.assertNotIn(y, b.possible_duplicates())
+
+    def test_unknown_station_codes_page_links_reports(self):
+        from .models import PoliceStation, StationCode
+        r = self.upload(self.flat_workbook())
+        self.client.post("/import/", {"token": r.context["token"]})
+        r = self.client.get("/station-codes/unknown/")
+        self.assertContains(r, "01999")
+        self.assertEqual([(c["code"], c["reports"], c["station"]) for c in r.context["rows"]],
+                         [("01001", 1, None), ("01999", 1, None)])
+        st = PoliceStation.objects.create(region=self.region, name="Test Station")
+        StationCode.objects.create(code="01999", station=st)
+        self.assertContains(self.client.get("/station-codes/unknown/"), "Link reports")
+        self.client.post("/station-codes/unknown/", {"code": "01999"})
+        a = Accident.objects.get(police_station=st)
+        self.assertNotIn("Police station code", a.analyst_notes)
+        self.assertEqual([c["code"] for c in self.client.get("/station-codes/unknown/").context["rows"]],
+                         ["01001"])
+
+    def test_large_file_sent_in_pieces(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        data = self.flat_workbook().getvalue()
+        size = 1000
+        total = -(-len(data) // size)
+        for i in range(total):
+            r = self.client.post("/import/chunk/", {
+                "upload_id": "abc123", "index": i, "total": total,
+                "chunk": SimpleUploadedFile("part", data[i * size:(i + 1) * size])})
+            self.assertEqual(r.status_code, 200)
+        r = self.client.post("/import/", {"upload_id": "abc123", "total": total, "name": "big.xlsx"})
+        self.assertEqual(r.context["plan"]["n_new"], 2)
+        self.assertContains(r, "big.xlsx")
+        r = self.client.post("/import/", {"upload_id": "abc123", "total": total, "name": "big.xlsx"})
+        self.assertContains(r, "did not arrive")                     # pieces are used once
+        r = self.client.post("/import/chunk/", {"upload_id": "../x", "index": 0, "total": 1,
+                                                "chunk": SimpleUploadedFile("part", b"1")})
+        self.assertEqual(r.status_code, 400)
+
     def test_file_that_is_not_accident_data_is_refused(self):
         import io
         from openpyxl import Workbook

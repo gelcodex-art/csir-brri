@@ -207,3 +207,64 @@ def stations_by_code():
             return {c.code: c.station for c in StationCode.objects.select_related("station")}
     except DatabaseError:
         return {}
+
+
+# A report whose station code was not on the list keeps it in its analyst notes
+# (the importer writes this line) and has no station.
+NOTE = re.compile(r"^Police station code: (\S+)\s*$", re.M)
+
+
+def _reports_with_code_note():
+    from .models import Accident
+    return Accident.objects.filter(police_station__isnull=True,
+                                   analyst_notes__contains="Police station code:")
+
+
+def codes_waiting():
+    """Station codes written on saved reports that left the station empty, most used
+    first: [{"code", "region", "regions", "code_region", "reports", "station"}].
+
+    "region" is the region of those reports (the most common one), "regions" every
+    region with its number of reports, and "code_region" the region the code's
+    first two digits stand for. "station" is set when the code has been added to
+    the list since, so the reports can now be linked."""
+    from . import codebook as cb
+    region_of = {number: name for name, (number, _) in cb.TOWN_CODES.items()}
+    known = stations_by_code()
+    counts = {}                                         # code -> {region name: reports}
+    for notes, region in (_reports_with_code_note()
+                          .values_list("analyst_notes", "region__name").iterator()):
+        m = NOTE.search(notes)
+        if m:
+            code = clean_code(m.group(1)) or m.group(1)
+            by_region = counts.setdefault(code, {})
+            by_region[region or ""] = by_region.get(region or "", 0) + 1
+    out = []
+    for code, by_region in sorted(counts.items(), key=lambda kv: (-sum(kv[1].values()), kv[0])):
+        regions = sorted(by_region.items(), key=lambda kv: (-kv[1], kv[0]))
+        station = known.get(ALIASES.get(code, code)) or known.get(code)
+        out.append({"code": code, "region": regions[0][0], "regions": regions,
+                    "code_region": (region_of.get(int(code[:2]), "") if code[:2].isdigit() else ""),
+                    "reports": sum(by_region.values()), "station": station})
+    return out
+
+
+def link_reports(codes=None):
+    """Give reports that kept a station code in their notes the station that code
+    now stands for, and take the line out of the notes. Only the given codes when
+    `codes` is set. Returns how many reports were linked."""
+    from .models import Accident
+    known = stations_by_code()
+    linked = 0
+    for pk, notes in _reports_with_code_note().values_list("pk", "analyst_notes"):
+        m = NOTE.search(notes)
+        code = (clean_code(m.group(1)) or m.group(1)) if m else ""
+        if not code or (codes is not None and code not in codes):
+            continue
+        station = known.get(ALIASES.get(code, code)) or known.get(code)
+        if station is None:
+            continue
+        Accident.objects.filter(pk=pk).update(police_station=station,
+                                              analyst_notes=NOTE.sub("", notes).strip())
+        linked += 1
+    return linked

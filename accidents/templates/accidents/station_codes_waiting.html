@@ -1,0 +1,62 @@
+{% extends "accidents/base.html" %}
+{% block title %}Unknown station codes · BRRI{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Police station codes not in the list</h1>
+    <p class="sub">These codes are written on saved reports, but they are not on the code list, so those reports have no police station yet.</p>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="{% url 'accident_import' %}">Import from Excel</a>
+  </div>
+</div>
+
+{% if rows %}
+<div class="card">
+  <p><strong>{{ rows|length }}</strong> code{{ rows|length|pluralize }} on <strong>{{ reports }}</strong> report{{ reports|pluralize }}.</p>
+  <ol>
+    <li>Open the region's police stations, choose the right station (or add it) and type the code under <strong>Station codes</strong>.</li>
+    <li>Come back here and click <strong>Link reports</strong>: those reports get their station and the code is taken out of their notes.</li>
+  </ol>
+  {% if ready %}
+  <form method="post">{% csrf_token %}
+    <input type="hidden" name="code" value="all">
+    <button class="btn" type="submit">Link all {{ ready }} report{{ ready|pluralize }} whose code is now in the list</button>
+  </form>
+  {% endif %}
+</div>
+
+<div class="card table-wrap table-flush">
+  <table>
+    <thead><tr><th>Code</th><th>Region</th><th class="num">Reports</th><th>Now in the list as</th><th></th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td class="nowrap strong">{{ r.code }}</td>
+        <td>{% for name, n in r.regions %}<div>{% firstof name "No region" %}{% if r.regions|length > 1 %} <span class="muted">({{ n }})</span>{% endif %}</div>{% endfor %}
+          {% if r.code_region and r.code_region != r.region %}<div class="muted">The code's first two digits are {{ r.code_region }}</div>{% elif not r.code_region %}<div class="muted">The first two digits are not a region number</div>{% endif %}</td>
+        <td class="num">{{ r.reports }}</td>
+        <td>{% if r.station %}<span class="badge reviewed">{{ r.station }}</span>{% else %}<span class="muted">Not yet</span>{% endif %}</td>
+        <td class="nowrap">
+          {% if r.station %}
+          <form method="post">{% csrf_token %}
+            <input type="hidden" name="code" value="{{ r.code }}">
+            <button class="btn" type="submit">Link reports</button>
+          </form>
+          {% elif r.region_id %}
+          <a class="btn ghost" href="{% url 'admin:accidents_policestation_changelist' %}?region__id__exact={{ r.region_id }}">Add to a station</a>
+          {% else %}
+          <a class="btn ghost" href="{% url 'admin:accidents_policestation_changelist' %}">Add to a station</a>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card">
+  <p>Every police station code on the saved reports is in the code list.</p>
+</div>
+{% endif %}
+{% endblock %}

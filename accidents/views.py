@@ -337,6 +337,9 @@ def accident_detail(request, pk):
             ps = acc.police_station
             if n == "police_station" and ps and ps.source == "user" and not ps.verified:
                 val = f"{ps} (new station added by an analyst - not yet checked)"
+            elif n == "police_station" and not ps and acc.unknown_station_code:
+                val = (f"Code {acc.unknown_station_code} - not in the code list"
+                       + (f" ({acc.region} Region)" if acc.region else ""))
             rows.append((f.verbose_name, val, n in ("scene_sketch", "site_sketch"),
                          f.get_internal_type() == "TextField"))   # long text gets a full row
         sections.append((title, rows))
@@ -690,11 +693,53 @@ def export(request, fmt):
 # Import from Excel (administrators): upload -> summary -> confirm
 # ---------------------------------------------------------------------------
 IMPORT_SHOWN = 300      # rows listed on the summary page
+IMPORT_CHUNK = 3 * 1024 * 1024   # the online host refuses requests over about 4.5 MB
+
+
+def _chunk_key(user, upload_id, index):
+    return f"importchunk:{user.pk}:{upload_id}:{index}"
+
+
+@login_required
+@require_POST
+def accident_import_chunk(request):
+    """Receive one piece of a large Excel file. The browser sends the file in
+    pieces because the online host does not accept one big upload."""
+    from .importer import MAX_BYTES
+
+    if not request.user.is_staff:
+        return JsonResponse({"error": "Only administrators can import reports."}, status=403)
+    upload_id = request.POST.get("upload_id", "")
+    piece = request.FILES.get("chunk")
+    try:
+        index, total = int(request.POST.get("index", "")), int(request.POST.get("total", ""))
+    except ValueError:
+        index = total = -1
+    if (not upload_id.isalnum() or len(upload_id) > 64 or piece is None
+            or not 0 <= index < total or total * IMPORT_CHUNK > MAX_BYTES + IMPORT_CHUNK
+            or piece.size > IMPORT_CHUNK):
+        return JsonResponse({"error": "That piece of the file was not accepted."}, status=400)
+    cache.set(_chunk_key(request.user, upload_id, index), piece.read(), 3600)
+    return JsonResponse({"ok": True})
+
+
+def _join_chunks(user, upload_id, total):
+    from .importer import ImportProblem
+
+    if not upload_id.isalnum() or not 0 < total <= 1000:
+        raise ImportProblem("Choose the Excel file again.")
+    keys = [_chunk_key(user, upload_id, i) for i in range(total)]
+    found = cache.get_many(keys)
+    cache.delete_many(keys)
+    if len(found) != total:
+        raise ImportProblem("Part of the file did not arrive. Choose the file again.")
+    return b"".join(found[k] for k in keys)
 
 
 @login_required
 def accident_import(request):
-    from .importer import ImportProblem, read_workbook, save_plan
+    from .importer import (MAX_BYTES, ImportProblem, make_plan, pack, read_sheets, save_plan,
+                           unpack)
 
     if not request.user.is_staff:
         messages.error(request, "Only administrators can import reports from Excel.")
@@ -707,23 +752,37 @@ def accident_import(request):
         try:
             if token:                                   # step 2: confirmed
                 held = cache.get(f"import:{request.user.pk}:{token}")
-                if not held:
+                if not held or "sheets" not in held:
                     raise ImportProblem("That file is no longer held (it is kept for one hour). "
                                         "Choose the file again.")
-                saved = save_plan(read_workbook(held["data"], request.user), request.user)
+                saved = save_plan(make_plan(unpack(held["sheets"]), request.user), request.user)
                 cache.delete(f"import:{request.user.pk}:{token}")
                 plural = "" if saved == 1 else "s"
                 messages.success(request, f"{saved} report{plural} imported from {held['name']}.")
                 return redirect("accident_list")
-            if not upload:
+            upload_id = request.POST.get("upload_id", "")
+            if upload_id:                               # step 1, file sent in pieces
+                try:
+                    total = int(request.POST.get("total", ""))
+                except ValueError:
+                    total = 0
+                data = _join_chunks(request.user, upload_id, total)
+                name = request.POST.get("name", "")[:200] or "file.xlsx"
+            elif upload:
+                data, name = upload.read(), upload.name
+            else:
                 raise ImportProblem("Choose an Excel file first.")
-            data = upload.read()                        # step 1: show what would happen
-            plan = read_workbook(data, request.user)
+            sheets = read_sheets(data)                  # step 1: show what would happen
+            del data
+            plan = make_plan(sheets, request.user)
             token = uuid.uuid4().hex
-            cache.set(f"import:{request.user.pk}:{token}", {"data": data, "name": upload.name}, 3600)
+            # Held until "Import" is clicked: only the columns and rows the import uses,
+            # compressed - not the whole Excel file.
+            cache.set(f"import:{request.user.pk}:{token}", {"sheets": pack(sheets), "name": name},
+                      3600)
             order = {"error": 0, "new": 1, "duplicate": 2}
             listed = sorted(plan["reports"], key=lambda r: (order[r["state"]], r["row"]))
-            ctx = {"plan": plan, "token": token, "filename": upload.name,
+            ctx = {"plan": plan, "token": token, "filename": name,
                    "hidden": max(0, len(listed) - IMPORT_SHOWN),
                    "rows": [{"row": r["row"], "ref": r["ref"], "state": r["state"],
                              "region": r["obj"].region if r["obj"].region_id else "",
@@ -733,7 +792,30 @@ def accident_import(request):
                             for r in listed[:IMPORT_SHOWN]]}
         except ImportProblem as exc:
             ctx = {"problem": str(exc)}
+    ctx.update(chunk_size=IMPORT_CHUNK, max_bytes=MAX_BYTES, max_mb=MAX_BYTES // (1024 * 1024))
     return render(request, "accidents/import.html", ctx)
+
+
+@login_required
+def station_codes_waiting(request):
+    """Police station codes on saved reports that are not on the code list, so an
+    administrator can see them, add them to a station, and then link the reports."""
+    if not request.user.is_staff:
+        messages.error(request, "Only administrators can manage police station codes.")
+        return redirect("accident_list")
+    if request.method == "POST":
+        code = request.POST.get("code", "")
+        linked = station_codes.link_reports(None if code == "all" else {code})
+        plural = "" if linked == 1 else "s"
+        messages.success(request, f"{linked} report{plural} now have their police station.")
+        return redirect("station_codes_waiting")
+    rows = station_codes.codes_waiting()
+    regions = {r.name: r.pk for r in Region.objects.all()}
+    for r in rows:
+        r["region_id"] = regions.get(r["region"])
+    return render(request, "accidents/station_codes_waiting.html", {
+        "rows": rows, "reports": sum(r["reports"] for r in rows),
+        "ready": sum(r["reports"] for r in rows if r["station"])})
 
 
 # ---------------------------------------------------------------------------

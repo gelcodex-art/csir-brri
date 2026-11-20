@@ -21,6 +21,9 @@ def brri_admin_counts():
         "waiting": Accident.objects.filter(status=Accident.STATUS_SUBMITTED).count(),
         "approved": Accident.objects.filter(status=Accident.STATUS_REVIEWED).count(),
         "query": Accident.objects.filter(status=Accident.STATUS_QUERY).count(),
+        # Reports whose station code is not in the code list (kept in their notes).
+        "unknown_code_reports": Accident.objects.filter(
+            police_station__isnull=True, analyst_notes__contains="Police station code:").count(),
     }
 
 

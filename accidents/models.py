@@ -227,9 +227,32 @@ class Accident(models.Model):
             self.town_code = self.town.code
         super().save(*args, **kwargs)
 
+    @property
+    def unknown_station_code(self):
+        """The station code written on the report when it is not in the code list
+        (kept in the analyst notes, the station left empty); "" otherwise."""
+        if self.police_station_id:
+            return ""
+        from .station_codes import NOTE, clean_code
+        m = NOTE.search(self.analyst_notes or "")
+        return (clean_code(m.group(1)) or m.group(1)) if m else ""
+
     def possible_duplicates(self):
-        """Same report number+year, or same date+region+town+time."""
+        """Same report number+year at the same police station, or same date+region+town+time.
+
+        Each police station numbers its own reports from 1, so report 2/2024 of
+        Nsawam and report 2/2024 of Suhum are two different reports."""
         same_report = models.Q(report_number=self.report_number, report_year=self.report_year)
+        if self.police_station_id:
+            same_report &= models.Q(police_station_id=self.police_station_id)
+        else:
+            # No station: the same region, and the same station code if one was kept
+            # in the notes (see station_codes.NOTE).
+            from .station_codes import NOTE
+            same_report &= models.Q(police_station__isnull=True, region_id=self.region_id)
+            m = NOTE.search(self.analyst_notes or "")
+            if m:
+                same_report &= models.Q(analyst_notes__contains=m.group(0).strip())
         same_event = models.Q(accident_date=self.accident_date, region=self.region,
                               town=self.town, accident_time=self.accident_time)
         return Accident.objects.filter(same_report | same_event).exclude(pk=self.pk)

@@ -16,11 +16,15 @@ its town/village code (0101 = Ashanti, Kumasi) - see codebook.TOWN_CODES.
     plan = read_workbook(file_bytes, user)   # nothing is saved; describes what would happen
     save_plan(plan, user)                    # saves the reports marked "new"
 
-A report is skipped when the same report number, year and region is already in
-the system, so importing the same file twice does not create duplicates.
+Each police station numbers its own reports from 1, so 2/2024 is on many
+stations' books: a report is its number and year at its police station (the
+region is only used for a report without a station). A report already in the
+system is skipped, so importing the same file twice does not create duplicates.
 """
 import io
+import pickle
 import re
+import zlib
 from datetime import date, datetime, time
 from decimal import Decimal, InvalidOperation
 
@@ -33,7 +37,7 @@ from . import station_codes as sc
 from .models import (Accident, AuditLog, District, PassengerCasualty, PedestrianCasualty,
                      PoliceStation, Region, Town, Vehicle)
 
-MAX_BYTES = 4 * 1024 * 1024          # the online host accepts uploads up to about 4 MB
+MAX_BYTES = 70 * 1024 * 1024         # online, the browser sends bigger files in pieces (see views)
 CHILD_SHEETS = [("Vehicles", Vehicle, "vehicles"), ("Passengers", PassengerCasualty, "passengers"),
                 ("Pedestrians", PedestrianCasualty, "pedestrians")]
 # Not read from the file: set by the system, or files that an Excel sheet cannot carry.
@@ -47,8 +51,8 @@ class ImportProblem(Exception):
 
 
 def _blank(v):
-    """Empty cell. The old accident database writes "?" for unknown."""
-    return v is None or (isinstance(v, str) and v.strip() in ("", "?"))
+    """Empty cell. The old accident database writes "?" or "NA" for unknown."""
+    return v is None or (isinstance(v, str) and v.strip().upper() in ("", "?", "NA", "N/A"))
 
 
 def _text(v):
@@ -91,6 +95,13 @@ def _old_style(values, notes):
     * town/village code typed as a number: 101 -> 0101
     """
     values = dict(values)
+    written = values.get("report_number")
+    if isinstance(written, (date, datetime)):
+        # Excel turns "11/20" into the date 20 November: the month is the report
+        # number and the day is the year (years 13 and up cannot be a month).
+        values["report_number"] = f"{written.month}/{written.day:02d}"
+        notes.append(f"Report number: Excel had changed \"{written.month}/{written.day:02d}\" into "
+                     "a date; it is read as the report number again.")
     number, year = _split_ref(_text(values.get("report_number") or ""))
     if year:
         values["report_number"] = number
@@ -240,14 +251,14 @@ OLD_VEHICLE = {
     "vehicle ownership": "ownership", "driver sex": "driver_sex", "driver/rider age": "driver_age",
     "driver nationality": "driver_nationality", "driver/rider injury": "driver_injury",
     "licence number": "licence_no", "drinking and driving": "drink_drugs",
-    "drivers error": "driver_error",
+    "drivers error": "driver_error", "vehiclekey": "_vkey",
 }
 OLD_CASUALTY = {
     "accident key": "accident", "casualty class": "_class", "vehicle reference no": "vehicle_no",
     "casualty sex": "sex", "casualty age": "age", "casualty injury": "severity",
     "passenger position in veh": "position", "passenger action": "_passenger_action",
     "pedestrian action": "_pedestrian_action", "pedestrian location": "location",
-    "drink/drugs": "drink_drugs",
+    "drink/drugs": "drink_drugs", "casualtykey": "_ckey",
 }
 
 
@@ -262,10 +273,18 @@ def _kinds():
     ]
 
 
+# One sheet holding everything (the old database's "flat" export): each row is one
+# accident x one vehicle x one casualty, so an accident with 2 vehicles and 3
+# casualties fills 6 rows. Each part is taken once, by its key.
+FLAT_KEYS = {"accidents": "_key", "vehicles": "_vkey", "casualties": "_ckey"}
+
+
 def _read_sheets(wb):
     """{"accidents": (sheet title, rows), ...} - each sheet recognised by its column headings.
 
-    rows is [(excel row number, {field name: cell value})].
+    rows is [(excel row number, {field name: cell value})]. Only the recognised
+    columns of filled rows are kept, so this is much smaller than the file.
+    A row whose key was already seen with other values gets "_differs": True.
     """
     found, kinds = {}, _kinds()
     for ws in wb.worksheets:
@@ -274,25 +293,46 @@ def _read_sheets(wb):
             headings = next(rows)
         except StopIteration:
             continue
-        best = None
+        matches = {}
         for kind, known, must, hint in kinds:
             columns = {i: known[_norm(h)] for i, h in enumerate(headings)
                        if h is not None and _norm(h) in known}
             if not must <= set(columns.values()) or len(columns) < len(must) + 1:
                 continue
             # Most matching columns wins; the sheet name only settles a tie.
-            score = (len(columns), hint in ws.title.lower())
-            if best is None or score > best[2]:
-                best = (kind, columns, score)
-        if best is None or best[0] in found:
+            matches[kind] = (columns, (len(columns), hint in ws.title.lower()))
+        if not matches:
             continue
-        kind, columns, _ = best
-        data = []
+        flat = ("accidents" in matches and "_vkey" in matches.get("vehicles", ({},))[0].values()
+                and "_ckey" in matches.get("casualties", ({},))[0].values())
+        if flat:
+            parts = [k for k in FLAT_KEYS if k not in found]
+        else:
+            parts = [max(matches, key=lambda k: matches[k][1])]
+            if parts[0] in found:
+                continue
+        data = {kind: [] for kind in parts}
+        first = {kind: {} for kind in parts}          # key -> values of its first row
         for n, row in enumerate(rows, start=2):
             if all(_blank(c) for c in row):
                 continue
-            data.append((n, {name: row[i] for i, name in columns.items() if i < len(row)}))
-        found[kind] = (ws.title, data)
+            for kind in parts:
+                columns = matches[kind][0]
+                values = {name: row[i] for i, name in columns.items() if i < len(row)}
+                if not flat:
+                    data[kind].append((n, values))
+                    continue
+                key = values.get(FLAT_KEYS[kind])
+                if _blank(key):                     # e.g. an accident without casualties
+                    continue
+                seen = first[kind].get(key)
+                if seen is None:
+                    first[kind][key] = values
+                    data[kind].append((n, values))
+                elif seen != values:
+                    seen["_differs"] = True
+        for kind in parts:
+            found[kind] = (ws.title, data[kind])
     return found
 
 
@@ -351,26 +391,76 @@ class _Places:
         return self._towns[key]
 
 
-def read_workbook(data, user):
-    """Read the file and work out what an import would do. Saves nothing."""
+def _station_label(acc, new_station=None):
+    """Which police station a report is from, for telling reports apart: the
+    station, else the code written on it, else the new station's name."""
+    label = _station_label_saved(acc.police_station_id, acc.analyst_notes)
+    return label or (f"n{new_station.lower()}" if new_station else "")
+
+
+def _station_label_saved(station_id, notes):
+    if station_id:
+        return f"s{station_id}"
+    m = sc.NOTE.search(notes or "")
+    return "c" + (sc.clean_code(m.group(1)) or m.group(1)) if m else ""
+
+
+def _identity(item):
+    """Report number and year at its police station. Each station numbers its own
+    reports from 1. The region is only used when the report has no station."""
+    acc = item["obj"]
+    return _identity_of(acc.report_number, acc.report_year, acc.region_id, item["station"])
+
+
+def _identity_of(number, year, region_id, station):
+    if station.startswith("s"):                     # a known station: it fixes the region
+        return (number, year, station)
+    return (number, year, region_id, station)
+
+
+def read_sheets(data):
+    """The recognised columns of the filled rows of the file (see _read_sheets)."""
     from openpyxl import load_workbook
 
     if len(data) > MAX_BYTES:
-        raise ImportProblem("The file is larger than 4 MB. Split it into smaller files "
-                            "(for example one per year) and import them one at a time.")
+        raise ImportProblem(f"The file is larger than {MAX_BYTES // (1024 * 1024)} MB. Split it "
+                            "into smaller files (for example one per year) and import them one "
+                            "at a time.")
     try:
         wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
     except Exception:
         raise ImportProblem("This is not an Excel (.xlsx) file that can be read. "
                             "Save it as .xlsx in Excel and try again.")
+    try:
+        return _read_sheets(wb)
+    finally:
+        wb.close()
 
+
+def pack(sheets):
+    """Sheets read from a file, compressed, to hold between "Check" and "Import".
+    Only what the import uses is kept, not the whole Excel file."""
+    return zlib.compress(pickle.dumps(sheets, protocol=pickle.HIGHEST_PROTOCOL), 6)
+
+
+def unpack(blob):
+    return pickle.loads(zlib.decompress(blob))
+
+
+def read_workbook(data, user):
+    """Read the file and work out what an import would do. Saves nothing."""
+    return make_plan(read_sheets(data), user)
+
+
+def make_plan(sheets, user):
+    """Work out what an import of these sheets would do. Saves nothing."""
     places = _Places()
     users = {u.username: u for u in User.objects.all()}
     statuses = {code for code, _ in Accident.STATUS_CHOICES}
-    reports, by_ref, by_key = [], {}, {}
+    reports, by_ref, by_key, by_identity = [], {}, {}, {}
     station_codes = 0
+    unknown_codes = {}                                  # code -> {region name: reports}
 
-    sheets = _read_sheets(wb)
     if "accidents" not in sheets:
         raise ImportProblem(
             "This file does not look like accident data. No sheet has the columns "
@@ -379,6 +469,9 @@ def read_workbook(data, user):
     for n, values in sheets["accidents"][1]:
         problems, notes = [], []
         acc = Accident()
+        if values.get("_differs"):
+            notes.append("This accident is on several rows with different details; the first "
+                         "row is used.")
         values = _old_style(values, notes)
         _fill(acc, values, problems, notes)
         ref = f"{acc.report_number}/{acc.report_year}" if acc.report_number else f"row {n}"
@@ -424,6 +517,8 @@ def read_workbook(data, user):
                 acc.police_station = places.station_codes.get(sc.clean_code(name))
                 if acc.police_station is None:
                     station_codes += 1
+                    by_region = unknown_codes.setdefault(sc.clean_code(name) or name, {})
+                    by_region[region.name] = by_region.get(region.name, 0) + 1
                     acc.analyst_notes = (acc.analyst_notes + "\n" if acc.analyst_notes else "") + \
                         f"Police station code: {name}"
                     notes.append(f"3 Police station code {name} is not in the code list; the "
@@ -444,11 +539,16 @@ def read_workbook(data, user):
         if acc.town and not acc.town_code:
             acc.town_code = acc.town.code
 
-        if ref in by_ref:
-            problems.append(f"Report {ref} appears more than once in the file "
-                            f"(also on row {by_ref[ref]['row']}).")
+        # Each police station numbers its own reports, so 2/2024 can be on many
+        # stations' books: a report is its number, year, region and station.
+        item["station"] = _station_label(acc, item["new_station"])
+        same = by_identity.get(_identity(item))
+        if same is not None:
+            problems.append(f"Report {ref} of the same police station appears more than once "
+                            f"in the file (also on row {same['row']}).")
         else:
-            by_ref[ref] = item
+            by_identity[_identity(item)] = item
+        by_ref.setdefault(ref, item)
         if not _blank(values.get("_key")):
             by_key[_text(values["_key"])] = item
         reports.append(item)
@@ -473,6 +573,11 @@ def read_workbook(data, user):
                 orphans += 1
                 continue
             if model is Vehicle:
+                if values.get("_differs"):
+                    parent["notes"].append(
+                        f"Vehicle {_text(values.get('vehicle_no') or '?')} "
+                        f"({_text(values.get('_vkey'))}) is on several rows with different "
+                        "details; the first row is used.")
                 values = _old_vehicle(values)
             child = model()
             _fill(child, values, parent["problems"], parent["notes"], label=f"{title} row {n}: ")
@@ -487,7 +592,10 @@ def read_workbook(data, user):
             continue
         kind = _text(values.get("_class") or "")
         values = dict(values)
-        if kind == "1":             # the driver: already on the vehicle row (37, 38, 40)
+        if values.get("_differs"):
+            parent["notes"].append(f"Casualty {_text(values.get('_ckey'))} is on several rows "
+                                   "with different details; the first row is used.")
+        if kind == "1":            # the driver: already on the vehicle row (37, 38, 40)
             drivers += 1
             continue
         if kind == "2":
@@ -509,20 +617,32 @@ def read_workbook(data, user):
 
     # Already in the system?
     years = {r["obj"].report_year for r in reports if r["obj"].report_year}
-    existing = set(Accident.objects.filter(report_year__in=years)
-                   .values_list("report_number", "report_year", "region_id"))
+    existing = set()
+    for number, year, region_id, station_id, notes in (
+            Accident.objects.filter(report_year__in=years)
+            .values_list("report_number", "report_year", "region_id", "police_station_id",
+                         "analyst_notes").iterator()):
+        existing.add(_identity_of(number, year, region_id,
+                                  _station_label_saved(station_id, notes)))
     for r in reports:
-        acc = r["obj"]
         if r["problems"]:
             r["state"] = "error"
-        elif (acc.report_number, acc.report_year, acc.region_id) in existing:
+        elif _identity(r) in existing:
             r["state"] = "duplicate"
         else:
             r["state"] = "new"
 
     count = lambda state: sum(1 for r in reports if r["state"] == state)   # noqa: E731
+    # Unknown station codes with the regions of their reports (most reports first).
+    region_names = {f"{number:02d}": name for number, name in REGION_BY_NUMBER.items()}
+    unknown = []
+    for code, by_region in sorted(unknown_codes.items(),
+                                  key=lambda kv: (-sum(kv[1].values()), kv[0])):
+        regions = sorted(by_region.items(), key=lambda kv: (-kv[1], kv[0]))
+        unknown.append({"code": code, "reports": sum(by_region.values()), "region": regions[0][0],
+                        "regions": regions, "code_region": region_names.get(code[:2], "")})
     return {"reports": reports, "orphans": orphans, "drivers": drivers,
-            "station_codes": station_codes, "n_new": count("new"),
+            "station_codes": station_codes, "unknown_codes": unknown, "n_new": count("new"),
             "n_duplicate": count("duplicate"), "n_error": count("error"),
             "n_notes": sum(1 for r in reports if r["notes"] and r["state"] == "new")}
 
