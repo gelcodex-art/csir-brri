@@ -104,14 +104,16 @@ class Command(BaseCommand):
                 st = min(found, key=lambda s: PREFER.index(s.kind) if s.kind in PREFER else 99)
                 matched += 1
             else:
-                st, _ = PoliceStation.objects.get_or_create(
-                    region=region, name=f"{names[code]} Police Station",
-                    defaults={"source": "codes", "verified": True})
+                # Saved below in one go (one by one is too slow for the website).
+                st = PoliceStation(region=region, name=f"{names[code]} Police Station",
+                                   source="codes", verified=True)
+                new_stations.append(st)
                 by_key.setdefault((region.pk, key(st.name)), []).append(st)
                 made += 1
             station_of[code] = st
             return st
 
+        new_stations, new_codes = [], []
         for code in sorted(names):
             if code in have:
                 continue
@@ -119,8 +121,11 @@ class Command(BaseCommand):
             if st is None:
                 self.stderr.write(f"{code}: its region is not in the database - skipped.")
                 continue
-            have[code] = StationCode.objects.create(code=code, station=st)
-            linked += 1
+            new_codes.append(StationCode(code=code, station=st))
+        PoliceStation.objects.bulk_create(new_stations, batch_size=200)
+        StationCode.objects.bulk_create(new_codes, batch_size=200)   # takes the new stations' ids
+        have.update({row.code: row for row in new_codes})
+        linked = len(new_codes)
 
         # Stations made from the list that no code or report uses any more
         # (left over after a code moved to its corrected station).
@@ -133,6 +138,9 @@ class Command(BaseCommand):
 
         # Reports imported before the list existed carry the code in their notes.
         filled = sc.link_reports()
+        # Batch saves send no change signals: refresh the station list of the form once.
+        from accidents.views import _locations_changed
+        _locations_changed()
 
         self.stdout.write(self.style.SUCCESS(
             f"{len(have)} station codes in the system ({linked} added now: {matched} matched "
