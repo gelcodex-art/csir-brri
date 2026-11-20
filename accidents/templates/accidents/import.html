@@ -21,7 +21,6 @@
     <li><strong>{{ plan.n_new }}</strong> new report{{ plan.n_new|pluralize }} will be added.</li>
     <li><strong>{{ plan.n_duplicate }}</strong> already in the system (same report number and year at the same police station) will be skipped.</li>
     <li><strong>{{ plan.n_error }}</strong> with problems will be skipped. Correct them in the Excel file and import it again.</li>
-    {% if plan.drivers %}<li><strong>{{ plan.drivers }}</strong> driver row{{ plan.drivers|pluralize }} on the casualty sheet are not added again: each driver is already on the vehicle row.</li>{% endif %}
     {% if plan.station_codes %}<li><strong>{{ plan.station_codes }}</strong> report{{ plan.station_codes|pluralize }} give a police station code that is not in the code list. The code is kept in the report's analyst notes and the station is left empty.</li>{% endif %}
     {% if plan.orphans %}<li><strong>{{ plan.orphans }}</strong> vehicle or casualty row{{ plan.orphans|pluralize }} do not match any report in the file and will be skipped.</li>{% endif %}
   </ul>
