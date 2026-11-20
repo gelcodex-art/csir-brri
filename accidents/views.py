@@ -26,8 +26,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from . import access
 from . import analysis
 from . import codebook as cb
+from .access import needs
 from . import station_codes
 from .checks import check_report
 from .forms import (AccidentForm, FirstAdminForm, PassengerFormSet, PedestrianFormSet, ReviewForm,
@@ -177,6 +179,9 @@ def _series(rows, key, codes=None):
 # ---------------------------------------------------------------------------
 @login_required
 def dashboard(request):
+    # The dashboard is analysis; other accounts start on the records list.
+    if not access.can(request.user, access.ANALYSE):
+        return redirect("accident_list")
     qs = filtered_accidents(request)
     totals = qs.aggregate(n=Count("id"), killed=Sum("killed"), injured=Sum("injured"),
                           fatal=Count("id", filter=Q(severity=1)))
@@ -237,6 +242,7 @@ def dashboard(request):
 # Analysis: count by one field, compare by a second field or across two periods
 # ---------------------------------------------------------------------------
 @login_required
+@needs(access.ANALYSE)
 def analysis_page(request):
     ch = analysis.choices(request.GET)
     result, problem = None, ""
@@ -288,6 +294,7 @@ def analysis_page(request):
 
 
 @login_required
+@needs(access.ANALYSE)
 def fatality_index_page(request):
     """Ready-made study: Fatality Index, foreign- against Ghanaian-registered vehicles."""
     from . import fatality
@@ -406,6 +413,7 @@ def accident_detail(request, pk):
 
 @login_required
 @require_POST
+@needs(access.APPROVE)
 def accident_review(request, pk):
     acc = get_object_or_404(Accident, pk=pk)
     form = ReviewForm(request.POST, instance=acc)
@@ -560,6 +568,7 @@ def district_of_pin(lat, lng):
 
 
 @login_required
+@needs(access.SUBMIT)
 def accident_edit(request, pk=None):
     instance = get_object_or_404(Accident, pk=pk) if pk else None
     data = request.POST if request.method == "POST" else None
@@ -681,6 +690,7 @@ def _fields(model, skip=()):
 
 
 @login_required
+@needs(access.ANALYSE)
 def export(request, fmt):
     qs = filtered_accidents(request).select_related("created_by", "reviewed_by")
     afields = _fields(Accident, skip=("client_uuid",))

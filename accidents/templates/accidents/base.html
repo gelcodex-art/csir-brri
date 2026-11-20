@@ -23,22 +23,22 @@
     </a>
     {% if user.is_authenticated %}
     <nav class="links" aria-label="Main">
-      <a href="{% url 'dashboard' %}" class="tab{% if u == 'dashboard' %} active{% endif %}"{% if u == 'dashboard' %} aria-current="page"{% endif %}>
+      {% if can_analyse %}<a href="{% url 'dashboard' %}" class="tab{% if u == 'dashboard' %} active{% endif %}"{% if u == 'dashboard' %} aria-current="page"{% endif %}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
         <span>Dashboard</span>
-      </a>
-      <a href="{% url 'accident_new' %}" class="tab{% if u == 'accident_new' %} active{% endif %}"{% if u == 'accident_new' %} aria-current="page"{% endif %}>
+      </a>{% endif %}
+      {% if can_submit %}<a href="{% url 'accident_new' %}" class="tab{% if u == 'accident_new' %} active{% endif %}"{% if u == 'accident_new' %} aria-current="page"{% endif %}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
         <span>New report</span>
-      </a>
+      </a>{% endif %}
       <a href="{% url 'accident_list' %}" class="tab{% if u == 'accident_list' or u == 'accident_detail' or u == 'accident_edit' or u == 'accident_review' %} active{% endif %}"{% if u == 'accident_list' %} aria-current="page"{% endif %}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>
         <span>Records</span>
       </a>
-      <a href="{% url 'analysis' %}" class="tab{% if u == 'analysis' %} active{% endif %}"{% if u == 'analysis' %} aria-current="page"{% endif %}>
+      {% if can_analyse %}<a href="{% url 'analysis' %}" class="tab{% if u == 'analysis' or u == 'fatality_index' %} active{% endif %}"{% if u == 'analysis' %} aria-current="page"{% endif %}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
         <span>Analysis</span>
-      </a>
+      </a>{% endif %}
       {% if user.is_staff %}<a href="{% url 'admin:index' %}" class="tab">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>
         <span>Admin</span>
@@ -48,7 +48,7 @@
       <span class="avatar" aria-hidden="true">{{ user.get_username|slice:":1"|upper }}</span>
       <span class="who">
         <span class="user-name">{{ user.get_full_name|default:user.get_username }}</span>
-        <span class="user-role">{% if user.is_staff %}Administrator{% else %}Analyst{% endif %}</span>
+        <span class="user-role">{{ user_role }}</span>
       </span>
       <form method="post" action="{% url 'logout' %}">{% csrf_token %}
         <button class="logout" title="Log out">

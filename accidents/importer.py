@@ -575,8 +575,18 @@ def make_plan(sheets, user):
                     by_region[region.name] = by_region.get(region.name, 0) + 1
                     acc.analyst_notes = (acc.analyst_notes + "\n" if acc.analyst_notes else "") + \
                         f"Police station code: {name}"
-                    notes.append(f"3 Police station code {name} is not in the code list; the "
-                                 "code is kept in the analyst notes, the station is left empty.")
+                    clean = sc.clean_code(name)
+                    region_of_code = REGION_BY_NUMBER.get(int(clean[:2])) if clean else None
+                    if region_of_code:
+                        # Region number (2 digits) + station number (3 digits): the
+                        # region is known, the station number is not on its list.
+                        notes.append(f"3 Police station code {clean}: station number "
+                                     f"{clean[2:]} is not on the {region_of_code} list (region "
+                                     f"{clean[:2]}). The code is kept in the analyst notes, the "
+                                     "station is left empty.")
+                    else:
+                        notes.append(f"3 Police station code {name} is not in the code list; the "
+                                     "code is kept in the analyst notes, the station is left empty.")
             elif name:
                 acc.police_station = places.stations.get((region.pk, name.lower()))
                 if acc.police_station is None:

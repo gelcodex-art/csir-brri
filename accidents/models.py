@@ -211,6 +211,12 @@ class Accident(models.Model):
     class Meta:
         ordering = ["-accident_date", "-accident_time"]
         verbose_name = "accident report"
+        # What an account may do; ticked on the account page in the admin area.
+        permissions = [
+            ("submit_report", "Can submit reports"),
+            ("approve_report", "Can approve reports"),
+            ("do_analysis", "Can do analysis"),
+        ]
         indexes = [
             models.Index(fields=["accident_date"]),
             models.Index(fields=["region", "accident_date"]),

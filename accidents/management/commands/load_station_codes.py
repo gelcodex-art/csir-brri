@@ -1,18 +1,22 @@
 """Put BRRI's police station codes in the database (see station_codes.py).
 
 For each code the station is looked for by name in its region; if it is not in
-the system yet it is added (marked verified: it is on BRRI's own list). Running
-the command again changes nothing. Reports imported earlier, which kept their
+the system yet it is added (marked verified: it is on BRRI's own list). When the
+list has been corrected, codes already in the database are moved to the station
+with the corrected name (or a misread station name is corrected), and stations
+made from the list that nothing uses any more are removed. Running the command
+again changes nothing. Reports imported earlier, which kept their
 station code in the analyst notes, get their station filled in.
 """
 import re
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models import Count
 
 from accidents import codebook as cb
 from accidents import station_codes as sc
-from accidents.models import PoliceStation, Region, StationCode
+from accidents.models import Accident, PoliceStation, Region, StationCode
 
 NOISE = re.compile(r"\b(police|station|post|headquarters|hq|district|divisional|municipal|command)\b")
 PREFER = ["station", "district_hq", "divisional_hq", "post", "mttd", "regional_hq", "national_hq"]
@@ -34,10 +38,60 @@ class Command(BaseCommand):
         by_key = {}
         for st in PoliceStation.objects.all():
             by_key.setdefault((st.region_id, key(st.name)), []).append(st)
-        have = {c.code: c for c in StationCode.objects.all()}
+        have = {c.code: c for c in StationCode.objects.select_related("station")}
         names = sc.all_codes()
-        made = matched = linked = 0
+        made = matched = linked = moved = renamed = 0
         station_of = {}
+
+        # Codes already in the database whose station no longer has the listed name
+        # (the list was corrected): point them at the right station.
+        listed = {}                                   # region id -> keys of names on the list
+        for code, name in names.items():
+            region = regions.get(number_region.get(int(code[:2]), ""))
+            if region:
+                listed.setdefault(region.pk, set()).add(key(name))
+        for code in sorted(have):
+            if code not in names or code in sc.ALIASES:
+                continue
+            row, want = have[code], key(names[code])
+            st = row.station
+            if key(st.name) == want:
+                continue
+            found = by_key.get((st.region_id, want), [])
+            if found:
+                row.station = min(found, key=lambda s: PREFER.index(s.kind) if s.kind in PREFER else 99)
+                moved += 1
+            elif (st.source == "codes" and key(st.name) not in listed.get(st.region_id, set())
+                  and not StationCode.objects.filter(station=st).exclude(code=code).exists()
+                  and not Accident.objects.filter(police_station=st).exists()):
+                # A station made from a misread name, not used yet: correct its name.
+                old = by_key.get((st.region_id, key(st.name)), [])
+                if st in old:
+                    old.remove(st)
+                st.name = f"{names[code]} Police Station"
+                st.save(update_fields=["name"])
+                by_key.setdefault((st.region_id, key(st.name)), []).append(st)
+                renamed += 1
+                continue
+            else:
+                row.station, _ = PoliceStation.objects.get_or_create(
+                    region_id=st.region_id, name=f"{names[code]} Police Station",
+                    defaults={"source": "codes", "verified": True})
+                by_key.setdefault((st.region_id, want), []).append(row.station)
+                made += 1
+                moved += 1
+            row.save(update_fields=["station"])
+        # Old codes follow the station of their new-region code.
+        for code, target in sc.ALIASES.items():
+            if code in have and target in have and have[code].station_id != have[target].station_id:
+                have[code].station = have[target].station
+                have[code].save(update_fields=["station"])
+                moved += 1
+        # Stations made from the list that no code or report uses any more.
+        unused = (PoliceStation.objects.filter(source="codes")
+                  .annotate(nc=Count("codes"), nr=Count("accident")).filter(nc=0, nr=0))
+        removed = unused.count()
+        unused.delete()
 
         def station_for(code):
             """The station a code stands for, found by name or added."""
@@ -79,5 +133,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(
             f"{len(have)} station codes in the system ({linked} added now: {matched} matched "
-            f"stations already in the list, {made} new stations added). "
+            f"stations already in the list, {made} new stations added; {moved} code(s) moved "
+            f"to the right station, {renamed} station name(s) corrected, {removed} unused "
+            f"station(s) removed). "
             f"{filled} earlier report(s) got their station from the code."))

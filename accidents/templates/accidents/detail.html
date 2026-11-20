@@ -15,7 +15,7 @@
   </div>
   <div class="actions">
     <a class="btn ghost" href="{% url 'accident_list' %}">Back to records</a>
-    <a class="btn" href="{% url 'accident_edit' a.pk %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>Edit report</a>
+    {% if can_submit %}<a class="btn" href="{% url 'accident_edit' a.pk %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>Edit report</a>{% endif %}
   </div>
 </div>
 {% if a.status == "reviewed" %}
@@ -46,13 +46,14 @@
   <div id="report-map" class="map big" data-lat="{{ a.latitude|stringformat:'f' }}" data-lng="{{ a.longitude|stringformat:'f' }}"></div>
   <p class="muted" style="margin:10px 0 0;font-size:.86em">Pin at {{ a.latitude }}, {{ a.longitude }}{% if a.district %} &middot; {{ a.district }}{% endif %}</p>
   {% else %}
-  <p class="none-yet">No pin on the map for this report. <a href="{% url 'accident_edit' a.pk %}#location-section">Edit the report</a> to place one.</p>
+  <p class="none-yet">No pin on the map for this report.{% if can_submit %} <a href="{% url 'accident_edit' a.pk %}#location-section">Edit the report</a> to place one.{% endif %}</p>
   {% endif %}
 </section>
 
 <div class="grid2" style="margin-bottom:16px">
   <section class="card">
     <h2>Approval</h2>
+    {% if can_approve %}
     <form method="post" action="{% url 'accident_review' a.pk %}">
       {% csrf_token %}
       <div class="field"><label for="{{ review.status.id_for_label }}">Status</label>{{ review.status }}</div>
@@ -60,6 +61,11 @@
       <div class="actions" style="margin-top:14px"><button class="btn">Save</button>
         {% if a.reviewed_by %}<span class="muted">Approved by {{ a.reviewed_by }}</span>{% endif %}</div>
     </form>
+    {% else %}
+    <p>Status: <span class="badge {{ a.status }}">{{ a.get_status_display }}</span>{% if a.reviewed_by %} <span class="muted">· approved by {{ a.reviewed_by }}</span>{% endif %}</p>
+    {% if a.analyst_notes %}<p style="white-space:pre-line">{{ a.analyst_notes }}</p>{% endif %}
+    <p class="muted">Only accounts that can approve reports change the status.</p>
+    {% endif %}
   </section>
   <section class="card">
     <h2>History</h2>

@@ -10,6 +10,7 @@ What it is for:
 Reports are entered and edited in the main app, never here: the app runs the
 checks in checks.py and writes the change history, the admin would skip both.
 """
+from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import Group, User
@@ -17,32 +18,91 @@ from django.db.models import Count
 from django.urls import reverse
 from django.utils.html import format_html
 
+from . import access
 from .models import Accident, AuditLog, District, PoliceStation, Region, StationCode, Town
 
-# Groups and per-table permissions are not used: an account is either an
-# analyst or an administrator.
+# Groups and per-table permissions are not used: an account has three ticks
+# (submit / approve / analysis, see access.py) or is an administrator.
 admin.site.unregister(Group)
 admin.site.unregister(User)
 
 
+class RightsForm(forms.ModelForm):
+    """Adds the three ticks (submit / approve / analysis) to the account page."""
+    can_submit = forms.BooleanField(required=False, initial=True, label=access.LABELS[access.SUBMIT],
+                                    help_text=access.RIGHTS[0][2])
+    can_approve = forms.BooleanField(required=False, label=access.LABELS[access.APPROVE],
+                                     help_text=access.RIGHTS[1][2])
+    can_analyse = forms.BooleanField(required=False, label=access.LABELS[access.ANALYSE],
+                                     help_text=access.RIGHTS[2][2])
+    FIELDS = {"can_submit": access.SUBMIT, "can_approve": access.APPROVE,
+              "can_analyse": access.ANALYSE}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            have = {p.codename for p in self.instance.user_permissions.all()}
+            for field, right in self.FIELDS.items():
+                self.fields[field].initial = right in have
+
+
+class UserChangeRightsForm(RightsForm, DjangoUserAdmin.form):
+    pass
+
+
+class UserAddRightsForm(RightsForm, DjangoUserAdmin.add_form):
+    pass
+
+
+RIGHT_FIELDS = ["can_submit", "can_approve", "can_analyse"]
+
+
 @admin.register(User)
 class UserAdmin(DjangoUserAdmin):
-    list_display = ["username", "full_name", "role", "is_active", "last_login"]
+    form = UserChangeRightsForm
+    add_form = UserAddRightsForm
+    list_display = ["username", "full_name", "role", "submits", "approves", "analyses",
+                    "is_active", "last_login"]
     list_filter = ["is_superuser", "is_active"]
     search_fields = ["username", "first_name", "last_name", "email"]
     ordering = ["username"]
     fieldsets = [
         (None, {"fields": ["username", "password"]}),
         ("Person", {"fields": ["first_name", "last_name", "email"]}),
+        ("What this account can do", {"fields": RIGHT_FIELDS}),
         ("Access", {"fields": ["is_active", "is_superuser"]}),
         ("Activity", {"fields": ["last_login", "date_joined"]}),
     ]
     add_fieldsets = [
         (None, {"classes": ["wide"], "fields": ["username", "password1", "password2"]}),
         ("Person", {"classes": ["wide"], "fields": ["first_name", "last_name", "email"]}),
+        ("What this account can do", {"classes": ["wide"], "fields": RIGHT_FIELDS}),
         ("Access", {"classes": ["wide"], "fields": ["is_superuser"]}),
     ]
     readonly_fields = ["last_login", "date_joined"]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("user_permissions")
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        access.set_rights(form.instance, [right for field, right in RightsForm.FIELDS.items()
+                                          if form.cleaned_data.get(field)])
+
+    def _has(self, obj, right):
+        return obj.is_superuser or any(p.codename == right for p in obj.user_permissions.all())
+
+    @admin.display(description="Submit", boolean=True)
+    def submits(self, obj):
+        return self._has(obj, access.SUBMIT)
+
+    @admin.display(description="Approve", boolean=True)
+    def approves(self, obj):
+        return self._has(obj, access.APPROVE)
+
+    @admin.display(description="Analysis", boolean=True)
+    def analyses(self, obj):
+        return self._has(obj, access.ANALYSE)
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -50,8 +110,8 @@ class UserAdmin(DjangoUserAdmin):
         if "is_superuser" in f:
             f["is_superuser"].label = "Administrator"
             f["is_superuser"].help_text = (
-                "Administrators can open this admin area: manage accounts, check police "
-                "stations and delete reports. Leave unticked for a normal analyst.")
+                "Administrators can do everything above and open this admin area: manage "
+                "accounts, check police stations, import Excel files and delete reports.")
         if "is_active" in f:
             f["is_active"].label = "Can log in"
             f["is_active"].help_text = ("Untick when someone leaves BRRI, instead of deleting the "
@@ -78,7 +138,7 @@ class UserAdmin(DjangoUserAdmin):
 
     @admin.display(description="Role", ordering="is_superuser")
     def role(self, obj):
-        return "Administrator" if obj.is_superuser else "Analyst"
+        return access.role_name(obj)
 
 
 @admin.register(Region)

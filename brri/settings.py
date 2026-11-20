@@ -81,6 +81,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'accidents.context_processors.map_keys',
+                'accidents.context_processors.rights',
             ],
         },
     },

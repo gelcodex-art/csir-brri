@@ -8,6 +8,14 @@ from django.test import TestCase, override_settings
 from .models import Accident, District, PoliceStation, Region, Town
 
 
+def full_account(username, rights=None, **kwargs):
+    """An account with the given rights (default: submit, approve and analysis)."""
+    from . import access
+    user = User.objects.create_user(username, **kwargs)
+    access.set_rights(user, list(access.LABELS) if rights is None else rights)
+    return user
+
+
 def mgmt(prefix, total=0, initial=0):
     return {f"{prefix}-TOTAL_FORMS": str(total), f"{prefix}-INITIAL_FORMS": str(initial),
             f"{prefix}-MIN_NUM_FORMS": "0", f"{prefix}-MAX_NUM_FORMS": "1000"}
@@ -18,7 +26,7 @@ class AccidentFlowTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         call_command("seed_locations", stdout=open("nul" if __import__("os").name == "nt" else "/dev/null", "w"))
-        cls.user = User.objects.create_user("analyst", password="pw-12345-test")
+        cls.user = full_account("analyst", password="pw-12345-test")
         cls.region = Region.objects.get(name="Ashanti")
         cls.district = District.objects.get(region=cls.region)
         cls.town = Town.objects.get(district=cls.district)
@@ -709,7 +717,7 @@ class AdminAreaTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.boss = User.objects.create_superuser("boss", password="pw-12345-test")
-        cls.analyst = User.objects.create_user("kofi", password="pw-12345-test")
+        cls.analyst = full_account("kofi", password="pw-12345-test")
         cls.region = Region.objects.create(name="Ashanti")
         cls.acc = Accident.objects.create(report_number="9", report_year=2026, region=cls.region,
                                           accident_date=__import__("datetime").date(2026, 1, 5),
@@ -739,6 +747,60 @@ class AdminAreaTests(TestCase):
         self.client.post("/admin/auth/user/add/", {**new, "username": "yaw", "is_superuser": "on"})
         yaw = User.objects.get(username="yaw")
         self.assertEqual((yaw.is_staff, yaw.is_superuser), (True, True))
+
+    def test_rights_ticked_on_the_account_page(self):
+        from . import access
+        page = self.client.get("/admin/auth/user/add/")
+        for label in ("Can submit reports", "Can approve reports", "Can do analysis"):
+            self.assertContains(page, label)
+        new = {"username": "esi", "password1": "Zx9-kumasi-road", "password2": "Zx9-kumasi-road",
+               "first_name": "Esi", "last_name": "", "email": "", "can_approve": "on"}
+        r = self.client.post("/admin/auth/user/add/", new)
+        self.assertEqual(r.status_code, 302, r.context and r.context["adminform"].form.errors)
+        esi = User.objects.get(username="esi")
+        self.assertEqual(access.rights_of(esi), [access.APPROVE])
+        data = {"username": "esi", "first_name": "Esi", "last_name": "", "email": "",
+                "is_active": "on", "can_submit": "on", "can_analyse": "on"}
+        r = self.client.post(f"/admin/auth/user/{esi.pk}/change/", data)
+        self.assertEqual(r.status_code, 302)
+        esi = User.objects.get(pk=esi.pk)
+        self.assertEqual(access.rights_of(esi), [access.SUBMIT, access.ANALYSE])
+        page = self.client.get(f"/admin/auth/user/{esi.pk}/change/").content.decode()
+        import re
+        box = lambda name: re.search(rf'<input[^>]*name="{name}"[^>]*>', page).group(0)
+        self.assertIn("checked", box("can_submit"))
+        self.assertNotIn("checked", box("can_approve"))
+
+    def test_each_right_opens_only_its_pages(self):
+        from . import access
+        acc = self.acc.pk
+        for name, rights in (("sub", [access.SUBMIT]), ("app", [access.APPROVE]),
+                             ("ana", [access.ANALYSE])):
+            full_account(name, rights, password="pw-12345-test")
+        c = self.client
+        c.login(username="sub", password="pw-12345-test")
+        self.assertEqual(c.get("/accidents/new/").status_code, 200)
+        self.assertEqual(c.get(f"/accidents/{acc}/edit/").status_code, 200)
+        self.assertEqual(c.post(f"/accidents/{acc}/review/", {"status": "reviewed"}).status_code, 403)
+        self.assertEqual(c.get("/analysis/").status_code, 403)
+        self.assertEqual(c.get("/export/csv/").status_code, 403)
+        self.assertRedirects(c.get("/"), "/accidents/")
+        self.assertNotContains(c.get(f"/accidents/{acc}/"), f"/accidents/{acc}/review/")
+
+        c.login(username="app", password="pw-12345-test")
+        self.assertEqual(c.get("/accidents/new/").status_code, 403)
+        self.assertContains(c.get(f"/accidents/{acc}/"), f"/accidents/{acc}/review/")
+        c.post(f"/accidents/{acc}/review/", {"status": "reviewed", "analyst_notes": ""})
+        self.acc.refresh_from_db()
+        self.assertEqual(self.acc.status, "reviewed")
+        self.assertEqual(c.get("/analysis/").status_code, 403)
+
+        c.login(username="ana", password="pw-12345-test")
+        self.assertEqual(c.get("/").status_code, 200)
+        self.assertEqual(c.get("/analysis/").status_code, 200)
+        self.assertEqual(c.get("/export/csv/").status_code, 200)
+        self.assertEqual(c.get("/accidents/new/").status_code, 403)
+        self.assertNotContains(c.get("/accidents/"), "/accidents/new/")
 
     def test_cannot_lock_yourself_out(self):
         page = self.client.get(f"/admin/auth/user/{self.boss.pk}/change/")
@@ -778,7 +840,7 @@ class FirstAdminTests(TestCase):
         self.assertTrue(u.is_superuser and u.is_staff and u.is_active)
 
     def test_closed_once_an_account_exists(self):
-        User.objects.create_user("analyst", password="pw-12345-test")
+        full_account("analyst", password="pw-12345-test")
         self.assertRedirects(self.client.get("/setup/"), "/login/")
         self.client.post("/setup/", self.good)
         self.assertFalse(User.objects.filter(username="ama").exists())
@@ -1226,7 +1288,7 @@ class ExcelImportTests(TestCase):
         buf = io.BytesIO(b"hello")
         buf.name = "notes.xlsx"
         self.assertContains(self.upload(buf), "not an Excel")
-        User.objects.create_user("analyst", password="pw-12345-test")
+        full_account("analyst", password="pw-12345-test")
         self.client.login(username="analyst", password="pw-12345-test")
         self.assertRedirects(self.client.get("/import/"), "/accidents/")
 
@@ -1264,7 +1326,7 @@ class FatalityIndexTests(TestCase):
         from datetime import date
         from .models import PassengerCasualty, PedestrianCasualty
         region = Region.objects.create(name="Ashanti")
-        user = User.objects.create_user("an", password="pw-12345-test")
+        user = full_account("an", password="pw-12345-test")
 
         def crash(n, regs, killed, injured, year=2021):
             a = Accident.objects.create(report_number=str(n), report_year=year, region=region,
@@ -1309,7 +1371,7 @@ class StationCodeTests(TestCase):
     def setUpTestData(cls):
         from django.core.management import call_command
         from .models import PoliceStation
-        cls.boss = User.objects.create_user("boss", password="pw-12345-test", is_staff=True,
+        cls.boss = full_account("boss", password="pw-12345-test", is_staff=True,
                                             is_superuser=True)
         cls.eastern = Region.objects.create(name="Eastern")
         cls.bono_east = Region.objects.create(name="Bono East")
@@ -1330,6 +1392,20 @@ class StationCodeTests(TestCase):
                          ("Nsawam Police Station", self.eastern, True))    # added
         self.assertEqual(self.station("02041"), self.station("12001"))      # Techiman, old and new
         self.assertEqual(self.station("12001").region, self.bono_east)
+
+    def test_loader_corrects_codes_when_the_list_changes(self):
+        """A code saved under an earlier, wrong name moves to the right station."""
+        from django.core.management import call_command
+        from .models import PoliceStation, StationCode
+        nsawam, suhum = self.station("04086"), self.station("04091")
+        StationCode.objects.filter(code="04086").update(station=suhum)     # wrong station
+        misread = PoliceStation.objects.create(region=self.eastern, name="Kurankam Police Station",
+                                               source="codes", verified=True)
+        StationCode.objects.filter(code="04003").update(station=misread)   # misread name
+        call_command("load_station_codes", verbosity=0)
+        self.assertEqual(self.station("04086"), nsawam)
+        self.assertEqual(self.station("04003").name, "Nkurakan Police Station")
+        self.assertEqual(self.station("04091"), suhum)
 
     def test_import_and_form_use_the_code(self):
         import io
@@ -1375,7 +1451,7 @@ class GeoFileTests(TestCase):
         Region.objects.create(name="Placeholder")
         call_command("seed_locations", stdout=open(os.devnull, "w"))
         Region.objects.filter(name="Placeholder").delete()
-        User.objects.create_user("analyst", password="pw-12345-test")
+        full_account("analyst", password="pw-12345-test")
         self.client.login(username="analyst", password="pw-12345-test")
         ashanti = Region.objects.get(name="Ashanti")
         d = District.objects.create(region=ashanti, name="Kumasi Metropolitan")

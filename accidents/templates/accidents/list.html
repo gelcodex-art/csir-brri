@@ -7,10 +7,10 @@
     <p class="sub">Every report entered so far. Click a report number to open it.</p>
   </div>
   <div class="actions">
-    <a class="btn ghost" href="{% url 'export' 'xlsx' %}?{{ querystring }}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Export Excel</a>
-    <a class="btn ghost" href="{% url 'export' 'csv' %}?{{ querystring }}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Export CSV</a>
+    {% if can_analyse %}<a class="btn ghost" href="{% url 'export' 'xlsx' %}?{{ querystring }}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Export Excel</a>
+    <a class="btn ghost" href="{% url 'export' 'csv' %}?{{ querystring }}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Export CSV</a>{% endif %}
     {% if user.is_staff %}<a class="btn ghost" href="{% url 'accident_import' %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 21h16"/></svg>Import Excel</a>{% endif %}
-    <a class="btn" href="{% url 'accident_new' %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New report</a>
+    {% if can_submit %}<a class="btn" href="{% url 'accident_new' %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New report</a>{% endif %}
   </div>
 </div>
 {% include "accidents/_sample_notice.html" %}
@@ -31,7 +31,7 @@
         <td>{% if a.severity %}<span class="sev sev-{{ a.severity }}">{{ a.get_severity_display }}</span>{% endif %}</td>
         <td class="num">{{ a.killed }}</td><td class="num">{{ a.injured }}</td>
         <td><span class="badge {{ a.status }}">{{ a.get_status_display }}</span></td>
-        <td><a href="{% url 'accident_edit' a.pk %}">Edit</a></td>
+        <td>{% if can_submit %}<a href="{% url 'accident_edit' a.pk %}">Edit</a>{% endif %}</td>
       </tr>
     {% empty %}
       <tr><td colspan="12" class="empty">No records match these filters.</td></tr>

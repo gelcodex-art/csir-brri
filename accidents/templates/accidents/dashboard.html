@@ -12,7 +12,7 @@
   </div>
   <div class="actions">
     <a class="btn ghost" href="{% url 'export' 'xlsx' %}?{{ querystring }}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Export Excel</a>
-    <a class="btn" href="{% url 'accident_new' %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New report</a>
+    {% if can_submit %}<a class="btn" href="{% url 'accident_new' %}"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New report</a>{% endif %}
   </div>
 </div>
 {% include "accidents/_sample_notice.html" %}
