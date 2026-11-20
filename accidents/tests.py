@@ -1135,6 +1135,43 @@ class ExcelImportTests(TestCase):
                                       accident_date=date(2021, 1, 2))
         self.assertEqual(list(new.possible_duplicates()), [old])
 
+    def test_old_database_quirks_do_not_block_reports(self):
+        import io
+        from datetime import datetime
+        from openpyxl import Workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.append(["ACCIDENT KEY", "REPORT NUMBER", "REGION", "DATE", "KILOMETRE POST", "100M",
+                   "Casualtykey", "CASUALTY CLASS", "CASUALTY INJURY", "VEHICLE REFERENCE NUMBER",
+                   "Vehiclekey", "VEHICLE TYPE"])
+        ws.append([1, "07/24/2026", "01", datetime(2024, 1, 29), 73.5, None, "1c1", 2, 0, 1, "1v1", 1])
+        ws.append([2, "07/24/2026", "01", datetime(2024, 5, 1), 7, 2, "2c1", "NA", 0, 1, "2v1", 1])
+        ws.append([3, "24/09/2026", "01", datetime(2024, 3, 3), 0.25, 4, "NA", "NA", "NA", 1, "3v1", 1])
+        ws.append([4, "512", "01", datetime(2024, 9, 5), None, None, "NA", "NA", "NA", 1, "4v1", 1])
+        ws.append([5, "512/24", "01", datetime(2024, 12, 6), None, None, "NA", "NA", "NA", 1, "5v1", 1])
+        buf = io.BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        buf.name = "2024.xlsx"
+        r = self.upload(buf)
+        plan = r.context["plan"]
+        self.assertEqual((plan["n_new"], plan["n_error"]), (5, 0), r.context["rows"])
+        by_row = {row["row"]: row for row in r.context["rows"]}
+        self.assertEqual([by_row[n]["ref"] for n in (2, 3, 4, 5, 6)],
+                         ["7/2024", "7/2024", "9/2024", "512/2024", "512/2024"])
+        self.assertTrue(any("also on row 3 (accident key 2)" in n for n in by_row[2]["notes"]))
+        self.assertTrue(any("casualty 2c1 is left out" in n for n in by_row[3]["notes"]))
+        self.client.post("/import/", {"token": r.context["token"]})
+        a = Accident.objects.get(report_number="7", accident_date__month=1)
+        self.assertEqual((a.km, a.hundred_m, a.pedestrians.count() + a.passengers.count()), (73, 5, 1))
+        self.assertEqual(a.passengers.get().severity, 9)              # 0 = injured
+        b = Accident.objects.get(report_number="9")
+        self.assertEqual((b.km, b.hundred_m), (0, 4))                 # 100m kept as written
+        self.assertEqual(Accident.objects.filter(report_number="512").count(), 2)
+        self.assertEqual(len(a.possible_duplicates()), 1)             # shown, to be checked
+        r = self.upload(io.BytesIO(buf.getvalue()))                   # again: nothing new
+        self.assertEqual((r.context["plan"]["n_new"], r.context["plan"]["n_duplicate"]), (0, 5))
+
     def test_unknown_station_codes_page_links_reports(self):
         from .models import PoliceStation, StationCode
         r = self.upload(self.flat_workbook())

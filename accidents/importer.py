@@ -97,6 +97,17 @@ def _region_name(text):
     return re.sub(r"\s+region$", "", text, flags=re.I).strip()
 
 
+def _date_shaped_ref(first, second, accident_date):
+    """(report number, two-digit year) from a report number Excel made into a date.
+    Usually the second part is the year (7/24 -> 24 July); when only the first
+    part matches the accident's year, the parts are the other way round."""
+    if isinstance(accident_date, (date, datetime)):
+        yy = accident_date.year % 100
+        if first == yy and second != yy:
+            return second, first
+    return first, second
+
+
 def _old_style(values, notes):
     """Rewrite one report row written the older way, before it is checked.
 
@@ -106,12 +117,22 @@ def _old_style(values, notes):
     """
     values = dict(values)
     written = values.get("report_number")
+    parts = None
     if isinstance(written, (date, datetime)):
-        # Excel turns "11/20" into the date 20 November: the month is the report
-        # number and the day is the year (years 13 and up cannot be a month).
-        values["report_number"] = f"{written.month}/{written.day:02d}"
-        notes.append(f"Report number: Excel had changed \"{written.month}/{written.day:02d}\" into "
-                     "a date; it is read as the report number again.")
+        parts = (written.month, written.day)
+    elif isinstance(written, str):
+        # The same date saved back as text: "07/24/2026", "07/24/" or "07/24/26".
+        m = re.fullmatch(r"\s*(\d{1,2})/(\d{1,2})/(\d{2}|\d{4})?\s*", written)
+        if m:
+            parts = (int(m.group(1)), int(m.group(2)))
+    if parts:
+        # Excel turns the report number "7/24" into the date 24 July: one part is the
+        # number, the other the year. The accident date says which is the year.
+        number, year = _date_shaped_ref(*parts, values.get("accident_date"))
+        values["report_number"] = f"{number}/{year:02d}"
+        notes.append(f"Report number: Excel had changed \"{number}/{year:02d}\" into a date "
+                     f"(\"{_text(written) if isinstance(written, str) else f'{written:%d/%m/%Y}'}\"); "
+                     "it is read as the report number again.")
     number, year = _split_ref(_text(values.get("report_number") or ""))
     if year:
         values["report_number"] = number
@@ -127,6 +148,21 @@ def _old_style(values, notes):
     elif isinstance(values.get("accident_date"), (date, datetime)):
         values["report_year"] = values["accident_date"].year
         notes.append("No report year given; the year of the accident date is used.")
+    km = values.get("km")
+    try:
+        km_number = float(km) if not _blank(km) else None
+    except (TypeError, ValueError):
+        km_number = None
+    if km_number is not None and not km_number.is_integer() and km_number >= 0:
+        # "73.5" is 73 km and 5 hundred metres (61 Km and 62 100m on the form).
+        whole = int(km_number)
+        hundreds = int(round((km_number - whole) * 10, 6))
+        values["km"] = whole
+        if _blank(values.get("hundred_m")):
+            values["hundred_m"] = hundreds
+            notes.append(f"61 Km: \"{_text(km)}\" is read as {whole} km and {hundreds} hundred metres.")
+        else:                               # 100m is filled in already: keep it
+            notes.append(f"61 Km: \"{_text(km)}\" is read as {whole} km.")
     code = _text(values.get("town_code") or "")
     if code.isdigit() and len(code) == 3:
         values["town_code"] = code.zfill(4)
@@ -560,12 +596,22 @@ def make_plan(sheets, user):
         # Each police station numbers its own reports, so 2/2024 can be on many
         # stations' books: a report is its number, year, region and station.
         item["station"] = _station_label(acc, item["new_station"])
+        item["key"] = None if _blank(values.get("_key")) else _text(values["_key"])
         same = by_identity.get(_identity(item))
-        if same is not None:
+        if same is None:
+            by_identity[_identity(item)] = item
+        elif item["key"] and same["key"] and item["key"] != same["key"]:
+            # The database's own accident key says these are two different accidents
+            # that were given the same number: both are imported, to be checked.
+            notes.append(f"Check the report number: report {ref} of the same police station is "
+                         f"also on row {same['row']} (accident key {same['key']}), a different "
+                         f"accident (key {item['key']}). Both are imported.")
+            same["notes"].append(f"Check the report number: report {ref} of the same police "
+                                 f"station is also on row {n} (accident key {item['key']}). "
+                                 "Both are imported.")
+        else:
             problems.append(f"Report {ref} of the same police station appears more than once "
                             f"in the file (also on row {same['row']}).")
-        else:
-            by_identity[_identity(item)] = item
         by_ref.setdefault(ref, item)
         if not _blank(values.get("_key")):
             by_key[_text(values["_key"])] = item
@@ -628,8 +674,11 @@ def make_plan(sheets, user):
             values["action"] = values.get("_pedestrian_action")
             values.pop("position", None)
         else:
-            parent["problems"].append(f"{title} row {n}: casualty class \"{kind}\" should be "
-                                      "1 (driver), 2 (passenger) or 3 (pedestrian).")
+            # Not known whether a driver, passenger or pedestrian: this person is left
+            # out, the rest of the report is still imported.
+            parent["notes"].append(
+                f"{title} row {n}: casualty {_text(values.get('_ckey') or '')} is left out: its "
+                f"casualty class \"{kind}\" should be 1 (driver), 2 (passenger) or 3 (pedestrian).")
             continue
         child = model()
         _fill(child, values, parent["problems"], parent["notes"], label=f"{title} row {n}: ")
